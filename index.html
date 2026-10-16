@@ -4,11 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
+
+<!-- PWA -->
+<link rel="manifest" id="manifestLink">
+<meta name="theme-color" content="#1e293b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Пропуски">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%231e293b%22/><text x=%2250%22 y=%2265%22 font-size=%2255%22 text-anchor=%22middle%22>🎓</text></svg>">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue }
+  import { getDatabase, ref, set, onValue, get, remove }
     from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -24,7 +33,7 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    window.firebaseDB = { db, ref, set, onValue };
+    window.firebaseDB = { db, ref, set, onValue, get, remove };
     console.log('✓ Firebase Realtime Database подключена');
   } catch (e) {
     console.error('Firebase error:', e);
@@ -79,6 +88,8 @@
   th .sort-arrow { margin-left: 4px; opacity: 0.5; font-size: 11px; }
   th .sort-arrow.active { opacity: 1; color: #1d4ed8; }
   tr:hover td { background: #f8fafc; }
+  tr.problem-row { background: #fff7ed; }
+  tr.problem-row:hover td { background: #ffedd5; }
   .empty { text-align: center; color: #94a3b8; padding: 32px; font-size: 14px; }
   .reason-tag { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 500; background: #dbeafe; color: #1e40af; }
   .reason-tag.bad { background: #fee2e2; color: #991b1b; }
@@ -87,6 +98,7 @@
   .source-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; margin-left: 6px; }
   .source-tag.teacher { background: #ede9fe; color: #5b21b6; }
   .source-tag.student { background: #fef3c7; color: #92400e; }
+  .problem-badge { display: inline-block; margin-left: 6px; background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 7px; }
   .parent-comment-tag { display: block; margin-top: 4px; font-size: 11px; color: #0369a1; font-style: italic; }
   .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
   .filter-bar > * { flex: 1; min-width: 140px; }
@@ -97,8 +109,10 @@
   .toast { position: fixed; bottom: 24px; right: 24px; left: 24px; max-width: 400px; margin-left: auto; background: #16a34a; color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.15); font-size: 14px; opacity: 0; transform: translateY(20px); transition: all .25s; pointer-events: none; z-index: 1000; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.error { background: #dc2626; }
+  .toast.warn { background: #d97706; }
   .students-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .student-chip { background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .student-chip.problem { background: #fee2e2; color: #991b1b; font-weight: 600; }
   .student-chip button { border: none; background: transparent; color: #dc2626; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; }
   .period-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer; }
   .period-dates { color: #64748b; font-size: 13px; align-self: center; white-space: nowrap; }
@@ -123,6 +137,17 @@
   .log-action.upd { background: #fef3c7; color: #92400e; }
   .log-action.login { background: #dbeafe; color: #1e40af; }
 
+  /* Предупреждение о многих пропусках */
+  .warning-banner { background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #dc2626; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+  .warning-banner .warn-icon { font-size: 24px; flex-shrink: 0; }
+  .warning-banner .warn-text { flex: 1; font-size: 13px; color: #7f1d1d; }
+  .warning-banner .warn-text b { font-size: 14px; }
+
+  /* PWA install button */
+  .pwa-install-btn { display: none; position: fixed; bottom: 20px; left: 20px; background: #2563eb; color: #fff; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(37,99,235,.35); border: none; cursor: pointer; font-weight: 600; font-size: 14px; z-index: 500; align-items: center; gap: 8px; }
+  .pwa-install-btn:hover { background: #1d4ed8; }
+  .pwa-install-btn.show { display: flex; }
+
   @media (max-width: 768px) {
     .login-wrap { padding: 16px; }
     .login-card { padding: 22px 18px; border-radius: 12px; }
@@ -130,7 +155,6 @@
     .subtitle { font-size: 13px; margin-bottom: 18px; }
     .role-tabs { gap: 4px; }
     .role-tab { font-size: 11px; padding: 8px 3px; min-width: 0; }
-
     .topbar { padding: 12px 14px; flex-direction: column; align-items: stretch; gap: 10px; }
     .topbar h2 { font-size: 15px; text-align: center; }
     .topbar .user-info { justify-content: center; gap: 8px; font-size: 13px; }
@@ -138,79 +162,41 @@
     .topbar .user-info .badge { font-size: 11px; padding: 3px 8px; }
     .topbar .user-info .btn-sm { flex: 1; padding: 8px 10px; font-size: 12px; }
     .notif-panel { width: calc(100vw - 40px); right: -10px; }
-
     .container { padding: 12px; }
     .card { padding: 16px; border-radius: 10px; margin-bottom: 12px; }
     .card h3 { font-size: 15px; margin-bottom: 12px; }
-
     .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
     .stat { padding: 12px; border-radius: 10px; }
     .stat .num { font-size: 22px; }
     .stat .lbl { font-size: 11px; }
-
     .form-grid { grid-template-columns: 1fr; gap: 10px; }
     .filter-bar { gap: 8px; }
     .filter-bar > * { min-width: 0; flex: 1 1 100%; }
-
     .table-wrap { overflow: visible; }
     .table-wrap table thead { display: none; }
-    .table-wrap table,
-    .table-wrap table tbody,
-    .table-wrap table tr,
-    .table-wrap table td { display: block; width: 100%; }
-    .table-wrap table tr {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
-    }
+    .table-wrap table, .table-wrap table tbody, .table-wrap table tr, .table-wrap table td { display: block; width: 100%; }
+    .table-wrap table tr { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .table-wrap table tr.problem-row { border-color: #dc2626; background: #fff7ed; }
     .table-wrap table tr:hover td { background: transparent; }
-    .table-wrap table td {
-      border: none;
-      padding: 5px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      text-align: right;
-    }
-    .table-wrap table td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: #64748b;
-      font-size: 12px;
-      text-align: left;
-      flex-shrink: 0;
-    }
-    .table-wrap table td:last-child {
-      justify-content: flex-end;
-      margin-top: 8px;
-      padding-top: 10px;
-      border-top: 1px solid #f1f5f9;
-    }
+    .table-wrap table td { border: none; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; text-align: right; }
+    .table-wrap table td::before { content: attr(data-label); font-weight: 600; color: #64748b; font-size: 12px; text-align: left; flex-shrink: 0; }
+    .table-wrap table td:last-child { justify-content: flex-end; margin-top: 8px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
     .table-wrap table td:last-child::before { content: none; }
-
     .journal-header { flex-direction: column; align-items: stretch; gap: 10px; }
     .journal-header > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
     .journal-header .period-select { flex: 1; }
     .period-dates { font-size: 12px; white-space: normal; }
-
     .periods-editor-row { grid-template-columns: 1fr; gap: 8px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #f8fafc; }
     .periods-editor-row button { width: 100%; }
-
     .students-list { gap: 6px; }
     .student-chip { font-size: 12px; padding: 5px 10px; gap: 6px; }
-
     .btn { padding: 10px 14px; font-size: 13px; }
-
     .card > div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; gap: 14px !important; }
     canvas { max-width: 100% !important; }
-
     .reason-tag { font-size: 11px; padding: 2px 7px; }
     .source-tag { font-size: 10px; padding: 2px 6px; margin-left: 4px; display: inline-block; margin-top: 2px; }
+    .warning-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .pwa-install-btn { bottom: 12px; left: 12px; right: 12px; justify-content: center; }
   }
 
   @media (max-width: 380px) {
@@ -218,7 +204,7 @@
     .topbar .user-info .btn-sm { font-size: 11px; padding: 7px 8px; }
   }
 
-  /* ========== ПЕЧАТЬ ========== */
+  /* ПЕЧАТЬ */
   .print-header { display: none; }
   .print-signature { display: none; }
   @media print {
@@ -238,10 +224,12 @@
     th, td { padding: 4px 6px !important; border-bottom: 1px solid #999 !important; }
     th { background: #eee !important; color: #000 !important; }
     tr { page-break-inside: avoid; }
+    tr.problem-row { background: none !important; }
     .reason-tag { background: none !important; color: #000 !important; padding: 0 !important; border: none !important; font-weight: 600; }
     .source-tag { display: none !important; }
     .parent-comment-tag { color: #000; }
-
+    .problem-badge { background: none !important; color: #000 !important; padding: 0 !important; }
+    .warning-banner, .pwa-install-btn { display: none !important; }
     .print-header { display: block !important; margin-bottom: 14px; border-bottom: 2px solid #000; padding-bottom: 8px; }
     .print-header h1 { margin: 0 0 6px 0; font-size: 16px; }
     .print-header .meta { font-size: 11px; color: #333; }
@@ -259,6 +247,7 @@
   </div>
 </div>
 <div id="toast" class="toast"></div>
+<button class="pwa-install-btn" id="installPwaBtn">📲 Установить приложение</button>
 
 <script>
 /* ============================================================
@@ -267,6 +256,9 @@
 const STORAGE_KEY = 'school_absence_v2';
 const SESSION_KEY = 'school_absence_session';
 const FB_PATH = 'schoolData';
+const BACKUP_PATH = 'backups';
+const BACKUP_KEEP_DAYS = 30;
+const ABSENCE_WARNING_THRESHOLD = 5; // порог "много пропусков"
 
 const CLASSES = (() => {
   const arr = [];
@@ -300,6 +292,71 @@ const REASONS = [
 function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASONS.length - 1]; }
 
 /* ============================================================
+   PWA MANIFEST (inline через Blob)
+   ============================================================ */
+(function setupPwaManifest() {
+  const iconSvg = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">' +
+    '<rect width="192" height="192" rx="36" fill="#1e293b"/>' +
+    '<text x="96" y="128" font-size="100" text-anchor="middle">🎓</text>' +
+    '</svg>'
+  );
+  const manifest = {
+    name: 'Учёт пропусков',
+    short_name: 'Пропуски',
+    description: 'Школьная система учёта пропусков и причин',
+    start_url: '.',
+    scope: '.',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#eef2f7',
+    theme_color: '#1e293b',
+    lang: 'ru',
+    icons: [
+      { src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('manifestLink');
+  if (link) link.href = url;
+})();
+
+// PWA install
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) btn.classList.add('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) btn.classList.remove('show');
+  deferredPrompt = null;
+  toast('Приложение установлено на телефон');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        toast('Установка недоступна — откройте сайт в Chrome или Safari', true);
+        return;
+      }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') toast('Устанавливаем приложение...');
+      deferredPrompt = null;
+      btn.classList.remove('show');
+    });
+  }
+});
+
+/* ============================================================
    БАЗОВЫЕ УТИЛИТЫ
    ============================================================ */
 function simpleHash(str) {
@@ -331,7 +388,7 @@ let firebaseReady = false;
 let firebaseConnected = false;
 
 /* ============================================================
-   СОХРАНЕНИЕ (локально + Firebase)
+   СОХРАНЕНИЕ
    ============================================================ */
 let saveTimer = null;
 function saveData() {
@@ -348,6 +405,78 @@ function saveData() {
       console.error('Firebase save error:', e);
     }
   }, 400);
+}
+
+/* ============================================================
+   АВТОБЭКАПЫ
+   ============================================================ */
+async function runAutoBackup(force) {
+  if (!window.firebaseDB) return;
+  const today = todayISO();
+  const lastBackup = localStorage.getItem('last_backup_date');
+  if (!force && lastBackup === today) return;
+
+  try {
+    const { db, ref, set, get, remove } = window.firebaseDB;
+
+    // 1. Получаем список существующих бэкапов
+    const snap = await get(ref(db, BACKUP_PATH));
+    const existing = snap.val() || {};
+    const keys = Object.keys(existing).sort();
+
+    // 2. Удаляем старые (оставляем последние BACKUP_KEEP_DAYS)
+    while (keys.length >= BACKUP_KEEP_DAYS) {
+      const oldest = keys.shift();
+      try { await remove(ref(db, BACKUP_PATH + '/' + oldest)); } catch (e) {}
+    }
+
+    // 3. Сохраняем сегодняшний бэкап
+    await set(ref(db, BACKUP_PATH + '/' + today), {
+      time: new Date().toISOString(),
+      studentsCount: data.students.length,
+      absencesCount: data.absences.length,
+      teachersCount: data.teachers.length,
+      data: data
+    });
+
+    localStorage.setItem('last_backup_date', today);
+    console.log('✓ Автобэкап создан: ' + today);
+  } catch (e) {
+    console.warn('Backup error:', e);
+  }
+}
+
+async function listBackups() {
+  if (!window.firebaseDB) return [];
+  try {
+    const { db, ref, get } = window.firebaseDB;
+    const snap = await get(ref(db, BACKUP_PATH));
+    const val = snap.val() || {};
+    return Object.entries(val).map(([date, info]) => ({
+      date,
+      time: info.time,
+      students: info.studentsCount || 0,
+      absences: info.absencesCount || 0,
+      teachers: info.teachersCount || 0
+    })).sort((a, b) => b.date.localeCompare(a.date));
+  } catch (e) { return []; }
+}
+
+async function restoreBackup(date) {
+  if (!window.firebaseDB) return false;
+  try {
+    const { db, ref, get } = window.firebaseDB;
+    const snap = await get(ref(db, BACKUP_PATH + '/' + date));
+    const val = snap.val();
+    if (!val || !val.data) return false;
+    data = val.data;
+    if (!data.log) data.log = [];
+    if (!data.notifications) data.notifications = [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    saveData();
+    logAction('upd', 'Восстановлена база из бэкапа ' + date);
+    return true;
+  } catch (e) { return false; }
 }
 
 /* ============================================================
@@ -370,39 +499,35 @@ function logAction(action, details) {
    УВЕДОМЛЕНИЯ
    ============================================================ */
 function requestNotificationPermission() {
-  if (!('Notification' in window)) return;
+  if (!('Notification' in window)) return toast('Браузер не поддерживает уведомления', true);
   if (Notification.permission === 'default') {
     Notification.requestPermission().then(p => {
       if (p === 'granted') toast('Уведомления включены');
+      else toast('Уведомления отклонены', true);
     });
   } else if (Notification.permission === 'granted') {
     toast('Уведомления уже включены');
   } else {
-    toast('Уведомления заблокированы в браузере', true);
+    toast('Уведомления заблокированы в настройках браузера', true);
   }
 }
 
 function showNativeNotification(title, body) {
   if (!('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
-  try {
-    new Notification(title, { body: body, icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>' });
-  } catch (e) {}
+  try { new Notification(title, { body: body, icon: document.querySelector('link[rel="apple-touch-icon"]').href }); } catch (e) {}
 }
 
 function pushNotification(toRole, toUser, message, detail) {
   if (!data.notifications) data.notifications = [];
   data.notifications.push({
-    id: uid(),
-    toRole, toUser, message, detail: detail || '',
+    id: uid(), toRole, toUser, message, detail: detail || '',
     from: session ? session.name : '—',
     time: new Date().toISOString(),
     read: false
   });
   if (data.notifications.length > 100) data.notifications = data.notifications.slice(-100);
   saveData();
-
-  // Если текущий пользователь — получатель, показать native уведомление
   if (session && session.role === toRole && session.name === toUser) {
     showNativeNotification('Учёт пропусков', message);
   }
@@ -414,24 +539,18 @@ function getMyNotifications() {
     .filter(n => n.toRole === session.role && n.toUser === session.name)
     .sort((a, b) => (b.time || '').localeCompare(a.time || ''));
 }
-
-function unreadCount() {
-  return getMyNotifications().filter(n => !n.read).length;
-}
-
+function unreadCount() { return getMyNotifications().filter(n => !n.read).length; }
 function markAllRead() {
   if (!data.notifications) return;
   let changed = false;
   data.notifications.forEach(n => {
-    if (n.toRole === session.role && n.toUser === session.name && !n.read) {
-      n.read = true; changed = true;
-    }
+    if (n.toRole === session.role && n.toUser === session.name && !n.read) { n.read = true; changed = true; }
   });
   if (changed) saveData();
 }
 
 /* ============================================================
-   СИНХРОНИЗАЦИЯ С FIREBASE
+   СИНХРОНИЗАЦИЯ
    ============================================================ */
 async function initFirebaseSync() {
   if (!window.firebaseDB) { firebaseReady = true; return false; }
@@ -476,8 +595,8 @@ function updateStatusBadge() {
   const badge = document.getElementById('syncStatus');
   if (!badge) return;
   if (!firebaseReady) badge.innerHTML = '<span class="status-dot offline"></span>Локально';
-  else if (firebaseConnected) badge.innerHTML = '<span class="status-dot online"></span>Онлайн — синхронизация с облаком';
-  else badge.innerHTML = '<span class="status-dot offline"></span>Офлайн — нет связи';
+  else if (firebaseConnected) badge.innerHTML = '<span class="status-dot online"></span>Онлайн';
+  else badge.innerHTML = '<span class="status-dot offline"></span>Офлайн';
 }
 
 /* ============================================================
@@ -525,7 +644,7 @@ function periodSelectorHTML(cls) {
 }
 
 /* ============================================================
-   УТИЛИТЫ (HTML)
+   УТИЛИТЫ
    ============================================================ */
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -553,13 +672,44 @@ function formatDateTime(iso) {
 function getStudentsOfClass(cls) { return data.students.filter(s => s.class === cls).sort((a, b) => a.name.localeCompare(b.name, 'ru')); }
 
 /* ============================================================
+   ПРЕДУПРЕЖДЕНИЕ "МНОГО ПРОПУСКОВ"
+   ============================================================ */
+function getProblemStudents(absences) {
+  const counts = {};
+  absences.forEach(a => { counts[a.studentName] = (counts[a.studentName] || 0) + 1; });
+  return Object.entries(counts)
+    .filter(([_, n]) => n >= ABSENCE_WARNING_THRESHOLD)
+    .map(([name, n]) => ({ name, count: n }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function problemNamesSet(absences) {
+  const s = new Set();
+  getProblemStudents(absences).forEach(p => s.add(p.name));
+  return s;
+}
+
+function warningBannerHTML(absences) {
+  const problems = getProblemStudents(absences);
+  if (!problems.length) return '';
+  const names = problems.slice(0, 5).map(p => p.name + ' (' + p.count + ')').join(', ');
+  const more = problems.length > 5 ? ' и ещё ' + (problems.length - 5) : '';
+  return '<div class="warning-banner">' +
+    '<div class="warn-icon">⚠️</div>' +
+    '<div class="warn-text">' +
+      '<b>Внимание! Много пропусков (≥ ' + ABSENCE_WARNING_THRESHOLD + ') у ' + problems.length + ' учеников:</b><br>' +
+      escapeHtml(names + more) +
+    '</div>' +
+    '</div>';
+}
+
+/* ============================================================
    ГРАФИКИ
    ============================================================ */
 function drawCharts(absences, canvasPrefix) {
   if (typeof Chart === 'undefined') return;
   if (window._charts) window._charts.forEach(c => c.destroy());
   window._charts = [];
-
   const reasonCounts = {};
   absences.forEach(a => { const n = reasonById(a.reason).name; reasonCounts[n] = (reasonCounts[n] || 0) + 1; });
   const pieCanvas = document.getElementById(canvasPrefix + 'ReasonChart');
@@ -600,33 +750,28 @@ function printJournal(cls, periodName, options) {
     const title = options.studentName
       ? 'Отчёт о пропусках — ' + options.studentName + ' (' + cls + ' класс)'
       : 'Журнал пропусков — ' + cls + ' класс';
-    printHeader.innerHTML =
-      '<h1>' + escapeHtml(title) + '</h1>' +
+    printHeader.innerHTML = '<h1>' + escapeHtml(title) + '</h1>' +
       '<div class="meta">' +
         '<span><b>Период:</b> ' + escapeHtml(periodName) + '</span>' +
-        '<span><b>Классный руководитель:</b> ' + escapeHtml(teacherName) + '</span>' +
+        '<span><b>Кл. руководитель:</b> ' + escapeHtml(teacherName) + '</span>' +
         '<span><b>Дата:</b> ' + dateStr + '</span>' +
       '</div>';
   }
   if (printSignature) {
-    printSignature.innerHTML =
-      '<div><span class="line"></span> подпись классного руководителя</div>' +
+    printSignature.innerHTML = '<div><span class="line"></span> подпись классного руководителя</div>' +
       '<div style="margin-top:20px;"><span class="line"></span> дата</div>';
   }
   window.print();
 }
 
 /* ============================================================
-   СОРТИРОВКА И ПОИСК (uiState)
+   UI STATE
    ============================================================ */
 let uiState = {
   filterReason: '', filterStudent: '', filterDate: '',
   newStudentName: '',
   adminSelectedClass: CLASSES[0],
-  searchQuery: '',
-  sortBy: 'date',   // 'date' | 'name' | 'reason' | 'subject'
-  sortDir: 'desc',
-  logFilter: ''
+  searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: ''
 };
 
 function sortAbsences(rows) {
@@ -643,7 +788,6 @@ function sortAbsences(rows) {
     return 0;
   });
 }
-
 function applySearch(rows) {
   const q = (uiState.searchQuery || '').toLowerCase().trim();
   if (!q) return rows;
@@ -651,10 +795,12 @@ function applySearch(rows) {
 }
 
 /* ============================================================
-   ОБЩАЯ ТАБЛИЦА ПРОПУСКОВ
+   ТАБЛИЦА ПРОПУСКОВ
    ============================================================ */
-function renderAbsencesTable(rows, withActions, withParentComment) {
+function renderAbsencesTable(rows, withActions, withParentComment, problemNames) {
   if (!rows.length) return '<div class="empty">Записей нет</div>';
+  problemNames = problemNames || new Set();
+
   const arrowDate = uiState.sortBy === 'date' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowName = uiState.sortBy === 'name' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowReason = uiState.sortBy === 'reason' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
@@ -665,10 +811,12 @@ function renderAbsencesTable(rows, withActions, withParentComment) {
       ? '<span class="source-tag student">добавил ученик</span>'
       : '<span class="source-tag teacher">добавил учитель</span>';
     const commentHTML = a.parentComment ? '<span class="parent-comment-tag">💬 Родитель: ' + escapeHtml(a.parentComment) + '</span>' : '';
+    const isProblem = problemNames.has(a.studentName);
+    const problemBadge = isProblem ? '<span class="problem-badge">⚠ Много</span>' : '';
 
-    let row = '<tr>';
+    let row = '<tr' + (isProblem ? ' class="problem-row"' : '') + '>';
     row += '<td data-label="Дата">' + escapeHtml(formatDate(a.date)) + '</td>';
-    row += '<td data-label="ФИО">' + escapeHtml(a.studentName) + '</td>';
+    row += '<td data-label="ФИО">' + escapeHtml(a.studentName) + problemBadge + '</td>';
     row += '<td data-label="Класс">' + escapeHtml(a.class) + '</td>';
     row += '<td data-label="Предмет">' + escapeHtml(a.subject) + '</td>';
     row += '<td data-label="Причина"><span class="reason-tag ' + r.type + '">' + escapeHtml(r.name) + '</span>' + srcLabel + '</td>';
@@ -699,19 +847,15 @@ function bindSortHandlers() {
   document.querySelectorAll('th.sortable').forEach(th => {
     th.addEventListener('click', () => {
       const key = th.dataset.sort;
-      if (uiState.sortBy === key) {
-        uiState.sortDir = uiState.sortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        uiState.sortBy = key;
-        uiState.sortDir = 'desc';
-      }
+      if (uiState.sortBy === key) uiState.sortDir = uiState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { uiState.sortBy = key; uiState.sortDir = 'desc'; }
       renderApp();
     });
   });
 }
 
 /* ============================================================
-   КОЛОКОЛЬЧИК УВЕДОМЛЕНИЙ
+   КОЛОКОЛЬЧИК
    ============================================================ */
 function bellHTML() {
   const count = unreadCount();
@@ -730,17 +874,14 @@ function bindBell() {
     const panel = document.createElement('div');
     panel.className = 'notif-panel';
     panel.id = 'notifPanel';
-    if (!notifs.length) {
-      panel.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">Уведомлений нет</div>';
-    } else {
-      panel.innerHTML = notifs.slice(0, 20).map(n =>
-        '<div class="notif-item' + (n.read ? '' : ' unread') + '">' +
-        '<div class="n-title">' + escapeHtml(n.message) + '</div>' +
-        (n.detail ? '<div class="n-text">' + escapeHtml(n.detail) + '</div>' : '') +
-        '<div class="n-time">' + escapeHtml(formatDateTime(n.time)) + '</div>' +
-        '</div>'
-      ).join('');
-    }
+    if (!notifs.length) panel.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">Уведомлений нет</div>';
+    else panel.innerHTML = notifs.slice(0, 20).map(n =>
+      '<div class="notif-item' + (n.read ? '' : ' unread') + '">' +
+      '<div class="n-title">' + escapeHtml(n.message) + '</div>' +
+      (n.detail ? '<div class="n-text">' + escapeHtml(n.detail) + '</div>' : '') +
+      '<div class="n-time">' + escapeHtml(formatDateTime(n.time)) + '</div>' +
+      '</div>'
+    ).join('');
     document.body.appendChild(panel);
     markAllRead();
     setTimeout(() => {
@@ -772,11 +913,7 @@ function loadSession() {
       if (!t) return null;
       s.class = t.class;
     }
-    if (s.role === 'student') {
-      const st = data.students.find(x => x.class === s.class && x.name === s.name);
-      if (!st) return null;
-    }
-    if (s.role === 'parent') {
+    if (s.role === 'student' || s.role === 'parent') {
       const st = data.students.find(x => x.class === s.class && x.name === s.name);
       if (!st) return null;
     }
@@ -786,9 +923,6 @@ function loadSession() {
 
 let loginState = { role: 'teacher', teacherName: '', teacherClass: CLASSES[0], studentClass: CLASSES[0], studentName: '' };
 
-/* ============================================================
-   АДМИН-ПАРОЛЬ
-   ============================================================ */
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
 function isAdminPassword(pwd) { return simpleHash(pwd) === ADMIN_PASSWORD_HASH; }
 
@@ -821,10 +955,8 @@ function renderLogin() {
   } else if (loginState.role === 'admin') {
     formHTML = '<label for="adminPwd">Пароль администратора</label>' +
       '<input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">';
-  } else if (loginState.role === 'student' || loginState.role === 'parent') {
-    const sNamesHTML = studentNames.length
-      ? optionsHTML(studentNames, loginState.studentName)
-      : '<option>— в классе нет учеников —</option>';
+  } else {
+    const sNamesHTML = studentNames.length ? optionsHTML(studentNames, loginState.studentName) : '<option>— в классе нет учеников —</option>';
     formHTML = '<label for="sClass">Класс</label>' +
       '<select id="sClass">' + optionsHTML(CLASSES, loginState.studentClass) + '</select>' +
       '<label for="sName">ФИО ' + (loginState.role === 'parent' ? 'ребёнка' : 'ученика') + '</label>' +
@@ -862,14 +994,13 @@ function renderLogin() {
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-
     if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
       const pinValue = (document.getElementById('tPin')?.value || '').trim();
       if (!name) return toast('Введите ФИО', true);
       if (!pinValue) return toast('Введите PIN-код', true);
       const teacher = findTeacher(name);
-      if (!teacher) return toast('Учитель не зарегистрирован. Обратитесь к администратору.', true);
+      if (!teacher) return toast('Учитель не зарегистрирован', true);
       if (simpleHash(pinValue) !== teacher.pin) {
         document.getElementById('tPin').value = '';
         return toast('Неверный PIN-код', true);
@@ -879,9 +1010,9 @@ function renderLogin() {
     } else if (loginState.role === 'admin') {
       const pwd = document.getElementById('adminPwd').value;
       if (!pwd) return toast('Введите пароль', true);
-      if (!isAdminPassword(pwd)) return toast('Неверный пароль администратора', true);
+      if (!isAdminPassword(pwd)) return toast('Неверный пароль', true);
       session = { role: 'admin', name: 'Администратор' };
-      logAction('login', 'Администратор вошёл в систему');
+      logAction('login', 'Администратор вошёл');
     } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
       const st = data.students.find(s => s.class === sClass.value && s.name === loginState.studentName);
@@ -889,11 +1020,10 @@ function renderLogin() {
       if (!st.pin) { st.pin = simpleHash('1234'); saveData(); toast('PIN по умолчанию: 1234'); }
       const entered = prompt('Введите PIN для "' + st.name + '"\n\nЕсли не меняли — введите 1234');
       if (entered === null) return;
-      if (simpleHash(entered) !== st.pin) return toast('Неверный PIN. Попробуйте 1234', true);
+      if (simpleHash(entered) !== st.pin) return toast('Неверный PIN', true);
       session = { role: loginState.role, name: loginState.studentName, class: sClass.value };
-      logAction('login', (loginState.role === 'parent' ? 'Родитель' : 'Ученик') + ' вошёл как ' + loginState.studentName);
+      logAction('login', (loginState.role === 'parent' ? 'Родитель' : 'Ученик') + ' вошёл');
     }
-
     ensurePeriods(session.class);
     saveSession();
     uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0], searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: '' };
@@ -904,14 +1034,14 @@ function renderLogin() {
   if (forgot) {
     forgot.addEventListener('click', (e) => {
       e.preventDefault();
-      const master = prompt('Введите мастер-пароль для сброса PIN\n(по умолчанию: school21)');
+      const master = prompt('Мастер-пароль для сброса PIN\n(по умолчанию: school21)');
       if (master !== 'school21') return toast('Неверный мастер-пароль', true);
       const targetName = prompt('Чьё ФИО сбросить?');
       if (!targetName) return;
       const t = findTeacher(targetName);
       const s = data.students.find(st => st.name.toLowerCase() === targetName.toLowerCase());
-      if (t) { t.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN учителя ' + t.name); toast('PIN учителя сброшен на 1234'); }
-      else if (s) { s.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN ученика ' + s.name); toast('PIN ученика сброшен на 1234'); }
+      if (t) { t.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN учителя ' + t.name); toast('PIN учителя сброшен'); }
+      else if (s) { s.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN ученика ' + s.name); toast('PIN ученика сброшен'); }
       else toast('Пользователь не найден', true);
     });
   }
@@ -922,16 +1052,13 @@ function findTeacher(name) {
   return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase());
 }
 
-/* ============================================================
-   ШАПКА (общая для всех ролей)
-   ============================================================ */
 function topbarHTML(title, extraUserInfo) {
   const showBell = session.role === 'teacher' || session.role === 'admin';
   return '<div class="topbar">' +
     '<h2>' + escapeHtml(title) + '</h2>' +
     '<div class="user-info">' +
       '<span>' + escapeHtml(session.name) + '</span>' +
-      (session.class ? '<span class="badge">' + escapeHtml(session.class) + ' класс</span>' : '') +
+      (session.class ? '<span class="badge">' + escapeHtml(session.class) + '</span>' : '') +
       extraUserInfo +
       (showBell ? bellHTML() : '') +
       '<button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>' +
@@ -946,7 +1073,7 @@ function renderTeacher() {
   const students = getStudentsOfClass(cls);
   const subjects = getSubjects(cls);
 
-  let absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
+  const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
 
   let absences = absencesAll.filter(a => {
     if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
@@ -957,17 +1084,19 @@ function renderTeacher() {
   absences = applySearch(absences);
   absences = sortAbsences(absences);
 
+  const problemNames = problemNamesSet(absencesAll);
   const total = absencesAll.length;
   const goodCount = absencesAll.filter(a => reasonById(a.reason).type === 'good').length;
   const badCount = absencesAll.filter(a => reasonById(a.reason).type === 'bad').length;
   const uniqueStudents = new Set(absencesAll.map(a => a.studentName)).size;
 
   const studentChips = students.length
-    ? students.map(s =>
-        '<span class="student-chip">' + escapeHtml(s.name) +
-        '<button data-reset-pin="' + s.id + '" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>' +
-        '<button data-del-student="' + s.id + '" title="Удалить">×</button></span>'
-      ).join('')
+    ? students.map(s => {
+        const isProblem = problemNames.has(s.name);
+        return '<span class="student-chip' + (isProblem ? ' problem' : '') + '">' + escapeHtml(s.name) +
+          '<button data-reset-pin="' + s.id + '" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>' +
+          '<button data-del-student="' + s.id + '" title="Удалить">×</button></span>';
+      }).join('')
     : '<div class="empty">Пока нет учеников.</div>';
 
   const periodRows = data.periods[cls].map((p, i) =>
@@ -985,6 +1114,8 @@ function renderTeacher() {
       '<button class="btn btn-secondary btn-sm" id="changeTeacherPinBtn">Сменить PIN</button>') +
 
     '<div class="container">' +
+      warningBannerHTML(absencesAll) +
+
       '<div class="stats">' +
         '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего пропусков</div></div>' +
         '<div class="stat"><div class="num">' + goodCount + '</div><div class="lbl">Уважительных</div></div>' +
@@ -1004,680 +1135,7 @@ function renderTeacher() {
           '<div><label for="aStudent">ФИО ученика</label><select id="aStudent" required' + (students.length ? '' : ' disabled') + '>' +
             (students.length ? optionsHTML(students.map(s => s.name), '') : '<option>— нет учеников —</option>') + '</select></div>' +
           '<div><label for="aSubject">Предмет</label><select id="aSubject" required>' + optionsHTML(subjects, '') + '</select></div>' +
-          '<div><label for="aReason">Причина пропуска</label><select id="aReason" required>' + optionsHTML(REASONS, '', 'id') + '</select></div>' +
+          '<div><label for="aReason">Причина</label><select id="aReason" required>' + optionsHTML(REASONS, '', 'id') + '</select></div>' +
           '<div class="full"><label for="aNote">Примечание</label><input type="text" id="aNote" placeholder="Например: справка №123"></div>' +
         '</div>' +
-        '<button type="submit" class="btn" style="margin-top:16px;"' + (students.length ? '' : ' disabled') + '>Добавить запись</button>' +
-      '</form></div>' +
-
-      '<div class="card"><h3>Ученики класса (' + students.length + ')</h3>' +
-        '<div class="students-list" id="studentsList">' + studentChips + '</div>' +
-        '<form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">' +
-          '<input type="text" id="newStudentName" placeholder="Иванов Иван" value="' + escapeHtml(uiState.newStudentName) + '" style="flex:1; min-width:200px;">' +
-          '<button type="submit" class="btn">Добавить ученика</button>' +
-        '</form></div>' +
-
-      '<div class="card"><h3>Периоды — ' + escapeHtml(cls) + '</h3>' +
-        '<div id="periodsEditor">' + periodRows +
-        '<button class="btn btn-secondary" id="addPeriodBtn" type="button" style="margin-top:8px;">+ Добавить период</button>' +
-        '</div></div>' +
-
-      '<div class="card">' +
-        '<div class="print-header" id="printHeader"></div>' +
-        '<div class="journal-header"><h3>Журнал — ' + escapeHtml(cls) + '</h3>' +
-          '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-            periodSelectorHTML(cls) +
-            '<button class="btn btn-secondary btn-sm" id="notifyPermBtn" title="Разрешить браузерные уведомления">🔔 Уведомления</button>' +
-            '<button class="btn btn-secondary btn-sm" id="printBtn">🖨 Печать</button>' +
-          '</div>' +
-        '</div>' +
-
-        '<div style="margin-bottom:12px; display:flex; gap:10px; flex-wrap:wrap;">' +
-          '<input type="text" id="searchInput" placeholder="🔍 Поиск по ФИО..." value="' + escapeHtml(uiState.searchQuery) + '" style="flex:1; min-width:200px;">' +
-        '</div>' +
-
-        '<div class="filter-bar">' +
-          '<select id="fStudent"><option value="">Все ученики</option>' + optionsHTML(students.map(s => s.name), uiState.filterStudent) + '</select>' +
-          '<select id="fReason"><option value="">Все причины</option>' +
-            REASONS.map(r => '<option value="' + r.id + '"' + (uiState.filterReason === r.id ? ' selected' : '') + '>' + escapeHtml(r.name) + '</option>').join('') +
-          '</select>' +
-          '<input type="date" id="fDate" value="' + uiState.filterDate + '">' +
-          '<button class="btn btn-secondary" id="clearFilters" type="button">Сбросить</button>' +
-        '</div>' +
-
-        '<div class="table-wrap">' + renderAbsencesTable(absences, true, false) + '</div>' +
-        '<div class="print-signature" id="printSignature"></div>' +
-      '</div>' +
-    '</div>';
-
-  drawCharts(absencesAll, 't');
-  bindTeacherEvents();
-  bindSortHandlers();
-  bindBell();
-}
-
-function bindTeacherEvents() {
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    logAction('login', 'Выход из системы');
-    session = null; saveSession(); renderApp();
-  });
-
-  document.getElementById('periodSelect')?.addEventListener('change', e => {
-    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
-    saveData(); renderTeacher();
-  });
-
-  document.getElementById('printBtn')?.addEventListener('click', () => {
-    const period = getCurrentPeriod(session.class);
-    printJournal(session.class, period.name);
-  });
-
-  document.getElementById('notifyPermBtn')?.addEventListener('click', requestNotificationPermission);
-
-  document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
-    const teacher = findTeacher(session.name);
-    if (!teacher) return toast('Ошибка: учитель не найден', true);
-    const oldPin = prompt('Текущий PIN:');
-    if (oldPin === null) return;
-    if (simpleHash(oldPin) !== teacher.pin) return toast('Неверный текущий PIN', true);
-    const newPin = prompt('Новый PIN (минимум 4 цифры):');
-    if (newPin === null) return;
-    if (!/^\d{4,}$/.test(newPin)) return toast('PIN должен быть минимум 4 цифры', true);
-    const confirmPin = prompt('Повторите новый PIN:');
-    if (confirmPin !== newPin) return toast('PIN не совпадает', true);
-    teacher.pin = simpleHash(newPin);
-    saveData();
-    logAction('upd', 'Учитель сменил PIN');
-    toast('PIN изменён');
-  });
-
-  document.getElementById('absenceForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const date = document.getElementById('aDate').value;
-    const studentName = document.getElementById('aStudent').value;
-    const subject = document.getElementById('aSubject').value;
-    const reason = document.getElementById('aReason').value;
-    const note = document.getElementById('aNote').value.trim();
-    if (!date || !studentName || !subject || !reason) return toast('Заполните все поля', true);
-    data.absences.push({ id: uid(), date, class: session.class, studentName, subject, reason, note, addedBy: session.name, addedByRole: 'teacher' });
-    logAction('add', 'Добавлен пропуск: ' + studentName + ' (' + date + ') — ' + reasonById(reason).name);
-    saveData();
-    toast('Запись добавлена');
-    renderTeacher();
-  });
-
-  document.getElementById('searchInput')?.addEventListener('input', e => {
-    uiState.searchQuery = e.target.value;
-    clearTimeout(window._searchTimer);
-    window._searchTimer = setTimeout(() => {
-      const input = document.getElementById('searchInput');
-      const val = input ? input.value : '';
-      const pos = input ? input.selectionStart : 0;
-      renderTeacher();
-      const newInput = document.getElementById('searchInput');
-      if (newInput) { newInput.focus(); newInput.setSelectionRange(pos, pos); }
-    }, 300);
-  });
-
-  document.getElementById('fStudent').addEventListener('change', e => { uiState.filterStudent = e.target.value; renderTeacher(); });
-  document.getElementById('fReason').addEventListener('change', e => { uiState.filterReason = e.target.value; renderTeacher(); });
-  document.getElementById('fDate').addEventListener('change', e => { uiState.filterDate = e.target.value; renderTeacher(); });
-  document.getElementById('clearFilters').addEventListener('click', () => {
-    uiState.filterReason = ''; uiState.filterStudent = ''; uiState.filterDate = ''; uiState.searchQuery = '';
-    renderTeacher();
-  });
-
-  document.querySelectorAll('[data-reset-pin]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const st = data.students.find(s => s.id === btn.dataset.resetPin);
-      if (!st) return;
-      if (!confirm('Сбросить PIN для "' + st.name + '"?')) return;
-      st.pin = simpleHash('1234');
-      logAction('upd', 'Сброшен PIN ученика ' + st.name);
-      saveData();
-      toast('PIN сброшен на 1234');
-    });
-  });
-
-  document.querySelectorAll('[data-del-abs]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const abs = data.absences.find(a => a.id === btn.dataset.delAbs);
-      if (!abs) return;
-      if (!confirm('Удалить запись?')) return;
-      data.absences = data.absences.filter(a => a.id !== btn.dataset.delAbs);
-      logAction('del', 'Удалён пропуск: ' + abs.studentName + ' (' + formatDate(abs.date) + ')');
-      saveData();
-      toast('Запись удалена');
-      renderTeacher();
-    });
-  });
-
-  document.getElementById('addStudentForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = (document.getElementById('newStudentName').value || '').trim();
-    if (!name) return toast('Введите ФИО', true);
-    const exists = data.students.some(s => s.class === session.class && s.name.toLowerCase() === name.toLowerCase());
-    if (exists) return toast('Такой ученик уже есть', true);
-    data.students.push({ id: uid(), class: session.class, name, pin: simpleHash('1234') });
-    logAction('add', 'Добавлен ученик ' + name + ' в ' + session.class);
-    saveData();
-    uiState.newStudentName = '';
-    toast('Ученик добавлен (PIN 1234)');
-    renderTeacher();
-  });
-  document.getElementById('newStudentName').addEventListener('input', e => { uiState.newStudentName = e.target.value; });
-
-  document.querySelectorAll('[data-del-student]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const st = data.students.find(s => s.id === btn.dataset.delStudent);
-      if (!st) return;
-      if (!confirm('Удалить ученика "' + st.name + '"?')) return;
-      data.students = data.students.filter(s => s.id !== st.id);
-      data.absences = data.absences.filter(a => !(a.class === st.class && a.studentName === st.name));
-      logAction('del', 'Удалён ученик ' + st.name + ' из ' + st.class);
-      saveData();
-      toast('Ученик удалён');
-      renderTeacher();
-    });
-  });
-
-  document.querySelectorAll('[data-pname]').forEach(inp => {
-    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pname].name = e.target.value.trim(); saveData(); });
-  });
-  document.querySelectorAll('[data-pstart]').forEach(inp => {
-    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pstart].start = e.target.value; saveData(); });
-  });
-  document.querySelectorAll('[data-pend]').forEach(inp => {
-    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pend].end = e.target.value; saveData(); });
-  });
-  document.querySelectorAll('[data-pdel]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const i = +btn.dataset.pdel;
-      if (!confirm('Удалить период "' + data.periods[session.class][i].name + '"?')) return;
-      data.periods[session.class].splice(i, 1);
-      if (data.currentPeriod[session.class] >= data.periods[session.class].length) data.currentPeriod[session.class] = data.periods[session.class].length - 1;
-      saveData(); renderTeacher();
-    });
-  });
-  document.getElementById('addPeriodBtn')?.addEventListener('click', () => {
-    const list = data.periods[session.class];
-    const last = list[list.length - 1];
-    list.push({ name: 'Новый период', start: last?.end || todayISO(), end: last?.end || todayISO() });
-    saveData(); renderTeacher();
-  });
-}
-
-/* ============================================================
-   УЧЕНИК
-   ============================================================ */
-function renderStudent() {
-  const cls = session.class;
-  const subjects = getSubjects(cls);
-  let myAbsences = filterByPeriod(
-    data.absences.filter(a => a.class === cls && a.studentName === session.name),
-    cls
-  );
-  myAbsences = sortAbsences(myAbsences);
-
-  const total = myAbsences.length;
-  const good = myAbsences.filter(a => reasonById(a.reason).type === 'good').length;
-  const bad = myAbsences.filter(a => reasonById(a.reason).type === 'bad').length;
-
-  const app = document.getElementById('app');
-  app.innerHTML =
-    topbarHTML('Учёт пропусков — личный кабинет ученика',
-      '<button class="btn btn-secondary btn-sm" id="changePinBtn">Сменить PIN</button>') +
-
-    '<div class="container">' +
-      '<div class="stats">' +
-        '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего пропусков</div></div>' +
-        '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уважительных</div></div>' +
-        '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуважительных</div></div>' +
-      '</div>' +
-
-      '<div class="card"><h3>Добавить свой пропуск</h3><form id="studentAbsenceForm">' +
-        '<div class="form-grid">' +
-          '<div class="full"><div class="student-self">ФИО: <b>' + escapeHtml(session.name) + '</b> · Класс: <b>' + escapeHtml(cls) + '</b></div></div>' +
-          '<div><label for="saDate">Дата</label><input type="date" id="saDate" value="' + todayISO() + '" required></div>' +
-          '<div><label for="saSubject">Предмет</label><select id="saSubject" required>' + optionsHTML(subjects, '') + '</select></div>' +
-          '<div><label for="saReason">Причина</label><select id="saReason" required>' + optionsHTML(REASONS, '', 'id') + '</select></div>' +
-          '<div class="full"><label for="saNote">Примечание</label><input type="text" id="saNote" placeholder="Необязательно"></div>' +
-        '</div>' +
-        '<button type="submit" class="btn" style="margin-top:16px;">Добавить запись</button>' +
-      '</form></div>' +
-
-      '<div class="card">' +
-        '<div class="journal-header"><h3>Мои пропуски</h3>' +
-          '<div style="display:flex; gap:10px; align-items:center;">' + periodSelectorHTML(cls) + '</div>' +
-        '</div>' +
-        '<div class="table-wrap">' + renderAbsencesTable(myAbsences, false, false) + '</div>' +
-      '</div>' +
-    '</div>';
-
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    session = null; saveSession(); renderApp();
-  });
-
-  document.getElementById('changePinBtn')?.addEventListener('click', () => {
-    const st = data.students.find(s => s.class === session.class && s.name === session.name);
-    if (!st) return toast('Ошибка', true);
-    const oldPin = prompt('Текущий PIN:');
-    if (oldPin === null) return;
-    if (simpleHash(oldPin) !== st.pin) return toast('Неверный PIN', true);
-    const newPin = prompt('Новый PIN (минимум 4 цифры):');
-    if (newPin === null) return;
-    if (!/^\d{4,}$/.test(newPin)) return toast('Минимум 4 цифры', true);
-    const confirmPin = prompt('Повторите новый PIN:');
-    if (confirmPin !== newPin) return toast('Не совпадает', true);
-    st.pin = simpleHash(newPin);
-    logAction('upd', 'Ученик ' + st.name + ' сменил PIN');
-    saveData();
-    toast('PIN изменён');
-  });
-
-  document.getElementById('studentAbsenceForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const date = document.getElementById('saDate').value;
-    const subject = document.getElementById('saSubject').value;
-    const reason = document.getElementById('saReason').value;
-    const note = document.getElementById('saNote').value.trim();
-    if (!date || !subject || !reason) return toast('Заполните все поля', true);
-    data.absences.push({ id: uid(), date, class: cls, studentName: session.name, subject, reason, note, addedBy: session.name, addedByRole: 'student' });
-    logAction('add', 'Ученик ' + session.name + ' добавил пропуск (' + formatDate(date) + ', ' + reasonById(reason).name + ')');
-
-    // Уведомление учителю класса
-    const teacher = (data.teachers || []).find(t => t.class === cls);
-    if (teacher) {
-      pushNotification('teacher', teacher.name,
-        session.name + ' добавил пропуск',
-        formatDate(date) + ' — ' + reasonById(reason).name);
-    }
-
-    saveData();
-    toast('Запись добавлена. Учитель уведомлён.');
-    renderStudent();
-  });
-
-  document.getElementById('periodSelect')?.addEventListener('change', e => {
-    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
-    saveData(); renderStudent();
-  });
-
-  bindSortHandlers();
-}
-
-/* ============================================================
-   РОДИТЕЛЬ
-   ============================================================ */
-function renderParent() {
-  const cls = session.class;
-  const childName = session.name;
-  let absences = filterByPeriod(
-    data.absences.filter(a => a.class === cls && a.studentName === childName),
-    cls
-  );
-  absences = sortAbsences(absences);
-
-  const total = absences.length;
-  const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
-  const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
-
-  const app = document.getElementById('app');
-  app.innerHTML =
-    topbarHTML('Кабинет родителя', '') +
-    '<div class="container">' +
-      '<div class="stats">' +
-        '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего пропусков</div></div>' +
-        '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уважительных</div></div>' +
-        '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуважительных</div></div>' +
-      '</div>' +
-
-      '<div class="card">' +
-        '<div class="student-self" style="margin-bottom:16px;">Ребёнок: <b>' + escapeHtml(childName) + '</b> · Класс: <b>' + escapeHtml(cls) + '</b></div>' +
-
-        '<div class="print-header" id="printHeader"></div>' +
-        '<div class="journal-header"><h3>Пропуски ребёнка</h3>' +
-          '<div style="display:flex; gap:10px; align-items:center;">' +
-            periodSelectorHTML(cls) +
-            '<button class="btn btn-secondary btn-sm" id="parentPrintBtn">🖨 Печать</button>' +
-          '</div>' +
-        '</div>' +
-
-        '<div class="table-wrap">' + renderAbsencesTable(absences, false, true) + '</div>' +
-        '<div class="print-signature" id="printSignature"></div>' +
-      '</div>' +
-    '</div>';
-
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    session = null; saveSession(); renderApp();
-  });
-
-  document.getElementById('periodSelect')?.addEventListener('change', e => {
-    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
-    saveData(); renderParent();
-  });
-
-  document.getElementById('parentPrintBtn')?.addEventListener('click', () => {
-    const period = getCurrentPeriod(cls);
-    printJournal(cls, period.name, { studentName: childName });
-  });
-
-  // Комментарии к пропускам
-  document.querySelectorAll('[data-parent-comment]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const abs = data.absences.find(a => a.id === btn.dataset.parentComment);
-      if (!abs) return;
-      const current = abs.parentComment || '';
-      const comment = prompt('Комментарий родителя к пропуску от ' + formatDate(abs.date) + ':\n\n(оставьте пустым, чтобы удалить)', current);
-      if (comment === null) return;
-      if (comment.trim()) {
-        abs.parentComment = comment.trim();
-        logAction('upd', 'Родитель ' + childName + ' оставил комментарий к пропуску от ' + formatDate(abs.date));
-      } else {
-        delete abs.parentComment;
-        logAction('upd', 'Родитель ' + childName + ' удалил комментарий к пропуску от ' + formatDate(abs.date));
-      }
-      saveData();
-      toast(comment.trim() ? 'Комментарий сохранён' : 'Комментарий удалён');
-      renderParent();
-    });
-  });
-
-  bindSortHandlers();
-}
-
-/* ============================================================
-   АДМИН
-   ============================================================ */
-function renderAllClassesSummary() {
-  const rows = CLASSES.map(cls => {
-    ensurePeriods(cls);
-    const absences = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
-    const total = absences.length;
-    const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
-    const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
-    const students = data.students.filter(s => s.class === cls).length;
-    const teacher = (data.teachers || []).find(t => t.class === cls);
-    return { cls, total, good, bad, students, teacher: teacher ? teacher.name : '—' };
-  });
-  const grandTotal = rows.reduce((s, r) => s + r.total, 0);
-  const grandGood = rows.reduce((s, r) => s + r.good, 0);
-  const grandBad = rows.reduce((s, r) => s + r.bad, 0);
-
-  const body = rows.map(r =>
-    '<tr><td data-label="Класс"><b>' + escapeHtml(r.cls) + '</b></td>' +
-    '<td data-label="Кл. рук." style="font-size:13px; color:#64748b;">' + escapeHtml(r.teacher) + '</td>' +
-    '<td data-label="Учеников">' + r.students + '</td>' +
-    '<td data-label="Всего">' + r.total + '</td>' +
-    '<td data-label="Уваж." style="color:#166534;">' + r.good + '</td>' +
-    '<td data-label="Неуваж." style="color:#991b1b;">' + r.bad + '</td></tr>'
-  ).join('');
-
-  return '<div class="card"><h3>Сводная по всем классам</h3>' +
-    '<div class="table-wrap"><table><thead><tr>' +
-    '<th>Класс</th><th>Классный руководитель</th><th>Учеников</th><th>Всего</th><th>Уважительных</th><th>Неуважительных</th>' +
-    '</tr></thead><tbody>' + body +
-    '<tr style="font-weight:700; background:#f1f5f9;"><td colspan="3" data-label="">ИТОГО</td>' +
-    '<td data-label="Всего">' + grandTotal + '</td>' +
-    '<td data-label="Уваж." style="color:#166534;">' + grandGood + '</td>' +
-    '<td data-label="Неуваж." style="color:#991b1b;">' + grandBad + '</td></tr>' +
-    '</tbody></table></div></div>';
-}
-
-function renderAdminClassStats(selectedClass) {
-  ensurePeriods(selectedClass);
-  const absences = filterByPeriod(data.absences.filter(a => a.class === selectedClass), selectedClass).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const total = absences.length;
-  const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
-  const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
-  const neutral = total - good - bad;
-  const uniqueStudents = new Set(absences.map(a => a.studentName)).size;
-  const studentsInClass = data.students.filter(s => s.class === selectedClass).length;
-
-  const byStudent = {};
-  absences.forEach(a => { byStudent[a.studentName] = (byStudent[a.studentName] || 0) + 1; });
-  const topStudents = Object.entries(byStudent).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  let topHTML = '';
-  if (topStudents.length) {
-    const rows = topStudents.map(([name, count], i) => '<tr><td data-label="#">' + (i + 1) + '</td><td data-label="Ученик">' + escapeHtml(name) + '</td><td data-label="Пропусков"><b>' + count + '</b></td></tr>').join('');
-    topHTML = '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Топ-5 учеников</h4>' +
-      '<div class="table-wrap" style="margin-bottom:20px;"><table>' +
-      '<thead><tr><th>#</th><th>Ученик</th><th>Пропусков</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-  }
-
-  return '<div class="card">' +
-    '<div class="print-header" id="printHeader"></div>' +
-    '<div class="journal-header"><h3>Статистика класса</h3>' +
-      '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-        '<select id="adminClassSelect" class="period-select">' + optionsHTML(CLASSES, selectedClass) + '</select>' +
-        periodSelectorHTML(selectedClass) +
-        '<button class="btn btn-secondary btn-sm" id="adminExportBtn">Скачать CSV</button>' +
-        '<button class="btn btn-secondary btn-sm" id="adminPrintBtn">🖨 Печать</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="stats" style="margin-bottom:20px;">' +
-      '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
-      '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уваж.</div></div>' +
-      '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуваж.</div></div>' +
-      '<div class="stat"><div class="num">' + neutral + '</div><div class="lbl">Прочих</div></div>' +
-      '<div class="stat"><div class="num">' + uniqueStudents + '</div><div class="lbl">Учеников</div></div>' +
-      '<div class="stat"><div class="num">' + studentsInClass + '</div><div class="lbl">В классе</div></div>' +
-    '</div>' +
-    topHTML +
-    '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Журнал за период</h4>' +
-    '<div class="table-wrap">' + renderAbsencesTable(absences, false, false) + '</div>' +
-    '<div class="print-signature" id="printSignature"></div>' +
-    '</div>';
-}
-
-function renderHistoryLog() {
-  const log = (data.log || []).slice().sort((a, b) => (b.time || '').localeCompare(a.time || ''));
-  const q = (uiState.logFilter || '').toLowerCase();
-  const filtered = q ? log.filter(l => (l.user || '').toLowerCase().includes(q) || (l.details || '').toLowerCase().includes(q)) : log;
-
-  const rows = filtered.slice(0, 100).map(l => {
-    let actionClass = 'upd';
-    if (l.action === 'add') actionClass = 'add';
-    else if (l.action === 'del') actionClass = 'del';
-    else if (l.action === 'login') actionClass = 'login';
-    return '<tr class="log-row">' +
-      '<td data-label="Время">' + escapeHtml(formatDateTime(l.time)) + '</td>' +
-      '<td data-label="Кто">' + escapeHtml(l.user) + '</td>' +
-      '<td data-label="Роль">' + escapeHtml(l.role) + '</td>' +
-      '<td data-label="Действие"><span class="log-action ' + actionClass + '">' + escapeHtml(l.action) + '</span></td>' +
-      '<td data-label="Детали">' + escapeHtml(l.details || '') + '</td>' +
-    '</tr>';
-  }).join('');
-
-  return '<div class="card">' +
-    '<div class="journal-header"><h3>История изменений (только админ)</h3>' +
-      '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-        '<input type="text" id="logSearch" placeholder="🔍 Поиск..." value="' + escapeHtml(uiState.logFilter) + '" style="min-width:200px;">' +
-        '<button class="btn btn-secondary btn-sm" id="clearLogBtn">Очистить историю</button>' +
-      '</div>' +
-    '</div>' +
-    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Всего записей: ' + log.length + ' (показано последние 100)</p>' +
-    (filtered.length
-      ? '<div class="table-wrap"><table><thead><tr><th>Время</th><th>Пользователь</th><th>Роль</th><th>Действие</th><th>Детали</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
-      : '<div class="empty">Записей нет</div>') +
-    '</div>';
-}
-
-function renderAdmin() {
-  if (!data.teachers) data.teachers = [];
-  const teachers = [...data.teachers].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-
-  let teachersCardHTML = '';
-  if (teachers.length === 0) teachersCardHTML = '<div class="empty">Пока нет зарегистрированных учителей</div>';
-  else {
-    const rows = teachers.map(t =>
-      '<tr><td data-label="ФИО"><b>' + escapeHtml(t.name) + '</b></td>' +
-      '<td data-label="Класс"><select data-tclass="' + escapeHtml(t.name) + '" style="padding:6px 10px;">' + optionsHTML(CLASSES, t.class) + '</select></td>' +
-      '<td data-label="PIN"><button class="btn btn-secondary btn-sm" data-treset="' + escapeHtml(t.name) + '">Сбросить на 1234</button></td>' +
-      '<td><button class="btn btn-danger btn-sm" data-tdel="' + escapeHtml(t.name) + '">Удалить</button></td></tr>'
-    ).join('');
-    teachersCardHTML = '<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th>PIN</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-  }
-
-  const app = document.getElementById('app');
-  app.innerHTML =
-    topbarHTML('Панель администратора', '') +
-
-    '<div class="container">' +
-      '<div class="card"><h3>Зарегистрировать учителя</h3><form id="addTeacherForm">' +
-        '<div class="form-grid">' +
-          '<div><label for="newTeacherName">ФИО учителя</label><input type="text" id="newTeacherName" placeholder="Иванова Ирина Ивановна" required></div>' +
-          '<div><label for="newTeacherClass">Класс</label><select id="newTeacherClass" required>' + optionsHTML(CLASSES, CLASSES[0]) + '</select></div>' +
-          '<div><label for="newTeacherPin">PIN (пусто = 1234)</label><input type="text" id="newTeacherPin" placeholder="1234" maxlength="8"></div>' +
-        '</div>' +
-        '<button type="submit" class="btn" style="margin-top:16px;">Добавить учителя</button>' +
-      '</form></div>' +
-
-      '<div class="card"><h3>Учителя (' + teachers.length + ')</h3>' + teachersCardHTML + '</div>' +
-
-      renderAllClassesSummary() +
-      renderAdminClassStats(uiState.adminSelectedClass || CLASSES[0]) +
-      renderHistoryLog() +
-    '</div>';
-
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    logAction('login', 'Администратор вышел');
-    session = null; saveSession(); renderApp();
-  });
-
-  document.getElementById('addTeacherForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = document.getElementById('newTeacherName').value.trim();
-    const cls = document.getElementById('newTeacherClass').value;
-    const pinRaw = document.getElementById('newTeacherPin').value.trim();
-    if (!name) return toast('Введите ФИО', true);
-    if (findTeacher(name)) return toast('Учитель с таким ФИО уже есть', true);
-    const pin = pinRaw || '1234';
-    if (!/^\d{4,8}$/.test(pin)) return toast('PIN 4–8 цифр', true);
-    data.teachers.push({ name, class: cls, pin: simpleHash(pin), createdAt: new Date().toISOString() });
-    logAction('add', 'Зарегистрирован учитель ' + name + ' (класс ' + cls + ')');
-    saveData();
-    toast('Учитель ' + name + ' добавлен');
-    renderAdmin();
-  });
-
-  document.querySelectorAll('[data-tclass]').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const t = findTeacher(sel.dataset.tclass);
-      if (!t) return;
-      const old = t.class;
-      t.class = e.target.value;
-      logAction('upd', 'Класс учителя ' + t.name + ' изменён с ' + old + ' на ' + t.class);
-      saveData();
-      toast('Класс изменён на ' + e.target.value);
-    });
-  });
-
-  document.querySelectorAll('[data-treset]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const name = btn.dataset.treset;
-      const t = findTeacher(name);
-      if (!t) return;
-      if (!confirm('Сбросить PIN "' + name + '"?')) return;
-      t.pin = simpleHash('1234');
-      logAction('upd', 'Сброшен PIN учителя ' + name);
-      saveData();
-      toast('PIN сброшен на 1234');
-    });
-  });
-
-  document.querySelectorAll('[data-tdel]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const name = btn.dataset.tdel;
-      if (!confirm('Удалить учителя "' + name + '"?')) return;
-      data.teachers = data.teachers.filter(t => t.name !== name);
-      logAction('del', 'Удалён учитель ' + name);
-      saveData();
-      toast('Учитель удалён');
-      renderAdmin();
-    });
-  });
-
-  document.getElementById('adminClassSelect')?.addEventListener('change', e => {
-    uiState.adminSelectedClass = e.target.value;
-    renderAdmin();
-  });
-
-  document.getElementById('periodSelect')?.addEventListener('change', e => {
-    const cls = uiState.adminSelectedClass || CLASSES[0];
-    data.currentPeriod[cls] = parseInt(e.target.value, 10);
-    saveData(); renderAdmin();
-  });
-
-  document.getElementById('adminExportBtn')?.addEventListener('click', () => {
-    const cls = uiState.adminSelectedClass || CLASSES[0];
-    ensurePeriods(cls);
-    const period = getCurrentPeriod(cls);
-    const rows = [['Дата', 'ФИО', 'Класс', 'Предмет', 'Причина', 'Примечание']];
-    filterByPeriod(data.absences.filter(a => a.class === cls), cls).forEach(a => {
-      rows.push([a.date, a.studentName, a.class, a.subject, reasonById(a.reason).name, a.note || '']);
-    });
-    const csv = '\uFEFF' + rows.map(r => r.join(';')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'пропуски_' + cls + '_' + period.name + '.csv';
-    link.click();
-    toast('Файл скачан');
-  });
-
-  document.getElementById('adminPrintBtn')?.addEventListener('click', () => {
-    const cls = uiState.adminSelectedClass || CLASSES[0];
-    const period = getCurrentPeriod(cls);
-    printJournal(cls, period.name);
-  });
-
-  document.getElementById('logSearch')?.addEventListener('input', e => {
-    uiState.logFilter = e.target.value;
-    clearTimeout(window._logTimer);
-    window._logTimer = setTimeout(() => {
-      const input = document.getElementById('logSearch');
-      const pos = input ? input.selectionStart : 0;
-      renderAdmin();
-      const newInput = document.getElementById('logSearch');
-      if (newInput) { newInput.focus(); newInput.setSelectionRange(pos, pos); }
-    }, 300);
-  });
-
-  document.getElementById('clearLogBtn')?.addEventListener('click', () => {
-    if (!confirm('Очистить всю историю изменений?')) return;
-    data.log = [];
-    saveData();
-    toast('История очищена');
-    renderAdmin();
-  });
-
-  bindSortHandlers();
-  bindBell();
-}
-
-/* ============================================================
-   СТАРТ
-   ============================================================ */
-(async function startApp() {
-  await new Promise(resolve => {
-    const start = Date.now();
-    const check = () => {
-      if (window.firebaseDB !== undefined) return resolve();
-      if (Date.now() - start > 3000) return resolve();
-      setTimeout(check, 50);
-    };
-    check();
-  });
-
-  await initFirebaseSync();
-  firebaseReady = true;
-  updateStatusBadge();
-
-  session = loadSession();
-  renderApp();
-})();
-</script>
-</body>
-</html>
+        '<button type="submit" class="btn" style="margin-top:16px;"' + (students.length ? '' : ' disabled') + '
