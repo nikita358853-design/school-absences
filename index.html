@@ -269,7 +269,7 @@ function seedData() {
     students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
     }
   }
-  const seeded = { students, absences: [] };
+  const seeded = { students, absences: [], teachers: [], periods: {}, currentPeriod: {} };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
   return seeded;
 }
@@ -367,6 +367,36 @@ function drawCharts(absences, canvasPrefix) {
       }
     }));
   }
+}
+ function ensureTeachers() {
+  if (!data.teachers) {
+    data.teachers = [];
+    saveData();
+  }
+}
+
+function findTeacher(name) {
+  ensureTeachers();
+  return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase());
+}
+
+function registerTeacher(name, cls) {
+  ensureTeachers();
+  const existing = findTeacher(name);
+  if (existing) {
+    existing.class = cls; // обновляем класс, если поменялся
+    saveData();
+    return existing;
+  }
+  const t = {
+    name,
+    class: cls,
+    pin: simpleHash('1234'),
+    firstLogin: true
+  };
+  data.teachers.push(t);
+  saveData();
+  return t;
 }
 let data = loadData();
 function ensurePeriods(cls) {
@@ -518,10 +548,13 @@ function renderLogin() {
               </select>
             `}
 
-          <button type="submit" class="btn btn-full">Войти в систему</button>
+                   <button type="submit" class="btn btn-full">Войти в систему</button>
+          <div style="text-align:center; margin-top:14px;">
+            <a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">
+              Забыли PIN?
+            </a>
+          </div>
         </form>
-      </div>
-    </div>
   `;
 
   document.querySelectorAll('.role-tab').forEach(tab => {
@@ -546,11 +579,38 @@ function renderLogin() {
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    if (loginState.role === 'teacher') {
+       if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
       if (!name) return toast('Введите ФИО', true);
+
+      // 1. Ищем учителя или создаём нового
+      const teacher = registerTeacher(name, tClass.value);
+
+      // 2. Первый вход — уведомляем о стандартном PIN
+      if (teacher.firstLogin) {
+        toast('Установлен PIN по умолчанию: 1234', false);
+      }
+
+      // 3. Спрашиваем PIN
+      const entered = prompt(
+        `Введите PIN для "${teacher.name}"\n\n` +
+        (teacher.firstLogin
+          ? 'Первый вход — введите 1234, потом смените в кабинете'
+          : 'Если не помните — попросите администратора сбросить')
+      );
+      if (entered === null) return;
+
+      // 4. Проверяем
+      if (simpleHash(entered) !== teacher.pin) {
+        return toast('Неверный PIN', true);
+      }
+
+      // 5. Снимаем флаг "первый вход" и создаём сессию
+      teacher.firstLogin = false;
+      saveData();
+
       session = { role: 'teacher', name, class: tClass.value };
-           } else {
+    } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
 
       // 1. Находим ученика в базе
@@ -588,6 +648,37 @@ function renderLogin() {
     uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '' };
     renderApp();
   });
+   // Секретная ссылка «Забыли PIN?»
+  const forgot = document.getElementById('forgotPin');
+  if (forgot) {
+    forgot.addEventListener('click', (e) => {
+      e.preventDefault();
+      const master = prompt(
+        'Введите мастер-пароль для сброса PIN\n' +
+        '(по умолчанию: school2024)'
+      );
+      if (master !== 'school21') return toast('Неверный мастер-пароль', true);
+
+      const targetName = prompt('Чьё ФИО сбросить? (точное совпадение)');
+      if (!targetName) return;
+
+      const t = findTeacher(targetName);
+      const s = data.students.find(st => st.name.toLowerCase() === targetName.toLowerCase());
+
+      if (t) {
+        t.pin = simpleHash('1234');
+        t.firstLogin = true;
+        saveData();
+        toast(`PIN учителя "${t.name}" сброшен на 1234`);
+      } else if (s) {
+        s.pin = simpleHash('1234');
+        saveData();
+        toast(`PIN ученика "${s.name}" сброшен на 1234`);
+      } else {
+        toast('Пользователь не найден', true);
+      }
+    });
+  }
 }
 
 /* =========================================================
@@ -612,11 +703,12 @@ function renderTeacher() {
 
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="topbar">
+     <div class="topbar">
       <h2>Учёт пропусков — панель классного руководителя</h2>
       <div class="user-info">
         <span>${escapeHtml(session.name)}</span>
         <span class="badge">${escapeHtml(cls)} класс</span>
+        <button class="btn btn-secondary btn-sm" id="changeTeacherPinBtn">Сменить PIN</button>
         <button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>
       </div>
     </div>
@@ -780,6 +872,35 @@ function bindTeacherEvents() {
     data.currentPeriod[session.class] = parseInt(e.target.value, 10);
     saveData();
     renderTeacher();
+  });
+  document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
+    const teacher = findTeacher(session.name);
+    if (!teacher) return toast('Ошибка: учитель не найден', true);
+
+    // 1. Старый PIN
+    const oldPin = prompt('Текущий PIN:');
+    if (oldPin === null) return;
+    if (simpleHash(oldPin) !== teacher.pin) {
+      return toast('Неверный текущий PIN', true);
+    }
+
+    // 2. Новый PIN
+    const newPin = prompt('Новый PIN (минимум 4 цифры):');
+    if (newPin === null) return;
+    if (!/^\d{4,}$/.test(newPin)) {
+      return toast('PIN должен содержать минимум 4 цифры', true);
+    }
+
+    // 3. Подтверждение
+    const confirmPin = prompt('Повторите новый PIN:');
+    if (confirmPin !== newPin) {
+      return toast('PIN не совпадает', true);
+    }
+
+    // 4. Сохраняем
+    teacher.pin = simpleHash(newPin);
+    saveData();
+    toast('PIN успешно изменён');
   });
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
