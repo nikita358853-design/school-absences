@@ -543,22 +543,25 @@ function renderLogin() {
               <input type="text" id="tName" placeholder="Иванова И.И."
                      value="${escapeHtml(loginState.teacherName)}" required>
     
-                       : loginState.role === 'admin' ? `
-              <label for="adminPwd">Пароль администратора</label>
-              <input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">
-            
-              <select id="sClass">
-                ${optionsHTML(CLASSES, loginState.studentClass)}
-              </select>
-           `
-              <label for="sName">ФИО ученика</label>
-              <select id="sName" ${studentNames.length ? '' : 'disabled'}>
-                ${studentNames.length
-                  ? optionsHTML(studentNames, loginState.studentName)
-                  : '<option>— в классе нет учеников —</option>'}
-              </select>
-            `}
+     : loginState.role === 'admin'
+? `
+  <label for="adminPwd">Пароль администратора</label>
+  <input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">
+`
+: loginState.role === 'student' ? `          ← ЭТА СТРОКА ПРОПУЩЕНА
+  <label for="sClass">Класс</label>
+  <select id="sClass">
+    ${optionsHTML(CLASSES, loginState.studentClass)}
+  </select>
 
+  <label for="sName">ФИО ученика</label>
+  <select id="sName" ${studentNames.length ? '' : 'disabled'}>
+    ${studentNames.length
+      ? optionsHTML(studentNames, loginState.studentName)
+      : '<option>— в классе нет учеников —</option>'}
+  </select>
+`
+: ''}
                    <button type="submit" class="btn btn-full">Войти в систему</button>
           <div style="text-align:center; margin-top:14px;">
             <a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">
