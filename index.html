@@ -1425,7 +1425,7 @@ function renderAdmin() {
           <button type="submit" class="btn" style="margin-top:16px;">Добавить учителя</button>
         </form>
       </div>
-
+      
       <div class="card">
         <h3>Учителя (${teachers.length})</h3>
         ${teachers.length === 0
@@ -1571,6 +1571,7 @@ function renderAdmin() {
       toast(`Учитель ${name} удалён`);
       renderAdmin();
     });
+   
 /* =========================================================
    8. ГЛАВНЫЙ РЕНДЕР
    ========================================================= */
