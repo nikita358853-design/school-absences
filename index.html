@@ -542,7 +542,7 @@ function renderLogin() {
               <label for="tName">ФИО классного руководителя</label>
               <input type="text" id="tName" placeholder="Иванова И.И."
                      value="${escapeHtml(loginState.teacherName)}" required>
-            `
+    
                        : loginState.role === 'admin' ? `
               <label for="adminPwd">Пароль администратора</label>
               <input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">
