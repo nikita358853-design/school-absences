@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Учёт пропусков и причин</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef2f7;
+    color: #1f2937;
+    min-height: 100vh;
+  }
+
+  .login-wrap {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .login-card {
+    background: #fff; border-radius: 16px; padding: 36px; width: 100%;
+    max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  }
+  .login-card h1 { margin: 0 0 6px; font-size: 26px; }
+  .subtitle { color: #6b7280; margin: 0 0 24px; font-size: 14px; }
+  .role-tabs {
+    display: flex; background: #f1f5f9; border-radius: 10px;
+    padding: 4px; margin-bottom: 22px;
+  }
+  .role-tab {
+    flex: 1; padding: 10px; border: none; background: transparent;
+    cursor: pointer; border-radius: 8px; font-size: 14px;
+    font-weight: 500; color: #475569; transition: all .15s;
+  }
+  .role-tab.active {
+    background: #fff; color: #1d4ed8;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+
+  label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; margin-top: 14px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1;
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    background: #fff; color: #1f2937;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid #93c5fd; border-color: #3b82f6;
+  }
+  .btn {
+    padding: 11px 18px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    background: #2563eb; color: #fff; transition: background .15s;
+  }
+  .btn:hover { background: #1d4ed8; }
+  .btn-full { width: 100%; margin-top: 22px; }
+  .btn-secondary { background: #e2e8f0; color: #1e293b; }
+  .btn-secondary:hover { background: #cbd5e1; }
+  .btn-danger { background: #dc2626; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  .topbar {
+    background: #1e293b; color: #fff; padding: 14px 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .topbar h2 { margin: 0; font-size: 18px; }
+  .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .topbar .badge { background: #334155; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .card {
+    background: #fff; border-radius: 12px; padding: 22px;
+    margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .card h3 { margin: 0 0 16px; font-size: 17px; }
+
+  .stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px; }
+  .stat { background: #fff; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+  .stat .num { font-size: 28px; font-weight: 700; color: #1d4ed8; }
+  .stat .lbl { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 13px; }
+  tr:hover td { background: #f8fafc; }
+  .empty { text-align: center; color: #94a3b8; padding: 32px; font-size: 14px; }
+
+  .reason-tag {
+    display: inline-block; padding: 3px 9px; border-radius: 12px;
+    font-size: 12px; font-weight: 500; background: #dbeafe; color: #1e40af;
+  }
+  .reason-tag.bad { background: #fee2e2; color: #991b1b; }
+  .reason-tag.good { background: #dcfce7; color: #166534; }
+  .reason-tag.neutral { background: #e2e8f0; color: #334155; }
+
+  .source-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500; margin-left: 6px;
+  }
+  .source-tag.teacher { background: #ede9fe; color: #5b21b6; }
+  .source-tag.student { background: #fef3c7; color: #92400e; }
+
+  .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filter-bar > * { flex: 1; min-width: 140px; }
+  .table-wrap { overflow-x: auto; }
+
+  .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-grid label { margin-top: 0; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #16a34a; color: #fff; padding: 12px 20px;
+    border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    font-size: 14px; opacity: 0; transform: translateY(20px);
+    transition: all .25s; pointer-events: none; z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: #dc2626; }
+
+  .students-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .student-chip {
+    background: #f1f5f9; padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; display: flex; align-items: center; gap: 8px;
+  }
+  .student-chip button {
+    border: none; background: transparent; color: #dc2626;
+    cursor: pointer; font-size: 15px; line-height: 1; padding: 0;
+  }
+
+  .student-self {
+    background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+    padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .topbar { padding: 12px 16px; }
+    .container { padding: 16px; }
+    .login-card { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* =========================================================
+   1. КОНСТАНТЫ
+   ========================================================= */
+const STORAGE_KEY = 'school_absence_v2';
+
+const CLASSES = (() => {
+  const arr = [];
+  for (let g = 1; g <= 9; g++) {
+    for (const l of ['А','Б','В']) arr.push(g + l);
+  }
+  arr.push('10', '11');
+  return arr;
+})();
+
+const SUBJECTS_JUNIOR = [
+  'Русский язык','Литературное чтение','Иностранный язык','Математика',
+  'Окружающий мир','Основы религиозных культур и светской этики',
+  'Изобразительное искусство','Музыка','Труд (технология)','Физическая культура'
+];
+const SUBJECTS_MIDDLE = [
+  'Русский язык','Литература','Иностранный язык','Математика','Информатика',
+  'История','Обществознание (с 2026 года — с 9 класса)','География','Физика','Химия','Биология',
+  'Изобразительное искусство','Музыка','Труд (технология)','Физическая культура',
+  'Основы безопасности и защиты Родины'
+];
+const SUBJECTS_SENIOR = [
+  'Русский язык','Литература','Иностранный язык','Математика','Информатика',
+  'История','Обществознание','Правовая культура','Экономика','География',
+  'Физика','Химия','Биология','Физическая культура','Основы безопасности и защиты Родины'
+];
+
+function getSubjects(cls) {
+  const g = parseInt(cls, 10);
+  if (g <= 4) return SUBJECTS_JUNIOR;
+  if (g <= 9) return SUBJECTS_MIDDLE;
+  return SUBJECTS_SENIOR;
+}
+
+const REASONS = [
+  { id: 'sick',       name: 'Болезнь',                    type: 'good' },
+  { id: 'statement',  name: 'По заявлению родителей',     type: 'good' },
+  { id: 'family',     name: 'Семейные обстоятельства',    type: 'good' },
+  { id: 'sport',      name: 'Спортивные соревнования',    type: 'good' },
+  { id: 'olymp',      name: 'Олимпиада / конкурс',        type: 'good' },
+  { id: 'disrespect', name: 'Неуважительная причина',     type: 'bad' },
+  { id: 'late',       name: 'Опоздание',                  type: 'bad' },
+  { id: 'other',      name: 'Другое',                     type: 'neutral' }
+];
+
+function reasonById(id) {
+  return REASONS.find(r => r.id === id) || REASONS[REASONS.length - 1];
+}
+
+/* =========================================================
+   2. ХРАНИЛИЩЕ
+   ========================================================= */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return seedData();
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function seedData() {
+  const names = [
+    'Иванов Иван','Петрова Мария','Сидоров Пётр',
+    'Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'
+  ];
+  const students = [];
+  for (const c of CLASSES) {
+    for (const n of names) {
+      students.push({ id: uid(), class: c, name: n });
+    }
+  }
+  const seeded = { students, absences: [] };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+  return seeded;
+}
+
+let data = loadData();
+
+/* =========================================================
+   3. СОСТОЯНИЕ UI
+   ========================================================= */
+let session = null;
+let loginState = {
+  role: 'teacher',
+  teacherName: '',
+  teacherClass: CLASSES[0],
+  studentClass: CLASSES[0],
+  studentName: ''
+};
+let uiState = {
+  filterReason: '',
+  filterStudent: '',
+  filterDate: '',
+  newStudentName: ''
+};
+
+/* =========================================================
+   4. УТИЛИТЫ
+   ========================================================= */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+  ));
+}
+
+function optionsHTML(items, selected, valueKey) {
+  return items.map(item => {
+    const val = valueKey ? item[valueKey] : item;
+    const label = valueKey ? item.name : item;
+    const sel = val === selected ? 'selected' : '';
+    return `<option value="${escapeHtml(val)}" ${sel}>${escapeHtml(label)}</option>`;
+  }).join('');
+}
+
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'toast'; }, 2200);
+}
+
+function todayISO() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+function getStudentsOfClass(cls) {
+  return data.students
+    .filter(s => s.class === cls)
+    .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+}
+
+/* =========================================================
+   5. РЕНДЕР: ЛОГИН
+   ========================================================= */
+function renderLogin() {
+  const app = document.getElementById('app');
+  const studentNames = getStudentsOfClass(loginState.studentClass).map(s => s.name);
+  if (!studentNames.includes(loginState.studentName)) {
+    loginState.studentName = studentNames[0] || '';
+  }
+
+  app.innerHTML = `
+    <div class="login-wrap">
+      <div class="login-card">
+        <h1>Учёт пропусков</h1>
+        <p class="subtitle">Школьная система учёта пропусков и причин</p>
+
+        <div class="role-tabs">
+          <button class="role-tab ${loginState.role === 'teacher' ? 'active' : ''}" data-role="teacher">
+            Классный руководитель
+          </button>
+          <button class="role-tab ${loginState.role === 'student' ? 'active' : ''}" data-role="student">
+            Ученик
+          </button>
+        </div>
+
+        <form id="loginForm">
+          ${loginState.role === 'teacher'
+            ? `
+              <label for="tName">ФИО классного руководителя</label>
+              <input type="text" id="tName" placeholder="Иванова И.И."
+                     value="${escapeHtml(loginState.teacherName)}" required>
+
+              <label for="tClass">Классное руководство (закреплённый класс)</label>
+              <select id="tClass">
+                ${optionsHTML(CLASSES, loginState.teacherClass)}
+              </select>
+            `
+            : `
+              <label for="sClass">Класс</label>
+              <select id="sClass">
+                ${optionsHTML(CLASSES, loginState.studentClass)}
+              </select>
+
+              <label for="sName">ФИО ученика</label>
+              <select id="sName" ${studentNames.length ? '' : 'disabled'}>
+                ${studentNames.length
+                  ? optionsHTML(studentNames, loginState.studentName)
+                  : '<option>— в классе нет учеников —</option>'}
+              </select>
+            `}
+
+          <button type="submit" class="btn btn-full">Войти в систему</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.role-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      loginState.role = tab.dataset.role;
+      renderLogin();
+    });
+  });
+
+  const tName = document.getElementById('tName');
+  const tClass = document.getElementById('tClass');
+  const sClass = document.getElementById('sClass');
+  const sName = document.getElementById('sName');
+
+  if (tName) tName.addEventListener('input', () => loginState.teacherName = tName.value);
+  if (tClass) tClass.addEventListener('change', () => loginState.teacherClass = tClass.value);
+  if (sClass) sClass.addEventListener('change', () => {
+    loginState.studentClass = sClass.value;
+    renderLogin();
+  });
+  if (sName) sName.addEventListener('change', () => loginState.studentName = sName.value);
+
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (loginState.role === 'teacher') {
+      const name = (tName.value || '').trim();
+      if (!name) return toast('Введите ФИО', true);
+      session = { role: 'teacher', name, class: tClass.value };
+    } else {
+      if (!loginState.studentName) return toast('Выберите ученика', true);
+      session = {
+        role: 'student',
+        name: loginState.studentName,
+        class: sClass.value
+      };
+    }
+    uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '' };
+    renderApp();
+  });
+}
+
+/* =========================================================
+   6. РЕНДЕР: СТРАНИЦА УЧИТЕЛЯ
+   ========================================================= */
+function renderTeacher() {
+  const cls = session.class;
+  const students = getStudentsOfClass(cls);
+  const subjects = getSubjects(cls);
+
+  const absencesAll = data.absences.filter(a => a.class === cls);
+  const absences = absencesAll.filter(a => {
+    if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
+    if (uiState.filterStudent && a.studentName !== uiState.filterStudent) return false;
+    if (uiState.filterDate && a.date !== uiState.filterDate) return false;
+    return true;
+  }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const total = absencesAll.length;
+  const goodCount = absencesAll.filter(a => reasonById(a.reason).type === 'good').length;
+  const badCount = absencesAll.filter(a => reasonById(a.reason).type === 'bad').length;
+  const uniqueStudents = new Set(absencesAll.map(a => a.studentName)).size;
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="topbar">
+      <h2>Учёт пропусков — панель классного руководителя</h2>
+      <div class="user-info">
+        <span>${escapeHtml(session.name)}</span>
+        <span class="badge">${escapeHtml(cls)} класс</span>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="stats">
+        <div class="stat"><div class="num">${total}</div><div class="lbl">Всего пропусков</div></div>
+        <div class="stat"><div class="num">${goodCount}</div><div class="lbl">Уважительных</div></div>
+        <div class="stat"><div class="num">${badCount}</div><div class="lbl">Неуважительных</div></div>
+        <div class="stat"><div class="num">${uniqueStudents}</div><div class="lbl">Учеников с пропусками</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Добавить пропуск</h3>
+        <form id="absenceForm">
+          <div class="form-grid">
+            <div>
+              <label for="aDate">Дата</label>
+              <input type="date" id="aDate" value="${todayISO()}" required>
+            </div>
+            <div>
+              <label for="aStudent">ФИО ученика</label>
+              <select id="aStudent" required ${students.length ? '' : 'disabled'}>
+                ${students.length
+                  ? optionsHTML(students.map(s => s.name), '')
+                  : '<option>— нет учеников —</option>'}
+              </select>
+            </div>
+            <div>
+              <label for="aSubject">Предмет</label>
+              <select id="aSubject" required>
+                ${optionsHTML(subjects, '')}
+              </select>
+            </div>
+            <div>
+              <label for="aReason">Причина пропуска</label>
+              <select id="aReason" required>
+                ${optionsHTML(REASONS, '', 'id')}
+              </select>
+            </div>
+            <div class="full">
+              <label for="aNote">Примечание (необязательно)</label>
+              <input type="text" id="aNote" placeholder="Например: справка от врача №123">
+            </div>
+          </div>
+          <button type="submit" class="btn" style="margin-top:16px;" ${students.length ? '' : 'disabled'}>
+            Добавить запись
+          </button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Ученики класса (${students.length})</h3>
+        <div class="students-list" id="studentsList">
+          ${students.length
+            ? students.map(s => `
+                <span class="student-chip">
+                  ${escapeHtml(s.name)}
+                  <button data-del-student="${s.id}" title="Удалить">×</button>
+                </span>`).join('')
+            : '<div class="empty">Пока нет учеников. Добавьте первого ниже.</div>'}
+        </div>
+        <form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+          <input type="text" id="newStudentName" placeholder="Иванов Иван"
+                 value="${escapeHtml(uiState.newStudentName)}" style="flex:1; min-width:200px;">
+          <button type="submit" class="btn">Добавить ученика</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Журнал пропусков — ${escapeHtml(cls)} класс</h3>
+
+        <div class="filter-bar">
+          <select id="fStudent">
+            <option value="">Все ученики</option>
+            ${optionsHTML(students.map(s => s.name), uiState.filterStudent)}
+          </select>
+          <select id="fReason">
+            <option value="">Все причины</option>
+            ${REASONS.map(r => `<option value="${r.id}" ${uiState.filterReason === r.id ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+          </select>
+          <input type="date" id="fDate" value="${uiState.filterDate}">
+          <button class="btn btn-secondary" id="clearFilters" type="button">Сбросить</button>
+        </div>
+
+        <div class="table-wrap">
+          ${renderAbsencesTable(absences, true)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  bindTeacherEvents();
+}
+
+function renderAbsencesTable(rows, withActions) {
+  if (!rows.length) return '<div class="empty">Записей нет</div>';
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>ФИО ученика</th>
+          <th>Класс</th>
+          <th>Предмет</th>
+          <th>Причина</th>
+          <th>Примечание</th>
+          ${withActions ? '<th></th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(a => {
+          const r = reasonById(a.reason);
+          const srcLabel = a.addedByRole === 'student'
+            ? '<span class="source-tag student">добавил ученик</span>'
+            : '<span class="source-tag teacher">добавил учитель</span>';
+          return `
+            <tr>
+              <td>${escapeHtml(formatDate(a.date))}</td>
+              <td>${escapeHtml(a.studentName)}</td>
+              <td>${escapeHtml(a.class)}</td>
+              <td>${escapeHtml(a.subject)}</td>
+              <td><span class="reason-tag ${r.type}">${escapeHtml(r.name)}</span>${srcLabel}</td>
+              <td>${escapeHtml(a.note || '—')}</td>
+              ${withActions ? `<td><button class="btn btn-danger btn-sm" data-del-abs="${a.id}">Удалить</button></td>` : ''}
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function bindTeacherEvents() {
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    session = null;
+    renderApp();
+  });
+
+  document.getElementById('absenceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = document.getElementById('aDate').value;
+    const studentName = document.getElementById('aStudent').value;
+    const subject = document.getElementById('aSubject').value;
+    const reason = document.getElementById('aReason').value;
+    const note = document.getElementById('aNote').value.trim();
+
+    if (!date || !studentName || !subject || !reason) {
+      return toast('Заполните все обязательные поля', true);
+    }
+
+    data.absences.push({
+      id: uid(),
+      date, class: session.class, studentName, subject, reason, note,
+      addedBy: session.name,
+      addedByRole: 'teacher'
+    });
+    saveData();
+    toast('Запись добавлена');
+    renderTeacher();
+  });
+
+  document.getElementById('fStudent').addEventListener('change', e => {
+    uiState.filterStudent = e.target.value; renderTeacher();
+  });
+  document.getElementById('fReason').addEventListener('change', e => {
+    uiState.filterReason = e.target.value;
+    renderTeacher();
+  });
+  document.getElementById('fDate').addEventListener('change', e => {
+    uiState.filterDate = e.target.value; renderTeacher();
+  });
+  document.getElementById('clearFilters').addEventListener('click', () => {
+    uiState.filterReason = '';
+    uiState.filterStudent = '';
+    uiState.filterDate = '';
+    renderTeacher();
+  });
+
+  document.querySelectorAll('[data-del-abs]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.delAbs;
+      if (!confirm('Удалить запись?')) return;
+      data.absences = data.absences.filter(a => a.id !== id);
+      saveData();
+      toast('Запись удалена');
+      renderTeacher();
+    });
+  });
+
+  document.getElementById('addStudentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = (document.getElementById('newStudentName').value || '').trim();
+    if (!name) return toast('Введите ФИО', true);
+    const exists = data.students.some(s => s.class === session.class && s.name.toLowerCase() === name.toLowerCase());
+    if (exists) return toast('Такой ученик уже есть в классе', true);
+    data.students.push({ id: uid(), class: session.class, name });
+    saveData();
+    uiState.newStudentName = '';
+    toast('Ученик добавлен');
+    renderTeacher();
+  });
+
+  document.getElementById('newStudentName').addEventListener('input', e => {
+    uiState.newStudentName = e.target.value;
+  });
+
+  document.querySelectorAll('[data-del-student]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.delStudent;
+      const st = data.students.find(s => s.id === id);
+      if (!st) return;
+      if (!confirm(`Удалить ученика "${st.name}"? Все его пропуски также будут удалены.`)) return;
+      data.students = data.students.filter(s => s.id !== id);
+      data.absences = data.absences.filter(a => !(a.class === st.class && a.studentName === st.name));
+      saveData();
+      toast('Ученик удалён');
+      renderTeacher();
+    });
+  });
+}
+
+/* =========================================================
+   7. РЕНДЕР: СТРАНИЦА УЧЕНИКА
+   ========================================================= */
+function renderStudent() {
+  const cls = session.class;
+  const subjects = getSubjects(cls);
+  const myAbsences = data.absences
+    .filter(a => a.class === cls && a.studentName === session.name)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const total = myAbsences.length;
+  const good = myAbsences.filter(a => reasonById(a.reason).type === 'good').length;
+  const bad = myAbsences.filter(a => reasonById(a.reason).type === 'bad').length;
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="topbar">
+      <h2>Учёт пропусков — личный кабинет ученика</h2>
+      <div class="user-info">
+        <span>${escapeHtml(session.name)}</span>
+        <span class="badge">${escapeHtml(cls)} класс</span>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="stats">
+        <div class="stat"><div class="num">${total}</div><div class="lbl">Всего пропусков</div></div>
+        <div class="stat"><div class="num">${good}</div><div class="lbl">Уважительных</div></div>
+        <div class="stat"><div class="num">${bad}</div><div class="lbl">Неуважительных</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Добавить свой пропуск</h3>
+        <form id="studentAbsenceForm">
+          <div class="form-grid">
+            <div class="full">
+              <div class="student-self">
+                ФИО: <b>${escapeHtml(session.name)}</b> &nbsp;·&nbsp; Класс: <b>${escapeHtml(cls)}</b>
+              </div>
+            </div>
+            <div>
+              <label for="saDate">Дата</label>
+              <input type="date" id="saDate" value="${todayISO()}" required>
+            </div>
+            <div>
+              <label for="saSubject">Предмет</label>
+              <select id="saSubject" required>
+                ${optionsHTML(subjects, '')}
+              </select>
+            </div>
+            <div>
+              <label for="saReason">Причина пропуска</label>
+              <select id="saReason" required>
+                ${optionsHTML(REASONS, '', 'id')}
+              </select>
+            </div>
+            <div class="full">
+              <label for="saNote">Примечание (необязательно)</label>
+              <input type="text" id="saNote" placeholder="Например: справка от врача">
+            </div>
+          </div>
+          <button type="submit" class="btn" style="margin-top:16px;">Добавить запись</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Мои пропуски</h3>
+        <div class="table-wrap">
+          ${renderAbsencesTable(myAbsences, false)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    session = null;
+    renderApp();
+  });
+
+  document.getElementById('studentAbsenceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = document.getElementById('saDate').value;
+    const subject = document.getElementById('saSubject').value;
+    const reason = document.getElementById('saReason').value;
+    const note = document.getElementById('saNote').value.trim();
+
+    if (!date || !subject || !reason) {
+      return toast('Заполните все обязательные поля', true);
+    }
+
+    data.absences.push({
+      id: uid(),
+      date,
+      class: cls,
+      studentName: session.name,
+      subject,
+      reason,
+      note,
+      addedBy: session.name,
+      addedByRole: 'student'
+    });
+    saveData();
+    toast('Запись добавлена');
+    renderStudent();
+  });
+}
+
+/* =========================================================
+   8. ГЛАВНЫЙ РЕНДЕР
+   ========================================================= */
+function renderApp() {
+  if (!session) { renderLogin(); return; }
+  if (session.role === 'teacher') renderTeacher();
+  else renderStudent();
+}
+
+renderApp();
+</script>
+</body>
+</html>
