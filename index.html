@@ -506,7 +506,8 @@ let uiState = {
   filterReason: '',
   filterStudent: '',
   filterDate: '',
-  newStudentName: ''
+  newStudentName: '',
+  adminSelectedClass: CLASSES[0]
 };
 
 /* =========================================================
@@ -1286,11 +1287,12 @@ function renderAdminClassStats(selectedClass) {
     <div class="card">
       <div class="journal-header">
         <h3>Статистика класса</h3>
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <select id="adminClassSelect" class="period-select">
             ${optionsHTML(CLASSES, selectedClass)}
           </select>
           ${periodSelectorHTML(selectedClass)}
+          <button class="btn btn-secondary btn-sm" id="adminExportBtn">Скачать CSV</button>
         </div>
       </div>
 
@@ -1525,6 +1527,39 @@ function renderAdmin() {
       toast(`PIN учителя ${name} сброшен на 1234`);
     });
   });
+ 
+  // Переключение класса в блоке статистики
+  document.getElementById('adminClassSelect')?.addEventListener('change', e => {
+    uiState.adminSelectedClass = e.target.value;
+    renderAdmin();
+  });
+
+  // Переключение периода в блоке статистики
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
+    const cls = uiState.adminSelectedClass || CLASSES[0];
+    data.currentPeriod[cls] = parseInt(e.target.value, 10);
+    saveData();
+    renderAdmin();
+     document.getElementById('adminExportBtn')?.addEventListener('click', () => {
+    const cls = uiState.adminSelectedClass || CLASSES[0];
+    ensurePeriods(cls);
+    const period = getCurrentPeriod(cls);
+    const rows = [['Дата', 'ФИО', 'Класс', 'Предмет', 'Причина', 'Примечание']];
+    filterByPeriod(data.absences.filter(a => a.class === cls), cls).forEach(a => {
+      rows.push([
+        a.date, a.studentName, a.class, a.subject,
+        reasonById(a.reason).name, a.note || ''
+      ]);
+    });
+    const csv = '\uFEFF' + rows.map(r => r.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `пропуски_${cls}_${period.name}.csv`;
+    link.click();
+    toast('Файл скачан');
+  });
+
 
   // Удаление учителя
   document.querySelectorAll('[data-tdel]').forEach(btn => {
