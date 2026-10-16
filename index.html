@@ -48,6 +48,12 @@
   input:focus, select:focus, textarea:focus {
     outline: 2px solid #93c5fd; border-color: #3b82f6;
   }
+   input[type="password"]#tPin,
+  input[type="password"]#adminPwd {
+    letter-spacing: 6px;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+  }
   .btn {
     padding: 11px 18px; border: none; border-radius: 8px;
     font-size: 14px; font-weight: 600; cursor: pointer;
@@ -577,11 +583,16 @@ function renderLogin() {
 
         <form id="loginForm">
                  <form id="loginForm">
-          ${loginState.role === 'teacher'
+                    ${loginState.role === 'teacher'
             ? `
               <label for="tName">ФИО классного руководителя</label>
               <input type="text" id="tName" placeholder="Иванова И.И."
                      value="${escapeHtml(loginState.teacherName)}" required>
+
+              <label for="tPin">PIN-код</label>
+              <input type="password" id="tPin" placeholder="••••"
+                     inputmode="numeric" maxlength="8" required
+                     autocomplete="off">
             `
             : loginState.role === 'admin'
             ? `
@@ -631,9 +642,12 @@ function renderLogin() {
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-          if (loginState.role === 'teacher') {
+              if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
+      const pinValue = (document.getElementById('tPin')?.value || '').trim();
+
       if (!name) return toast('Введите ФИО', true);
+      if (!pinValue) return toast('Введите PIN-код', true);
 
       // 1. Ищем учителя в списке, зарегистрированных админом
       const teacher = findTeacher(name);
@@ -641,16 +655,14 @@ function renderLogin() {
         return toast('Учитель не зарегистрирован. Обратитесь к администратору.', true);
       }
 
-      // 2. Спрашиваем PIN
-      const entered = prompt(`Введите PIN для "${teacher.name}"`);
-      if (entered === null) return;
-
-      // 3. Проверяем
-      if (simpleHash(entered) !== teacher.pin) {
-        return toast('Неверный PIN', true);
+      // 2. Проверяем PIN
+      if (simpleHash(pinValue) !== teacher.pin) {
+        // Очищаем поле PIN, чтобы можно было сразу ввести заново
+        document.getElementById('tPin').value = '';
+        return toast('Неверный PIN-код', true);
       }
 
-      // 4. Создаём сессию с классом из базы (учитель не может выбрать другой)
+      // 3. Создаём сессию
       session = { role: 'teacher', name: teacher.name, class: teacher.class };
     } else if (loginState.role === 'admin') {
       // Вход администратора
