@@ -160,6 +160,8 @@
     margin-bottom: 10px;
     align-items: center;
   }
+   .role-tabs { flex-wrap: wrap; }
+  .role-tab { min-width: 100px; }
   .student-self {
     background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
     padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -398,6 +400,15 @@ function registerTeacher(name, cls) {
   saveData();
   return t;
 }
+ /* =========================================================
+   АДМИНИСТРАТОР
+   ========================================================= */
+// Мастер-пароль админа. Смени на свой!
+const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
+
+function isAdminPassword(pwd) {
+  return simpleHash(pwd) === ADMIN_PASSWORD_HASH;
+}
 let data = loadData();
 function ensurePeriods(cls) {
   if (!data.periods) data.periods = {};
@@ -513,12 +524,15 @@ function renderLogin() {
         <h1>Учёт пропусков</h1>
         <p class="subtitle">Школьная система учёта пропусков и причин</p>
 
-        <div class="role-tabs">
+                <div class="role-tabs">
           <button class="role-tab ${loginState.role === 'teacher' ? 'active' : ''}" data-role="teacher">
-            Классный руководитель
+            Учитель
           </button>
           <button class="role-tab ${loginState.role === 'student' ? 'active' : ''}" data-role="student">
             Ученик
+          </button>
+          <button class="role-tab ${loginState.role === 'admin' ? 'active' : ''}" data-role="admin">
+            Администратор
           </button>
         </div>
 
@@ -528,14 +542,11 @@ function renderLogin() {
               <label for="tName">ФИО классного руководителя</label>
               <input type="text" id="tName" placeholder="Иванова И.И."
                      value="${escapeHtml(loginState.teacherName)}" required>
-
-              <label for="tClass">Классное руководство (закреплённый класс)</label>
-              <select id="tClass">
-                ${optionsHTML(CLASSES, loginState.teacherClass)}
-              </select>
             `
-            : `
-              <label for="sClass">Класс</label>
+                       : loginState.role === 'admin' ? `
+              <label for="adminPwd">Пароль администратора</label>
+              <input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">
+            `
               <select id="sClass">
                 ${optionsHTML(CLASSES, loginState.studentClass)}
               </select>
@@ -579,37 +590,33 @@ function renderLogin() {
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-       if (loginState.role === 'teacher') {
+          if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
       if (!name) return toast('Введите ФИО', true);
 
-      // 1. Ищем учителя или создаём нового
-      const teacher = registerTeacher(name, tClass.value);
-
-      // 2. Первый вход — уведомляем о стандартном PIN
-      if (teacher.firstLogin) {
-        toast('Установлен PIN по умолчанию: 1234', false);
+      // 1. Ищем учителя в списке, зарегистрированных админом
+      const teacher = findTeacher(name);
+      if (!teacher) {
+        return toast('Учитель не зарегистрирован. Обратитесь к администратору.', true);
       }
 
-      // 3. Спрашиваем PIN
-      const entered = prompt(
-        `Введите PIN для "${teacher.name}"\n\n` +
-        (teacher.firstLogin
-          ? 'Первый вход — введите 1234, потом смените в кабинете'
-          : 'Если не помните — попросите администратора сбросить')
-      );
+      // 2. Спрашиваем PIN
+      const entered = prompt(`Введите PIN для "${teacher.name}"`);
       if (entered === null) return;
 
-      // 4. Проверяем
+      // 3. Проверяем
       if (simpleHash(entered) !== teacher.pin) {
         return toast('Неверный PIN', true);
       }
 
-      // 5. Снимаем флаг "первый вход" и создаём сессию
-      teacher.firstLogin = false;
-      saveData();
-
-      session = { role: 'teacher', name, class: tClass.value };
+      // 4. Создаём сессию с классом из базы (учитель не может выбрать другой)
+      session = { role: 'teacher', name: teacher.name, class: teacher.class };
+    } else if (loginState.role === 'admin') {
+      // Вход администратора
+      const pwd = document.getElementById('adminPwd').value;
+      if (!pwd) return toast('Введите пароль', true);
+      if (!isAdminPassword(pwd)) return toast('Неверный пароль администратора', true);
+      session = { role: 'admin', name: 'Администратор' };
     } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
 
@@ -1192,14 +1199,164 @@ function renderStudent() {
     renderStudent();
   });
 }
+function renderAdmin() {
+  ensureTeachers();
+  const teachers = data.teachers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
 
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="topbar">
+      <h2>Панель администратора</h2>
+      <div class="user-info">
+        <span>${escapeHtml(session.name)}</span>
+        <span class="badge">Админ</span>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <h3>Зарегистрировать учителя</h3>
+        <form id="addTeacherForm">
+          <div class="form-grid">
+            <div>
+              <label for="newTeacherName">ФИО учителя</label>
+              <input type="text" id="newTeacherName" placeholder="Иванова Ирина Ивановна" required>
+            </div>
+            <div>
+              <label for="newTeacherClass">Закреплённый класс</label>
+              <select id="newTeacherClass" required>
+                ${optionsHTML(CLASSES, CLASSES[0])}
+              </select>
+            </div>
+            <div>
+              <label for="newTeacherPin">PIN (оставьте пустым для 1234)</label>
+              <input type="text" id="newTeacherPin" placeholder="1234" maxlength="8">
+            </div>
+          </div>
+          <button type="submit" class="btn" style="margin-top:16px;">Добавить учителя</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Учителя (${teachers.length})</h3>
+        ${teachers.length === 0
+          ? '<div class="empty">Пока нет зарегистрированных учителей</div>'
+          : `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ФИО</th>
+                  <th>Класс</th>
+                  <th>PIN</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${teachers.map((t, i) => `
+                  <tr>
+                    <td><b>${escapeHtml(t.name)}</b></td>
+                    <td>
+                      <select data-tclass="${escapeHtml(t.name)}" style="padding:6px 10px;">
+                        ${optionsHTML(CLASSES, t.class)}
+                      </select>
+                    </td>
+                    <td>
+                      <button class="btn btn-secondary btn-sm" data-treset="${escapeHtml(t.name)}">
+                        Сбросить на 1234
+                      </button>
+                    </td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" data-tdel="${escapeHtml(t.name)}">Удалить</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          `}
+      </div>
+    </div>
+  `;
+
+  // Выход
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    session = null;
+    renderApp();
+  });
+
+  // Добавить учителя
+  document.getElementById('addTeacherForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('newTeacherName').value.trim();
+    const cls = document.getElementById('newTeacherClass').value;
+    const pinRaw = document.getElementById('newTeacherPin').value.trim();
+
+    if (!name) return toast('Введите ФИО', true);
+    if (findTeacher(name)) return toast('Учитель с таким ФИО уже есть', true);
+
+    const pin = pinRaw || '1234';
+    if (!/^\d{4,8}$/.test(pin)) return toast('PIN должен быть 4–8 цифр', true);
+
+    data.teachers.push({
+      name,
+      class: cls,
+      pin: simpleHash(pin),
+      createdAt: new Date().toISOString()
+    });
+    saveData();
+    toast(`Учитель ${name} добавлен (класс ${cls}, PIN ${pin})`);
+    renderAdmin();
+  });
+
+  // Смена класса
+  document.querySelectorAll('[data-tclass]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const name = sel.dataset.tclass;
+      const t = findTeacher(name);
+      if (!t) return;
+      t.class = e.target.value;
+      saveData();
+      toast(`Класс учителя ${name} изменён на ${e.target.value}`);
+    });
+  });
+
+  // Сброс PIN
+  document.querySelectorAll('[data-treset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.treset;
+      const t = findTeacher(name);
+      if (!t) return;
+      if (!confirm(`Сбросить PIN учителя "${name}" на 1234?`)) return;
+      t.pin = simpleHash('1234');
+      saveData();
+      toast(`PIN учителя ${name} сброшен на 1234`);
+    });
+  });
+
+  // Удаление учителя
+  document.querySelectorAll('[data-tdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.tdel;
+      if (!confirm(`Удалить учителя "${name}"?`)) return;
+      data.teachers = data.teachers.filter(t => t.name !== name);
+      saveData();
+      toast(`Учитель ${name} удалён`);
+      renderAdmin();
+    });
+  });
+}
 /* =========================================================
    8. ГЛАВНЫЙ РЕНДЕР
    ========================================================= */
 function renderApp() {
   if (!session) { renderLogin(); return; }
-  if (session.role === 'teacher') renderTeacher();
-  else renderStudent();
+  if (session.role === 'admin') renderAdmin();
+  else if (session.role === 'teacher') renderTeacher();
+  else if (session.role === 'student') renderStudent();
+  else if (session.role === 'parent') renderParent();
+  else if (session.role === 'head') renderHead();
 }
 
 renderApp();
