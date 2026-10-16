@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -288,6 +289,76 @@ function defaultPeriodsForClass(cls) {
     { name: 'Весь год',     start: `${y1}-09-01`, end: `${y2}-05-31` }
   ];
 }
+ /* =========================================================
+   ГРАФИКИ (Chart.js)
+   ========================================================= */
+function drawCharts(absences, canvasPrefix) {
+  // Уничтожаем старые графики, чтобы не накладывались
+  if (window._charts) window._charts.forEach(c => c.destroy());
+  window._charts = [];
+
+  // --- Круговая: по причинам ---
+  const reasonCounts = {};
+  absences.forEach(a => {
+    const name = reasonById(a.reason).name;
+    reasonCounts[name] = (reasonCounts[name] || 0) + 1;
+  });
+  const pieCanvas = document.getElementById(`${canvasPrefix}ReasonChart`);
+  if (pieCanvas) {
+    const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+    window._charts.push(new Chart(pieCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(reasonCounts),
+        datasets: [{
+          data: Object.values(reasonCounts),
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 } } }
+        }
+      }
+    }));
+  }
+
+  // --- Столбчатая: по месяцам ---
+  const monthCounts = {};
+  absences.forEach(a => {
+    const m = a.date.slice(0, 7); // YYYY-MM
+    monthCounts[m] = (monthCounts[m] || 0) + 1;
+  });
+  const sortedMonths = Object.keys(monthCounts).sort();
+  const monthLabels = sortedMonths.map(m => {
+    const [y, mo] = m.split('-');
+    const names = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+    return `${names[+mo-1]} ${y.slice(2)}`;
+  });
+  const barCanvas = document.getElementById(`${canvasPrefix}MonthChart`);
+  if (barCanvas) {
+    window._charts.push(new Chart(barCanvas, {
+      type: 'bar',
+      data: {
+        labels: monthLabels,
+        datasets: [{
+          label: 'Пропусков',
+          data: sortedMonths.map(m => monthCounts[m]),
+          backgroundColor: '#3b82f6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    }));
+  }
+}
 let data = loadData();
 function ensurePeriods(cls) {
   if (!data.periods) data.periods = {};
@@ -522,6 +593,13 @@ function renderTeacher() {
         <div class="stat"><div class="num">${badCount}</div><div class="lbl">Неуважительных</div></div>
         <div class="stat"><div class="num">${uniqueStudents}</div><div class="lbl">Учеников с пропусками</div></div>
       </div>
+            <div class="card">
+        <h3>Аналитика за период</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+          <div style="height:260px;"><canvas id="tReasonChart"></canvas></div>
+          <div style="height:260px;"><canvas id="tMonthChart"></canvas></div>
+        </div>
+      </div>
 
       <div class="card">
         <h3>Добавить пропуск</h3>
@@ -621,7 +699,7 @@ function renderTeacher() {
       </div>
     </div>
   `;
-
+  drawCharts(absencesAll, 't');
   bindTeacherEvents();
 }
 
