@@ -410,6 +410,10 @@ function isAdminPassword(pwd) {
   return simpleHash(pwd) === ADMIN_PASSWORD_HASH;
 }
 let data = loadData();
+ // Гарантируем, что структура полная
+if (!data.teachers) data.teachers = [];
+if (!data.periods) data.periods = {};
+if (!data.currentPeriod) data.currentPeriod = {};
 function ensurePeriods(cls) {
   if (!data.periods) data.periods = {};
   if (!data.periods[cls]) {
@@ -450,6 +454,41 @@ function periodSelectorHTML(cls) {
    3. СОСТОЯНИЕ UI
    ========================================================= */
 let session = null;
+
+/* =========================================================
+   СОХРАНЕНИЕ СЕССИИ
+   ========================================================= */
+const SESSION_KEY = 'school_absence_session';
+
+function saveSession() {
+  if (session) {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } else {
+    localStorage.removeItem(SESSION_KEY);
+  }
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    // Проверяем, что такой пользователь всё ещё существует
+    if (s.role === 'teacher') {
+      const t = data.teachers?.find(t => t.name === s.name);
+      if (!t) return null; // учителя удалили — разлогиниваем
+      // Обновляем класс из базы (мог поменяться)
+      s.class = t.class;
+    }
+    if (s.role === 'student') {
+      const st = data.students.find(st => st.class === s.class && st.name === s.name);
+      if (!st) return null; // ученика удалили
+    }
+    return s;
+  } catch (e) {
+    return null;
+  }
+}
 let loginState = {
   role: 'teacher',
   teacherName: '',
@@ -653,7 +692,8 @@ function renderLogin() {
         class: sClass.value
       };
     }
-    ensurePeriods(session.class);
+        ensurePeriods(session.class);
+    saveSession();                               // ← добавили
     uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '' };
     renderApp();
   });
@@ -912,8 +952,9 @@ function bindTeacherEvents() {
     toast('PIN успешно изменён');
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
+   document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
+    saveSession();
     renderApp();
   });
 
@@ -1164,8 +1205,9 @@ function renderStudent() {
     toast('PIN успешно изменён');
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
+    document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
+    saveSession();
     renderApp();
   });
 
@@ -1283,8 +1325,9 @@ function renderAdmin() {
   `;
 
   // Выход
-  document.getElementById('logoutBtn').addEventListener('click', () => {
+    document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
+    saveSession();
     renderApp();
   });
 
@@ -1361,6 +1404,8 @@ function renderApp() {
   else if (session.role === 'head') renderHead();
 }
 
+// При загрузке пробуем восстановить сессию
+session = loadSession();
 renderApp();
 </script>
 </body>
