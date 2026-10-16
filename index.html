@@ -1255,6 +1255,136 @@ function renderStudent() {
     renderStudent();
   });
 }
+ /* =========================================================
+   СТАТИСТИКА КЛАССА ДЛЯ АДМИНА
+   ========================================================= */
+function renderAdminClassStats(selectedClass) {
+  ensurePeriods(selectedClass);
+  const subjects = getSubjects(selectedClass);
+
+  const allAbsences = data.absences.filter(a => a.class === selectedClass);
+  const absences = filterByPeriod(allAbsences, selectedClass)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const total = absences.length;
+  const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
+  const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
+  const neutral = total - good - bad;
+  const uniqueStudents = new Set(absences.map(a => a.studentName)).size;
+  const studentsInClass = data.students.filter(s => s.class === selectedClass).length;
+
+  // Топ учеников по пропускам
+  const byStudent = {};
+  absences.forEach(a => {
+    byStudent[a.studentName] = (byStudent[a.studentName] || 0) + 1;
+  });
+  const topStudents = Object.entries(byStudent)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  return `
+    <div class="card">
+      <div class="journal-header">
+        <h3>Статистика класса</h3>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="adminClassSelect" class="period-select">
+            ${optionsHTML(CLASSES, selectedClass)}
+          </select>
+          ${periodSelectorHTML(selectedClass)}
+        </div>
+      </div>
+
+      <div class="stats" style="margin-bottom:20px;">
+        <div class="stat"><div class="num">${total}</div><div class="lbl">Всего пропусков</div></div>
+        <div class="stat"><div class="num">${good}</div><div class="lbl">Уважительных</div></div>
+        <div class="stat"><div class="num">${bad}</div><div class="lbl">Неуважительных</div></div>
+        <div class="stat"><div class="num">${neutral}</div><div class="lbl">Прочих</div></div>
+        <div class="stat"><div class="num">${uniqueStudents}</div><div class="lbl">Учеников с пропусками</div></div>
+        <div class="stat"><div class="num">${studentsInClass}</div><div class="lbl">Всего в классе</div></div>
+      </div>
+
+      ${topStudents.length ? `
+        <h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Топ-5 учеников по пропускам</h4>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>#</th><th>Ученик</th><th>Пропусков</th></tr></thead>
+            <tbody>
+              ${topStudents.map(([name, count], i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${escapeHtml(name)}</td>
+                  <td><b>${count}</b></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : ''}
+
+      <h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Журнал пропусков за период</h4>
+      <div class="table-wrap">
+        ${renderAbsencesTable(absences, false)}
+      </div>
+    </div>
+  `;
+}
+ function renderAllClassesSummary() {
+  const rows = CLASSES.map(cls => {
+    ensurePeriods(cls);
+    const absences = filterByPeriod(
+      data.absences.filter(a => a.class === cls),
+      cls
+    );
+    const total = absences.length;
+    const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
+    const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
+    const students = data.students.filter(s => s.class === cls).length;
+    const teacher = (data.teachers || []).find(t => t.class === cls);
+    return { cls, total, good, bad, students, teacher: teacher?.name || '—' };
+  });
+
+  const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+  const grandGood = rows.reduce((s, r) => s + r.good, 0);
+  const grandBad = rows.reduce((s, r) => s + r.bad, 0);
+
+  return `
+    <div class="card">
+      <h3>Сводная по всем классам (текущий период)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Класс</th>
+              <th>Классный руководитель</th>
+              <th>Учеников</th>
+              <th>Всего пропусков</th>
+              <th>Уважительных</th>
+              <th>Неуважительных</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><b>${escapeHtml(r.cls)}</b></td>
+                <td style="font-size:13px; color:#64748b;">${escapeHtml(r.teacher)}</td>
+                <td>${r.students}</td>
+                <td>${r.total}</td>
+                <td style="color:#166534;">${r.good}</td>
+                <td style="color:#991b1b;">${r.bad}</td>
+              </tr>
+            `).join('')}
+            <tr style="font-weight:700; background:#f1f5f9;">
+              <td colspan="3">ИТОГО</td>
+              <td>${grandTotal}</td>
+              <td style="color:#166534;">${grandGood}</td>
+              <td style="color:#991b1b;">${grandBad}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
 function renderAdmin() {
   ensureTeachers();
   const teachers = data.teachers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
@@ -1331,8 +1461,12 @@ function renderAdmin() {
               </tbody>
             </table>
           </div>
-          `}
+                `}
       </div>
+
+      ${renderAllClassesSummary()}
+
+      ${renderAdminClassStats(uiState.adminSelectedClass || CLASSES[0])}
     </div>
   `;
 
