@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
 
-<!-- PWA -->
 <link rel="manifest" id="manifestLink">
 <meta name="theme-color" content="#1e293b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -52,7 +51,7 @@
   .login-card h1 { margin: 0 0 6px; font-size: 26px; }
   .subtitle { color: #6b7280; margin: 0 0 24px; font-size: 14px; }
   .role-tabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 22px; flex-wrap: wrap; }
-  .role-tab { flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; border-radius: 8px; font-size: 14px; font-weight: 500; color: #475569; min-width: 90px; }
+  .role-tab { flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; border-radius: 8px; font-size: 14px; font-weight: 500; color: #475569; min-width: 80px; }
   .role-tab.active { background: #fff; color: #1d4ed8; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
   label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; margin-top: 14px; }
   input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; color: #1f2937; }
@@ -137,17 +136,13 @@
   .log-action.upd { background: #fef3c7; color: #92400e; }
   .log-action.login { background: #dbeafe; color: #1e40af; }
   .log-action.backup { background: #ede9fe; color: #5b21b6; }
-
   .warning-banner { background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #dc2626; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
   .warning-banner .warn-icon { font-size: 24px; flex-shrink: 0; }
   .warning-banner .warn-text { flex: 1; font-size: 13px; color: #7f1d1d; }
   .warning-banner .warn-text b { font-size: 14px; }
-
   .pwa-install-btn { display: none; position: fixed; bottom: 20px; left: 20px; background: #2563eb; color: #fff; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(37,99,235,.35); border: none; cursor: pointer; font-weight: 600; font-size: 14px; z-index: 500; align-items: center; gap: 8px; }
   .pwa-install-btn:hover { background: #1d4ed8; }
   .pwa-install-btn.show { display: flex; }
-
-  /* Расписание */
   .schedule-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .schedule-day { background: #f8fafc; border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0; }
   .schedule-day-title { font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #cbd5e1; }
@@ -157,10 +152,31 @@
   .schedule-lesson button { background: transparent; border: none; color: #dc2626; cursor: pointer; font-size: 15px; padding: 0 4px; }
   .schedule-add { background: transparent; border: 1px dashed #cbd5e1; color: #64748b; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%; margin-top: 4px; }
   .schedule-add:hover { border-color: #2563eb; color: #2563eb; }
-
   .backup-list { max-height: 300px; overflow-y: auto; }
   .backup-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
   .backup-item:last-child { border-bottom: none; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; z-index: 900; padding: 20px; }
+  .modal { background: #fff; border-radius: 14px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { margin: 0; font-size: 18px; }
+  .modal-close { background: transparent; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0 6px; line-height: 1; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end; }
+  .drop-zone { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 32px; text-align: center; color: #64748b; font-size: 14px; transition: all .2s; cursor: pointer; }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+  .drop-zone .big-icon { font-size: 40px; margin-bottom: 8px; }
+  .import-preview { margin-top: 14px; max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .import-row { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+  .import-row:last-child { border-bottom: none; }
+  .import-row.ok { color: #166534; }
+  .import-row.dup { color: #92400e; background: #fefce8; }
+  .import-row.err { color: #991b1b; background: #fef2f2; }
+  .import-summary { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-top: 14px; font-size: 13px; }
+  .import-summary b { color: #1d4ed8; }
+  .csv-hint { background: #f1f5f9; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #475569; margin-top: 14px; }
+  .csv-hint code { background: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; }
+  .print-header { display: none; }
+  .print-signature { display: none; }
 
   @media (max-width: 768px) {
     .login-wrap { padding: 16px; }
@@ -212,6 +228,9 @@
     .warning-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
     .pwa-install-btn { bottom: 12px; left: 12px; right: 12px; justify-content: center; }
     .schedule-grid { grid-template-columns: 1fr; }
+    .modal-header, .modal-body, .modal-footer { padding: 14px 16px; }
+    .modal-footer { flex-direction: column; }
+    .modal-footer .btn { width: 100%; }
   }
 
   @media (max-width: 380px) {
@@ -219,8 +238,6 @@
     .topbar .user-info .btn-sm { font-size: 11px; padding: 7px 8px; }
   }
 
-  .print-header { display: none; }
-  .print-signature { display: none; }
   @media print {
     @page { margin: 15mm 10mm; size: A4 portrait; }
     body { background: #fff !important; color: #000; font-size: 12px; }
@@ -260,15 +277,13 @@
 <button class="pwa-install-btn" id="installPwaBtn">📲 Установить приложение</button>
 
 <script>
-/* ============================================================
-   КОНСТАНТЫ
-   ============================================================ */
+/* ============ КОНСТАНТЫ ============ */
 const STORAGE_KEY = 'school_absence_v2';
 const SESSION_KEY = 'school_absence_session';
 const FB_PATH = 'schoolData';
 const BACKUP_PATH = 'backups';
 const BACKUP_KEEP_DAYS = 30;
-const ABSENCE_WARNING_THRESHOLD = 5;
+const ABSENCE_WARNING_THRESHOLD = 40;
 const DAYS_OF_WEEK = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
 const CLASSES = (() => {
@@ -302,62 +317,7 @@ const REASONS = [
 
 function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASONS.length - 1]; }
 
-/* ============================================================
-   PWA
-   ============================================================ */
-(function setupPwaManifest() {
-  const iconSvg = 'data:image/svg+xml,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">' +
-    '<rect width="192" height="192" rx="36" fill="#1e293b"/>' +
-    '<text x="96" y="128" font-size="100" text-anchor="middle">🎓</text>' +
-    '</svg>'
-  );
-  const manifest = {
-    name: 'Учёт пропусков', short_name: 'Пропуски',
-    description: 'Школьная система учёта пропусков и причин',
-    start_url: '.', scope: '.', display: 'standalone', orientation: 'portrait',
-    background_color: '#eef2f7', theme_color: '#1e293b', lang: 'ru',
-    icons: [
-      { src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-      { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.getElementById('manifestLink');
-  if (link) link.href = url;
-})();
-
-// Регистрация service worker через Blob (для офлайн)
-if ('serviceWorker' in navigator) {
-  const swCode = "self.addEventListener('install',e=>self.skipWaiting());" +
-    "self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));" +
-    "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;" +
-    "e.respondWith(caches.open('v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(_){}return res}).catch(()=>c.match('/')))))});";
-  try {
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).catch(() => {});
-  } catch (e) {}
-}
-
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('installPwaBtn');
-  if (btn) btn.classList.add('show');
-});
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('installPwaBtn');
-  if (btn) btn.classList.remove('show');
-  deferredPrompt = null;
-  toast('Приложение установлено');
-});
-
-/* ============================================================
-   УТИЛИТЫ
-   ============================================================ */
+/* ============ УТИЛИТЫ ============ */
 function simpleHash(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
@@ -390,16 +350,10 @@ function formatDateTime(iso) {
 function getStudentsOfClass(cls) { return data.students.filter(s => s.class === cls).sort((a, b) => a.name.localeCompare(b.name, 'ru')); }
 function getDayOfWeek(dateISO) {
   if (!dateISO) return null;
-  try {
-    const d = new Date(dateISO + 'T00:00:00');
-    const idx = d.getDay();
-    return DAYS_OF_WEEK[(idx + 6) % 7];
-  } catch (e) { return null; }
+  try { const d = new Date(dateISO + 'T00:00:00'); return DAYS_OF_WEEK[(d.getDay() + 6) % 7]; } catch (e) { return null; }
 }
 
-/* ============================================================
-   ДАННЫЕ
-   ============================================================ */
+/* ============ ДАННЫЕ ============ */
 function buildSeedData() {
   const names = ['Иванов Иван','Петрова Мария','Сидоров Пётр','Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'];
   const students = [];
@@ -424,10 +378,8 @@ let firebaseReady = false;
 let firebaseConnected = false;
 let session = null;
 
-/* ============================================================
-   СОХРАНЕНИЕ
-   ============================================================ */
-let saveTimer = null;
+/* ============ СОХРАНЕНИЕ ============ */
+let saveTimer = null, saveLogTimer = null, saveNotifTimer = null;
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   if (!firebaseReady || !window.firebaseDB) return;
@@ -435,17 +387,148 @@ function saveData() {
   saveTimer = setTimeout(async () => {
     try {
       const { db, ref, set } = window.firebaseDB;
-      await set(ref(db, FB_PATH), data);
-      firebaseConnected = true; updateStatusBadge();
-    } catch (e) {
-      firebaseConnected = false; updateStatusBadge();
-    }
-  }, 400);
+      await set(ref(db, FB_PATH + '/main'), {
+        students: data.students || [],
+        absences: data.absences || [],
+        teachers: data.teachers || [],
+        parents: data.parents || [],
+        periods: data.periods || {},
+        currentPeriod: data.currentPeriod || {},
+        schedules: data.schedules || {}
+      });
+      firebaseConnected = true;
+      updateStatusBadge();
+    } catch (e) { firebaseConnected = false; updateStatusBadge(); }
+  }, 600);
+}
+function saveLog() {
+  if (!firebaseReady || !window.firebaseDB) return;
+  clearTimeout(saveLogTimer);
+  saveLogTimer = setTimeout(async () => {
+    try {
+      const { db, ref, set } = window.firebaseDB;
+      await set(ref(db, FB_PATH + '/log'), data.log || []);
+    } catch (e) {}
+  }, 2000);
+}
+function saveNotifications() {
+  if (!firebaseReady || !window.firebaseDB) return;
+  clearTimeout(saveNotifTimer);
+  saveNotifTimer = setTimeout(async () => {
+    try {
+      const { db, ref, set } = window.firebaseDB;
+      await set(ref(db, FB_PATH + '/notifications'), data.notifications || []);
+    } catch (e) {}
+  }, 1000);
 }
 
-/* ============================================================
-   АВТОБЭКАПЫ
-   ============================================================ */
+/* ============ ЛОГ ============ */
+function logAction(action, details) {
+  if (!data.log) data.log = [];
+  data.log.push({
+    time: new Date().toISOString(),
+    user: session ? session.name : '—',
+    role: session ? session.role : '—',
+    action: action,
+    details: details || ''
+  });
+  if (data.log.length > 300) data.log = data.log.slice(-300);
+  saveLog();
+}
+
+/* ============ УВЕДОМЛЕНИЯ ============ */
+function requestNotificationPermission() {
+  if (!('Notification' in window)) return toast('Не поддерживается', true);
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') toast('Уведомления включены');
+      else toast('Отклонено', true);
+    });
+  } else if (Notification.permission === 'granted') toast('Уже включены');
+  else toast('Заблокированы', true);
+}
+function showNativeNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try { new Notification(title, { body: body }); } catch (e) {}
+}
+function pushNotification(toRole, toUser, message, detail) {
+  if (!data.notifications) data.notifications = [];
+  data.notifications.push({
+    id: uid(), toRole, toUser, message, detail: detail || '',
+    from: session ? session.name : '—',
+    time: new Date().toISOString(), read: false
+  });
+  if (data.notifications.length > 60) data.notifications = data.notifications.slice(-60);
+  saveNotifications();
+  if (session && session.role === toRole && session.name === toUser) {
+    showNativeNotification('Учёт пропусков', message);
+  }
+}
+function getMyNotifications() {
+  if (!session || !data.notifications) return [];
+  return data.notifications
+    .filter(n => n.toRole === session.role && n.toUser === session.name)
+    .sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+}
+function unreadCount() { return getMyNotifications().filter(n => !n.read).length; }
+function markAllRead() {
+  if (!data.notifications) return;
+  let changed = false;
+  data.notifications.forEach(n => {
+    if (n.toRole === session.role && n.toUser === session.name && !n.read) { n.read = true; changed = true; }
+  });
+  if (changed) saveNotifications();
+}
+
+/* ============ FIREBASE ============ */
+async function initFirebaseSync() {
+  if (!window.firebaseDB) { firebaseReady = true; return false; }
+  firebaseReady = true;
+  return true;
+}
+function subscribeToFirebase() {
+  if (!window.firebaseDB) return;
+  const { db, ref, onValue, set } = window.firebaseDB;
+
+  onValue(ref(db, FB_PATH + '/main'), (snap) => {
+    const incoming = snap.val();
+    if (!incoming) {
+      const seeded = buildSeedData();
+      set(ref(db, FB_PATH + '/main'), {
+        students: seeded.students, absences: seeded.absences,
+        teachers: seeded.teachers, parents: seeded.parents,
+        periods: seeded.periods, currentPeriod: seeded.currentPeriod, schedules: seeded.schedules
+      });
+      return;
+    }
+    data.students = incoming.students || [];
+    data.absences = incoming.absences || [];
+    data.teachers = incoming.teachers || [];
+    data.parents = incoming.parents || [];
+    data.periods = incoming.periods || {};
+    data.currentPeriod = incoming.currentPeriod || {};
+    data.schedules = incoming.schedules || {};
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    firebaseConnected = true;
+    updateStatusBadge();
+    if (session) renderApp();
+  }, (err) => { firebaseConnected = false; updateStatusBadge(); });
+
+  onValue(ref(db, FB_PATH + '/log'), (snap) => { data.log = snap.val() || []; });
+  onValue(ref(db, FB_PATH + '/notifications'), (snap) => {
+    data.notifications = snap.val() || [];
+    if (session) renderApp();
+  });
+}
+function updateStatusBadge() {
+  const badge = document.getElementById('syncStatus');
+  if (!badge) return;
+  if (!firebaseReady) badge.innerHTML = '<span class="status-dot offline"></span>Локально';
+  else if (firebaseConnected) badge.innerHTML = '<span class="status-dot online"></span>Онлайн';
+  else badge.innerHTML = '<span class="status-dot offline"></span>Офлайн';
+}
+
+/* ============ АВТОБЭКАПЫ ============ */
 async function runAutoBackup(force) {
   if (!window.firebaseDB) return;
   const today = todayISO();
@@ -465,13 +548,15 @@ async function runAutoBackup(force) {
       studentsCount: data.students.length,
       absencesCount: data.absences.length,
       teachersCount: data.teachers.length,
-      data: data
+      data: {
+        students: data.students, absences: data.absences,
+        teachers: data.teachers, parents: data.parents,
+        periods: data.periods, currentPeriod: data.currentPeriod, schedules: data.schedules
+      }
     });
     localStorage.setItem('last_backup_date', today);
-    console.log('✓ Автобэкап: ' + today);
-  } catch (e) { console.warn('Backup error:', e); }
+  } catch (e) {}
 }
-
 async function listBackups() {
   if (!window.firebaseDB) return [];
   try {
@@ -486,7 +571,6 @@ async function listBackups() {
     })).sort((a, b) => b.date.localeCompare(a.date));
   } catch (e) { return []; }
 }
-
 async function restoreBackup(date) {
   if (!window.firebaseDB) return false;
   try {
@@ -494,128 +578,21 @@ async function restoreBackup(date) {
     const snap = await get(ref(db, BACKUP_PATH + '/' + date));
     const val = snap.val();
     if (!val || !val.data) return false;
-    data = val.data;
-    if (!data.teachers) data.teachers = [];
-    if (!data.periods) data.periods = {};
-    if (!data.currentPeriod) data.currentPeriod = {};
-    if (!data.schedules) data.schedules = {};
-    if (!data.log) data.log = [];
-    if (!data.notifications) data.notifications = [];
+    const d = val.data;
+    data.students = d.students || [];
+    data.absences = d.absences || [];
+    data.teachers = d.teachers || [];
+    data.parents = d.parents || [];
+    data.periods = d.periods || {};
+    data.currentPeriod = d.currentPeriod || {};
+    data.schedules = d.schedules || {};
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     saveData();
     return true;
   } catch (e) { return false; }
 }
 
-/* ============================================================
-   ЛОГ
-   ============================================================ */
-function logAction(action, details) {
-  if (!data.log) data.log = [];
-  data.log.push({
-    time: new Date().toISOString(),
-    user: session ? session.name : '—',
-    role: session ? session.role : '—',
-    action, details: details || ''
-  });
-  if (data.log.length > 500) data.log = data.log.slice(-500);
-  saveData();
-}
-
-/* ============================================================
-   УВЕДОМЛЕНИЯ
-   ============================================================ */
-function requestNotificationPermission() {
-  if (!('Notification' in window)) return toast('Не поддерживается', true);
-  if (Notification.permission === 'default') {
-    Notification.requestPermission().then(p => {
-      if (p === 'granted') toast('Уведомления включены');
-      else toast('Отклонено', true);
-    });
-  } else if (Notification.permission === 'granted') toast('Уже включены');
-  else toast('Заблокированы в браузере', true);
-}
-function showNativeNotification(title, body) {
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  try { new Notification(title, { body: body }); } catch (e) {}
-}
-function pushNotification(toRole, toUser, message, detail) {
-  if (!data.notifications) data.notifications = [];
-  data.notifications.push({
-    id: uid(), toRole, toUser, message, detail: detail || '',
-    from: session ? session.name : '—',
-    time: new Date().toISOString(), read: false
-  });
-  if (data.notifications.length > 100) data.notifications = data.notifications.slice(-100);
-  saveData();
-  if (session && session.role === toRole && session.name === toUser) {
-    showNativeNotification('Учёт пропусков', message);
-  }
-}
-function getMyNotifications() {
-  if (!session || !data.notifications) return [];
-  return data.notifications
-    .filter(n => n.toRole === session.role && n.toUser === session.name)
-    .sort((a, b) => (b.time || '').localeCompare(a.time || ''));
-}
-function unreadCount() { return getMyNotifications().filter(n => !n.read).length; }
-function markAllRead() {
-  if (!data.notifications) return;
-  let changed = false;
-  data.notifications.forEach(n => {
-    if (n.toRole === session.role && n.toUser === session.name && !n.read) { n.read = true; changed = true; }
-  });
-  if (changed) saveData();
-}
-
-/* ============================================================
-   FIREBASE SYNC
-   ============================================================ */
-async function initFirebaseSync() {
-  if (!window.firebaseDB) { firebaseReady = true; return false; }
-  const { db, ref, set, onValue } = window.firebaseDB;
-  const dataRef = ref(db, FB_PATH);
-  return new Promise((resolve) => {
-    let firstLoad = true;
-    onValue(dataRef, (snap) => {
-      const incoming = snap.val();
-      if (!incoming) { set(dataRef, buildSeedData()).then(() => {}); return; }
-      if (incoming.students || incoming.absences) {
-        data = {
-          students: incoming.students || [],
-          absences: incoming.absences || [],
-          teachers: incoming.teachers || [],
-          parents: incoming.parents || [],
-          periods: incoming.periods || {},
-          currentPeriod: incoming.currentPeriod || {},
-          schedules: incoming.schedules || {},
-          log: incoming.log || [],
-          notifications: incoming.notifications || []
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-      firebaseConnected = true;
-      updateStatusBadge();
-      if (firstLoad) { firstLoad = false; resolve(true); }
-      else if (session) renderApp();
-    }, (error) => {
-      console.error('Firebase error:', error);
-      firebaseConnected = false; updateStatusBadge(); resolve(false);
-    });
-    setTimeout(() => resolve(false), 5000);
-  });
-}
-function updateStatusBadge() {
-  const badge = document.getElementById('syncStatus');
-  if (!badge) return;
-  if (!firebaseReady) badge.innerHTML = '<span class="status-dot offline"></span>Локально';
-  else if (firebaseConnected) badge.innerHTML = '<span class="status-dot online"></span>Онлайн';
-  else badge.innerHTML = '<span class="status-dot offline"></span>Офлайн';
-}
-
-/* ============================================================
-   ПЕРИОДЫ
-   ============================================================ */
+/* ============ ПЕРИОДЫ ============ */
 function defaultPeriodsForClass(cls) {
   const grade = parseInt(cls, 10);
   const year = new Date().getFullYear();
@@ -656,9 +633,7 @@ function periodSelectorHTML(cls) {
     '<span class="period-dates">' + escapeHtml(formatDate(periods[cur].start)) + ' — ' + escapeHtml(formatDate(periods[cur].end)) + '</span>';
 }
 
-/* ============================================================
-   РАСПИСАНИЕ
-   ============================================================ */
+/* ============ РАСПИСАНИЕ ============ */
 function ensureSchedule(cls) {
   if (!data.schedules) data.schedules = {};
   if (!data.schedules[cls]) {
@@ -675,10 +650,66 @@ function getLessonsFor(cls, dateISO) {
   if (schedule && schedule.length) return schedule;
   return getSubjects(cls);
 }
+function renderScheduleInner(cls) {
+  ensureSchedule(cls);
+  const schedule = data.schedules[cls];
+  const subjects = getSubjects(cls);
+  const daysHTML = DAYS_OF_WEEK.map(day => {
+    const lessons = schedule[day] || [];
+    const lessonsHTML = lessons.map((lesson, idx) =>
+      '<div class="schedule-lesson">' +
+        '<span class="schedule-lesson-num">' + (idx + 1) + '.</span>' +
+        '<select data-sched-day="' + day + '" data-sched-idx="' + idx + '">' + optionsHTML(subjects, lesson) + '</select>' +
+        '<button data-sched-del="' + day + '|' + idx + '">×</button>' +
+      '</div>').join('');
+    return '<div class="schedule-day">' +
+      '<div class="schedule-day-title">' + day + '</div>' +
+      lessonsHTML +
+      '<button class="schedule-add" data-sched-add="' + day + '">+ Добавить урок</button>' +
+      '</div>';
+  }).join('');
+  return '<div class="schedule-grid">' + daysHTML + '</div>' +
+    '<button class="btn btn-secondary btn-sm" id="clearScheduleBtn" style="margin-top:12px;">Очистить всё расписание</button>';
+}
+function renderScheduleCard(cls) {
+  return '<div class="card"><h3>📅 Расписание — ' + escapeHtml(cls) + '</h3>' +
+    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Уроки по дням недели. Предметы подставляются автоматически при добавлении пропуска.</p>' +
+    renderScheduleInner(cls) + '</div>';
+}
+function bindScheduleEvents(cls, onUpdate) {
+  onUpdate = onUpdate || (() => renderApp());
+  document.querySelectorAll('[data-sched-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const day = btn.dataset.schedAdd;
+      ensureSchedule(cls);
+      if (!data.schedules[cls][day]) data.schedules[cls][day] = [];
+      if (data.schedules[cls][day].length >= 10) return toast('Максимум 10 уроков', true);
+      data.schedules[cls][day].push(getSubjects(cls)[0]);
+      saveData(); onUpdate();
+    });
+  });
+  document.querySelectorAll('[data-sched-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parts = btn.dataset.schedDel.split('|');
+      data.schedules[cls][parts[0]].splice(+parts[1], 1);
+      saveData(); onUpdate();
+    });
+  });
+  document.querySelectorAll('[data-sched-day]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      data.schedules[cls][sel.dataset.schedDay][+sel.dataset.schedIdx] = e.target.value;
+      saveData();
+    });
+  });
+  document.getElementById('clearScheduleBtn')?.addEventListener('click', () => {
+    if (!confirm('Очистить всё расписание ' + cls + '?')) return;
+    const empty = {}; DAYS_OF_WEEK.forEach(d => empty[d] = []);
+    data.schedules[cls] = empty;
+    saveData(); onUpdate();
+  });
+}
 
-/* ============================================================
-   ПРЕДУПРЕЖДЕНИЕ "МНОГО ПРОПУСКОВ"
-   ============================================================ */
+/* ============ ПРОБЛЕМНЫЕ УЧЕНИКИ ============ */
 function getProblemStudents(absences) {
   const counts = {};
   absences.forEach(a => { counts[a.studentName] = (counts[a.studentName] || 0) + 1; });
@@ -703,9 +734,7 @@ function warningBannerHTML(absences) {
     '</div></div>';
 }
 
-/* ============================================================
-   ГРАФИКИ
-   ============================================================ */
+/* ============ ГРАФИКИ ============ */
 function drawCharts(absences, canvasPrefix) {
   if (typeof Chart === 'undefined') return;
   if (window._charts) window._charts.forEach(c => c.destroy());
@@ -736,9 +765,7 @@ function drawCharts(absences, canvasPrefix) {
   }
 }
 
-/* ============================================================
-   ПЕЧАТЬ
-   ============================================================ */
+/* ============ ПЕЧАТЬ ============ */
 function printJournal(cls, periodName, options) {
   options = options || {};
   const printHeader = document.getElementById('printHeader');
@@ -764,13 +791,12 @@ function printJournal(cls, periodName, options) {
   window.print();
 }
 
-/* ============================================================
-   UI STATE
-   ============================================================ */
+/* ============ UI STATE ============ */
 let uiState = {
   filterReason: '', filterStudent: '', filterDate: '',
   newStudentName: '',
   adminSelectedClass: CLASSES[0],
+  scheduleEditClass: CLASSES[0],
   searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: ''
 };
 
@@ -794,16 +820,13 @@ function applySearch(rows) {
   return rows.filter(a => (a.studentName || '').toLowerCase().includes(q));
 }
 
-/* ============================================================
-   ТАБЛИЦА ПРОПУСКОВ
-   ============================================================ */
+/* ============ ТАБЛИЦА ============ */
 function renderAbsencesTable(rows, withActions, withParentComment, problemNames) {
   if (!rows.length) return '<div class="empty">Записей нет</div>';
   problemNames = problemNames || new Set();
   const arrowDate = uiState.sortBy === 'date' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowName = uiState.sortBy === 'name' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowReason = uiState.sortBy === 'reason' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
-
   const body = rows.map(a => {
     const r = reasonById(a.reason);
     const srcLabel = a.addedByRole === 'student'
@@ -847,9 +870,7 @@ function bindSortHandlers() {
   });
 }
 
-/* ============================================================
-   КОЛОКОЛЬЧИК
-   ============================================================ */
+/* ============ КОЛОКОЛЬЧИК ============ */
 function bellHTML() {
   const count = unreadCount();
   if (count === 0) return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn">🔔</button></div>';
@@ -884,9 +905,7 @@ function bindBell() {
   });
 }
 
-/* ============================================================
-   СЕССИЯ
-   ============================================================ */
+/* ============ СЕССИЯ ============ */
 function saveSession() {
   if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   else localStorage.removeItem(SESSION_KEY);
@@ -916,9 +935,7 @@ function findTeacher(name) {
   return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase());
 }
 
-/* ============================================================
-   ГЛАВНЫЙ РЕНДЕР
-   ============================================================ */
+/* ============ ГЛАВНЫЙ РЕНДЕР ============ */
 function renderApp() {
   if (!session) { renderLogin(); return; }
   if (session.role === 'admin') renderAdmin();
@@ -928,14 +945,11 @@ function renderApp() {
   else { session = null; saveSession(); renderLogin(); }
 }
 
-/* ============================================================
-   ЛОГИН
-   ============================================================ */
+/* ============ ЛОГИН ============ */
 function renderLogin() {
   const app = document.getElementById('app');
   const studentNames = getStudentsOfClass(loginState.studentClass).map(s => s.name);
   if (!studentNames.includes(loginState.studentName)) loginState.studentName = studentNames[0] || '';
-
   let formHTML = '';
   if (loginState.role === 'teacher') {
     formHTML = '<label for="tName">ФИО классного руководителя</label>' +
@@ -952,7 +966,6 @@ function renderLogin() {
       '<label for="sName">ФИО ' + (loginState.role === 'parent' ? 'ребёнка' : 'ученика') + '</label>' +
       '<select id="sName"' + (studentNames.length ? '' : ' disabled') + '>' + sNamesHTML + '</select>';
   }
-
   app.innerHTML =
     '<div class="login-wrap"><div class="login-card">' +
     '<h1>Учёт пропусков</h1>' +
@@ -968,7 +981,6 @@ function renderLogin() {
     '<div style="text-align:center; margin-top:14px;"><a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">Забыли PIN?</a></div>' +
     '<div style="text-align:center; margin-top:12px; font-size:12px; color:#64748b;" id="syncStatus"></div>' +
     '</form></div></div>';
-
   updateStatusBadge();
   document.querySelectorAll('.role-tab').forEach(tab => {
     tab.addEventListener('click', () => { loginState.role = tab.dataset.role; renderLogin(); });
@@ -1011,7 +1023,7 @@ function renderLogin() {
     if (session.class) ensureSchedule(session.class);
     saveSession();
     logAction('login', session.role + ' вошёл');
-    uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0], searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: '' };
+    uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0], scheduleEditClass: CLASSES[0], searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: '' };
     renderApp();
     runAutoBackup(false);
   });
@@ -1033,9 +1045,7 @@ function renderLogin() {
   }
 }
 
-/* ============================================================
-   ШАПКА
-   ============================================================ */
+/* ============ ШАПКА ============ */
 function topbarHTML(title, extra) {
   const showBell = session.role === 'teacher' || session.role === 'admin';
   return '<div class="topbar"><h2>' + escapeHtml(title) + '</h2>' +
@@ -1054,77 +1064,10 @@ function bindLogout() {
   });
 }
 
-/* ============================================================
-   КАРТОЧКА РАСПИСАНИЯ (для учителя)
-   ============================================================ */
-function renderScheduleCard(cls) {
-  ensureSchedule(cls);
-  const schedule = data.schedules[cls];
-  const subjects = getSubjects(cls);
-
-  const daysHTML = DAYS_OF_WEEK.map(day => {
-    const lessons = schedule[day] || [];
-    const lessonsHTML = lessons.map((lesson, idx) =>
-      '<div class="schedule-lesson">' +
-        '<span class="schedule-lesson-num">' + (idx + 1) + '.</span>' +
-        '<select data-sched-day="' + day + '" data-sched-idx="' + idx + '">' + optionsHTML(subjects, lesson) + '</select>' +
-        '<button data-sched-del="' + day + '|' + idx + '">×</button>' +
-      '</div>').join('');
-    return '<div class="schedule-day">' +
-      '<div class="schedule-day-title">' + day + '</div>' +
-      lessonsHTML +
-      '<button class="schedule-add" data-sched-add="' + day + '">+ Добавить урок</button>' +
-      '</div>';
-  }).join('');
-
-  return '<div class="card"><h3>📅 Расписание — ' + escapeHtml(cls) + '</h3>' +
-    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Уроки по дням недели. Предметы подставляются автоматически при добавлении пропуска.</p>' +
-    '<div class="schedule-grid">' + daysHTML + '</div>' +
-    '<button class="btn btn-secondary btn-sm" id="clearScheduleBtn" style="margin-top:12px;">Очистить всё расписание</button>' +
-    '</div>';
-}
-
-function bindScheduleEvents(cls) {
-  document.querySelectorAll('[data-sched-add]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const day = btn.dataset.schedAdd;
-      ensureSchedule(cls);
-      if (!data.schedules[cls][day]) data.schedules[cls][day] = [];
-      if (data.schedules[cls][day].length >= 10) return toast('Максимум 10 уроков', true);
-      data.schedules[cls][day].push(getSubjects(cls)[0]);
-      saveData(); renderTeacher();
-    });
-  });
-  document.querySelectorAll('[data-sched-del]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const parts = btn.dataset.schedDel.split('|');
-      const day = parts[0], idx = +parts[1];
-      data.schedules[cls][day].splice(idx, 1);
-      saveData(); renderTeacher();
-    });
-  });
-  document.querySelectorAll('[data-sched-day]').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const day = sel.dataset.schedDay, idx = +sel.dataset.schedIdx;
-      data.schedules[cls][day][idx] = e.target.value;
-      saveData();
-    });
-  });
-  document.getElementById('clearScheduleBtn')?.addEventListener('click', () => {
-    if (!confirm('Очистить всё расписание ' + cls + '?')) return;
-    const empty = {}; DAYS_OF_WEEK.forEach(d => empty[d] = []);
-    data.schedules[cls] = empty;
-    saveData(); renderTeacher();
-  });
-}
-
-/* ============================================================
-   УЧИТЕЛЬ
-   ============================================================ */
+/* ============ УЧИТЕЛЬ ============ */
 function renderTeacher() {
   const cls = session.class;
   const students = getStudentsOfClass(cls);
-  const subjects = getSubjects(cls);
   const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
   let absences = absencesAll.filter(a => {
     if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
@@ -1134,13 +1077,11 @@ function renderTeacher() {
   });
   absences = applySearch(absences);
   absences = sortAbsences(absences);
-
   const problemNames = problemNamesSet(absencesAll);
   const total = absencesAll.length;
   const goodCount = absencesAll.filter(a => reasonById(a.reason).type === 'good').length;
   const badCount = absencesAll.filter(a => reasonById(a.reason).type === 'bad').length;
   const uniqueStudents = new Set(absencesAll.map(a => a.studentName)).size;
-
   const studentChips = students.length
     ? students.map(s => {
         const isProblem = problemNames.has(s.name);
@@ -1149,7 +1090,6 @@ function renderTeacher() {
           '<button data-del-student="' + s.id + '">×</button></span>';
       }).join('')
     : '<div class="empty">Пока нет учеников.</div>';
-
   const periodRows = data.periods[cls].map((p, i) =>
     '<div class="periods-editor-row">' +
       '<input type="text" value="' + escapeHtml(p.name) + '" data-pname="' + i + '">' +
@@ -1169,13 +1109,11 @@ function renderTeacher() {
         '<div class="stat"><div class="num">' + badCount + '</div><div class="lbl">Неуважительных</div></div>' +
         '<div class="stat"><div class="num">' + uniqueStudents + '</div><div class="lbl">Учеников</div></div>' +
       '</div>' +
-
       '<div class="card"><h3>Аналитика за период</h3>' +
         '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">' +
           '<div style="height:260px;"><canvas id="tReasonChart"></canvas></div>' +
           '<div style="height:260px;"><canvas id="tMonthChart"></canvas></div>' +
         '</div></div>' +
-
       '<div class="card"><h3>Добавить пропуск</h3><form id="absenceForm">' +
         '<div class="form-grid">' +
           '<div><label for="aDate">Дата</label><input type="date" id="aDate" value="' + todayISO() + '" required></div>' +
@@ -1188,20 +1126,19 @@ function renderTeacher() {
         '</div>' +
         '<button type="submit" class="btn" style="margin-top:16px;"' + (students.length ? '' : ' disabled') + '>Добавить</button>' +
       '</form></div>' +
-
-      '<div class="card"><h3>Ученики класса (' + students.length + ')</h3>' +
+      '<div class="card">' +
+        '<div class="journal-header"><h3>Ученики класса (' + students.length + ')</h3>' +
+          '<button class="btn btn-secondary btn-sm" id="importStudentsBtn">📥 Импорт из CSV</button>' +
+        '</div>' +
         '<div class="students-list">' + studentChips + '</div>' +
         '<form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">' +
           '<input type="text" id="newStudentName" placeholder="Иванов Иван" value="' + escapeHtml(uiState.newStudentName) + '" style="flex:1; min-width:200px;">' +
           '<button type="submit" class="btn">Добавить ученика</button>' +
         '</form></div>' +
-
       renderScheduleCard(cls) +
-
       '<div class="card"><h3>Периоды</h3><div>' + periodRows +
         '<button class="btn btn-secondary" id="addPeriodBtn" type="button" style="margin-top:8px;">+ Добавить период</button>' +
       '</div></div>' +
-
       '<div class="card">' +
         '<div class="print-header" id="printHeader"></div>' +
         '<div class="journal-header"><h3>Журнал — ' + escapeHtml(cls) + '</h3>' +
@@ -1229,7 +1166,7 @@ function renderTeacher() {
   bindTeacherEvents();
   bindSortHandlers();
   bindBell();
-  bindScheduleEvents(cls);
+  bindScheduleEvents(cls, () => renderTeacher());
 }
 
 function bindTeacherEvents() {
@@ -1243,7 +1180,6 @@ function bindTeacherEvents() {
     printJournal(session.class, period.name);
   });
   document.getElementById('notifyPermBtn')?.addEventListener('click', requestNotificationPermission);
-
   document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
     const teacher = findTeacher(session.name);
     if (!teacher) return toast('Ошибка', true);
@@ -1257,7 +1193,6 @@ function bindTeacherEvents() {
     logAction('upd', 'Учитель сменил PIN');
     toast('PIN изменён');
   });
-
   document.getElementById('absenceForm').addEventListener('submit', e => {
     e.preventDefault();
     const date = document.getElementById('aDate').value;
@@ -1272,15 +1207,10 @@ function bindTeacherEvents() {
     toast('Запись добавлена');
     renderTeacher();
   });
-
-  // Авто-подстановка предметов при смене даты
   document.getElementById('aDate')?.addEventListener('change', e => {
-    const date = e.target.value;
-    const lessons = getLessonsFor(session.class, date);
-    const sel = document.getElementById('aSubject');
-    if (sel) sel.innerHTML = optionsHTML(lessons, '');
+    const lessons = getLessonsFor(session.class, e.target.value);
+    document.getElementById('aSubject').innerHTML = optionsHTML(lessons, '');
   });
-
   document.getElementById('searchInput')?.addEventListener('input', e => {
     uiState.searchQuery = e.target.value;
     clearTimeout(window._searchTimer);
@@ -1292,7 +1222,6 @@ function bindTeacherEvents() {
       if (ni) { ni.focus(); ni.setSelectionRange(pos, pos); }
     }, 300);
   });
-
   document.getElementById('fStudent').addEventListener('change', e => { uiState.filterStudent = e.target.value; renderTeacher(); });
   document.getElementById('fReason').addEventListener('change', e => { uiState.filterReason = e.target.value; renderTeacher(); });
   document.getElementById('fDate').addEventListener('change', e => { uiState.filterDate = e.target.value; renderTeacher(); });
@@ -1300,7 +1229,6 @@ function bindTeacherEvents() {
     uiState.filterReason = ''; uiState.filterStudent = ''; uiState.filterDate = ''; uiState.searchQuery = '';
     renderTeacher();
   });
-
   document.querySelectorAll('[data-reset-pin]').forEach(btn => {
     btn.addEventListener('click', () => {
       const st = data.students.find(s => s.id === btn.dataset.resetPin);
@@ -1310,7 +1238,6 @@ function bindTeacherEvents() {
       toast('PIN сброшен');
     });
   });
-
   document.querySelectorAll('[data-del-abs]').forEach(btn => {
     btn.addEventListener('click', () => {
       const abs = data.absences.find(a => a.id === btn.dataset.delAbs);
@@ -1320,7 +1247,7 @@ function bindTeacherEvents() {
       saveData(); toast('Удалено'); renderTeacher();
     });
   });
-
+  document.getElementById('importStudentsBtn')?.addEventListener('click', () => openImportModal(session.class));
   document.getElementById('addStudentForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = (document.getElementById('newStudentName').value || '').trim();
@@ -1334,7 +1261,6 @@ function bindTeacherEvents() {
     renderTeacher();
   });
   document.getElementById('newStudentName').addEventListener('input', e => { uiState.newStudentName = e.target.value; });
-
   document.querySelectorAll('[data-del-student]').forEach(btn => {
     btn.addEventListener('click', () => {
       const st = data.students.find(s => s.id === btn.dataset.delStudent);
@@ -1345,7 +1271,6 @@ function bindTeacherEvents() {
       saveData(); toast('Удалено'); renderTeacher();
     });
   });
-
   document.querySelectorAll('[data-pname]').forEach(inp => {
     inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pname].name = e.target.value.trim(); saveData(); });
   });
@@ -1372,9 +1297,7 @@ function bindTeacherEvents() {
   });
 }
 
-/* ============================================================
-   УЧЕНИК
-   ============================================================ */
+/* ============ УЧЕНИК ============ */
 function renderStudent() {
   const cls = session.class;
   let myAbsences = filterByPeriod(data.absences.filter(a => a.class === cls && a.studentName === session.name), cls);
@@ -1388,7 +1311,7 @@ function renderStudent() {
   app.innerHTML =
     topbarHTML('Личный кабинет ученика', '<button class="btn btn-secondary btn-sm" id="changePinBtn">Сменить PIN</button>') +
     '<div class="container">' +
-      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У вас ' + total + ' пропусков за период.</b><br>Пожалуйста, проверьте причины с классным руководителем.</div></div>' : '') +
+      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У вас ' + total + ' пропусков за период.</b></div></div>' : '') +
       '<div class="stats">' +
         '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
         '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уважительных</div></div>' +
@@ -1438,8 +1361,7 @@ function renderStudent() {
     saveData(); toast('Запись добавлена'); renderStudent();
   });
   document.getElementById('saDate')?.addEventListener('change', e => {
-    const lessons = getLessonsFor(cls, e.target.value);
-    document.getElementById('saSubject').innerHTML = optionsHTML(lessons, '');
+    document.getElementById('saSubject').innerHTML = optionsHTML(getLessonsFor(cls, e.target.value), '');
   });
   document.getElementById('periodSelect')?.addEventListener('change', e => {
     data.currentPeriod[session.class] = parseInt(e.target.value, 10);
@@ -1448,9 +1370,7 @@ function renderStudent() {
   bindSortHandlers();
 }
 
-/* ============================================================
-   РОДИТЕЛЬ
-   ============================================================ */
+/* ============ РОДИТЕЛЬ ============ */
 function renderParent() {
   const cls = session.class;
   const childName = session.name;
@@ -1465,7 +1385,7 @@ function renderParent() {
   app.innerHTML =
     topbarHTML('Кабинет родителя', '') +
     '<div class="container">' +
-      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У ' + escapeHtml(childName) + ' ' + total + ' пропусков за период.</b></div></div>' : '') +
+      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У ' + escapeHtml(childName) + ' ' + total + ' пропусков.</b></div></div>' : '') +
       '<div class="stats">' +
         '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
         '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уваж.</div></div>' +
@@ -1508,9 +1428,160 @@ function renderParent() {
   bindSortHandlers();
 }
 
-/* ============================================================
-   АДМИН
-   ============================================================ */
+/* ============ ИМПОРТ CSV ============ */
+function parseStudentsCSV(text, defaultClass) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!lines.length) return [];
+  const first = lines[0];
+  let sep = ';';
+  if (first.split('\t').length > first.split(';').length && first.split('\t').length > first.split(',').length) sep = '\t';
+  else if (first.split(',').length > first.split(';').length) sep = ',';
+  const firstRow = first.split(sep).map(s => s.trim().toLowerCase());
+  const hasHeader = firstRow.some(c => c.includes('фио') || c === 'имя' || c === 'ученик' || c === 'класс' || c === 'name' || c === 'class');
+  let nameIdx = 0, classIdx = -1;
+  if (hasHeader) {
+    firstRow.forEach((c, i) => {
+      if (c.includes('фио') || c === 'имя' || c === 'ученик' || c === 'name') nameIdx = i;
+      if (c.includes('класс') || c === 'class') classIdx = i;
+    });
+  }
+  const startIdx = hasHeader ? 1 : 0;
+  const result = [];
+  for (let i = startIdx; i < lines.length; i++) {
+    const parts = lines[i].split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
+    const name = parts[nameIdx] || '';
+    if (!name || name.length < 2) {
+      result.push({ name: parts.join(' '), cls: null, status: 'err', reason: 'Некорректное ФИО' });
+      continue;
+    }
+    let cls = defaultClass;
+    if (classIdx >= 0 && parts[classIdx]) {
+      cls = parts[classIdx].trim().toUpperCase().replace(/\s+/g, '');
+      if (!CLASSES.includes(cls)) {
+        result.push({ name, cls: parts[classIdx], status: 'err', reason: 'Класс "' + parts[classIdx] + '" не существует' });
+        continue;
+      }
+    }
+    const exists = data.students.some(s => s.class === cls && s.name.toLowerCase() === name.toLowerCase());
+    result.push({ name, cls, status: exists ? 'dup' : 'ok', reason: exists ? 'Уже есть в ' + cls : '' });
+  }
+  return result;
+}
+function openImportModal(defaultClass) {
+  const existing = document.getElementById('importModalOverlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'importModalOverlay';
+  overlay.innerHTML =
+    '<div class="modal" onclick="event.stopPropagation()">' +
+      '<div class="modal-header"><h3>📥 Импорт учеников из CSV</h3>' +
+        '<button class="modal-close" id="importCloseBtn">×</button></div>' +
+      '<div class="modal-body">' +
+        '<div class="drop-zone" id="dropZone">' +
+          '<div class="big-icon">📄</div>' +
+          '<div><b>Перетащите CSV-файл сюда</b><br>или нажмите, чтобы выбрать</div>' +
+          '<input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;">' +
+        '</div>' +
+        '<div id="importPreviewBox"></div>' +
+        '<div class="csv-hint">' +
+          '<b>Формат файла:</b><br>' +
+          '• Одна колонка — ФИО: <code>Иванов Иван</code><br>' +
+          '• Две колонки — ФИО;Класс: <code>Иванов Иван;7А</code><br>' +
+          '• С заголовком: <code>ФИО;Класс</code><br>' +
+          '• Разделитель: <code>;</code>, <code>,</code> или табуляция' +
+        '</div>' +
+        '<div style="margin-top:14px;">' +
+          '<label>Класс по умолчанию (если в файле не указан)</label>' +
+          '<select id="importDefaultClass">' + optionsHTML(CLASSES, defaultClass) + '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn btn-secondary" id="importCancelBtn">Отмена</button>' +
+        '<button class="btn" id="importConfirmBtn" disabled>Импортировать</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  let parsedRows = [];
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('csvFileInput');
+  const previewBox = document.getElementById('importPreviewBox');
+  const confirmBtn = document.getElementById('importConfirmBtn');
+  const defaultClassSel = document.getElementById('importDefaultClass');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleFile(f); });
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0]; if (f) handleFile(f);
+  });
+  defaultClassSel.addEventListener('change', () => {
+    if (window._lastCsvText) {
+      parsedRows = parseStudentsCSV(window._lastCsvText, defaultClassSel.value);
+      renderPreview();
+    }
+  });
+  function handleFile(file) {
+    if (file.size > 1024 * 1024) return toast('Файл больше 1 МБ', true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      window._lastCsvText = e.target.result;
+      parsedRows = parseStudentsCSV(e.target.result, defaultClassSel.value);
+      renderPreview();
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+  function renderPreview() {
+    if (!parsedRows.length) {
+      previewBox.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">Файл пуст</div>';
+      confirmBtn.disabled = true;
+      return;
+    }
+    const ok = parsedRows.filter(r => r.status === 'ok').length;
+    const dup = parsedRows.filter(r => r.status === 'dup').length;
+    const err = parsedRows.filter(r => r.status === 'err').length;
+    const rowsHTML = parsedRows.slice(0, 200).map(r => {
+      const cls = r.status === 'ok' ? 'ok' : (r.status === 'dup' ? 'dup' : 'err');
+      const icon = r.status === 'ok' ? '✓' : (r.status === 'dup' ? '⚠' : '✕');
+      const note = r.status === 'ok' ? 'будет добавлен' : (r.status === 'dup' ? 'уже есть' : r.reason);
+      return '<div class="import-row ' + cls + '">' +
+        '<span>' + icon + ' ' + escapeHtml(r.name) + ' <b style="color:#2563eb;">' + escapeHtml(r.cls || '') + '</b></span>' +
+        '<span>' + escapeHtml(note) + '</span></div>';
+    }).join('');
+    previewBox.innerHTML =
+      '<div class="import-summary">' +
+        '<span>Всего: <b>' + parsedRows.length + '</b></span>' +
+        '<span style="color:#166534;">Новых: <b>' + ok + '</b></span>' +
+        '<span style="color:#92400e;">Дубликатов: <b>' + dup + '</b></span>' +
+        '<span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span>' +
+      '</div>' +
+      '<div class="import-preview">' + rowsHTML + '</div>' +
+      (parsedRows.length > 200 ? '<p style="font-size:12px; color:#64748b; margin:8px 0 0;">Показано 200 из ' + parsedRows.length + '</p>' : '');
+    confirmBtn.disabled = ok === 0;
+    confirmBtn.textContent = ok > 0 ? 'Импортировать (' + ok + ')' : 'Импортировать';
+  }
+  function closeModal() { overlay.remove(); window._lastCsvText = null; }
+  document.getElementById('importCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('importCancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  confirmBtn.addEventListener('click', () => {
+    const toAdd = parsedRows.filter(r => r.status === 'ok');
+    if (!toAdd.length) return;
+    toAdd.forEach(r => {
+      data.students.push({ id: uid(), class: r.cls, name: r.name, pin: simpleHash('1234') });
+    });
+    logAction('add', 'Импортировано ' + toAdd.length + ' учеников из CSV');
+    saveData();
+    toast('Добавлено: ' + toAdd.length);
+    closeModal();
+    renderApp();
+  });
+}
+
+/* ============ АДМИН ============ */
 function renderAllClassesSummary() {
   const rows = CLASSES.map(cls => {
     ensurePeriods(cls);
@@ -1545,7 +1616,6 @@ function renderAdminClassStats(selectedClass) {
   const neutral = total - good - bad;
   const uniq = new Set(absences.map(a => a.studentName)).size;
   const inClass = data.students.filter(s => s.class === selectedClass).length;
-
   const byStudent = {};
   absences.forEach(a => { byStudent[a.studentName] = (byStudent[a.studentName] || 0) + 1; });
   const top = Object.entries(byStudent).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -1555,7 +1625,6 @@ function renderAdminClassStats(selectedClass) {
     topHTML = '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Топ-5</h4><div class="table-wrap" style="margin-bottom:20px;">' +
       '<table><thead><tr><th>#</th><th>Ученик</th><th>Пропусков</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
-
   return '<div class="card"><div class="print-header" id="printHeader"></div>' +
     '<div class="journal-header"><h3>Статистика класса</h3>' +
       '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
@@ -1604,13 +1673,12 @@ function renderHistoryLog() {
 }
 function renderBackupsCard() {
   return '<div class="card"><h3>💾 Резервные копии</h3>' +
-    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Автобэкап создаётся раз в день при входе в систему. Хранятся последние ' + BACKUP_KEEP_DAYS + ' дней.</p>' +
+    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Автобэкап создаётся раз в день при входе. Хранятся последние ' + BACKUP_KEEP_DAYS + ' дней.</p>' +
     '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">' +
-      '<button class="btn btn-secondary btn-sm" id="manualBackupBtn">💾 Создать бэкап сейчас</button>' +
+      '<button class="btn btn-secondary btn-sm" id="manualBackupBtn">💾 Создать бэкап</button>' +
       '<button class="btn btn-secondary btn-sm" id="refreshBackupsBtn">🔄 Обновить</button>' +
     '</div>' +
-    '<div class="backup-list" id="backupList"><div class="empty">Нажмите «Обновить» для загрузки</div></div>' +
-    '</div>';
+    '<div class="backup-list" id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';
 }
 
 function renderAdmin() {
@@ -1631,6 +1699,13 @@ function renderAdmin() {
   app.innerHTML =
     topbarHTML('Панель администратора', '') +
     '<div class="container">' +
+      '<div class="card">' +
+        '<div class="journal-header">' +
+          '<h3>📥 Импорт учеников из CSV</h3>' +
+          '<button class="btn" id="adminImportBtn">Выбрать файл</button>' +
+        '</div>' +
+        '<p style="font-size:13px; color:#64748b; margin:0;">Загрузите файл со списком учеников.</p>' +
+      '</div>' +
       '<div class="card"><h3>Зарегистрировать учителя</h3><form id="addTeacherForm">' +
         '<div class="form-grid">' +
           '<div><label for="newTeacherName">ФИО</label><input type="text" id="newTeacherName" required></div>' +
@@ -1642,11 +1717,23 @@ function renderAdmin() {
       '<div class="card"><h3>Учителя (' + teachers.length + ')</h3>' + tCard + '</div>' +
       renderAllClassesSummary() +
       renderAdminClassStats(uiState.adminSelectedClass || CLASSES[0]) +
+      '<div class="card">' +
+        '<div class="journal-header"><h3>📅 Расписание классов</h3>' +
+          '<div style="display:flex; gap:10px; align-items:center;">' +
+            '<select id="adminScheduleClass" class="period-select">' +
+              optionsHTML(CLASSES, uiState.scheduleEditClass || CLASSES[0]) +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Выберите класс и настройте уроки по дням недели.</p>' +
+        '<div id="adminScheduleBox"></div>' +
+      '</div>' +
       renderBackupsCard() +
       renderHistoryLog() +
     '</div>';
 
   bindLogout();
+  document.getElementById('adminImportBtn')?.addEventListener('click', () => openImportModal(CLASSES[0]));
   document.getElementById('addTeacherForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = document.getElementById('newTeacherName').value.trim();
@@ -1715,6 +1802,10 @@ function renderAdmin() {
     const period = getCurrentPeriod(cls);
     printJournal(cls, period.name);
   });
+  document.getElementById('adminScheduleClass')?.addEventListener('change', e => {
+    uiState.scheduleEditClass = e.target.value;
+    renderAdminScheduleBox();
+  });
   document.getElementById('logSearch')?.addEventListener('input', e => {
     uiState.logFilter = e.target.value;
     clearTimeout(window._logTimer);
@@ -1738,9 +1829,20 @@ function renderAdmin() {
     loadBackupList();
   });
   document.getElementById('refreshBackupsBtn')?.addEventListener('click', loadBackupList);
+
+  renderAdminScheduleBox();
   loadBackupList();
   bindSortHandlers();
   bindBell();
+}
+
+function renderAdminScheduleBox() {
+  const cls = uiState.scheduleEditClass || CLASSES[0];
+  ensureSchedule(cls);
+  const box = document.getElementById('adminScheduleBox');
+  if (!box) return;
+  box.innerHTML = renderScheduleInner(cls);
+  bindScheduleEvents(cls, () => renderAdminScheduleBox());
 }
 
 async function loadBackupList() {
@@ -1755,7 +1857,7 @@ async function loadBackupList() {
   list.innerHTML = backups.map(b =>
     '<div class="backup-item">' +
       '<div><b>' + escapeHtml(b.date) + '</b><br>' +
-        '<span style="font-size:11px; color:#64748b;">' + escapeHtml(formatDateTime(b.time)) + ' · учеников: ' + b.students + ' · пропусков: ' + b.absences + '</span></div>' +
+        '<span style="font-size:11px; color:#64748b;">' + escapeHtml(formatDateTime(b.time)) + ' · уч.: ' + b.students + ' · проп.: ' + b.absences + '</span></div>' +
       '<button class="btn btn-secondary btn-sm" data-restore="' + escapeHtml(b.date) + '">Восстановить</button>' +
     '</div>').join('');
   document.querySelectorAll('[data-restore]').forEach(btn => {
@@ -1772,9 +1874,56 @@ async function loadBackupList() {
   });
 }
 
-/* ============================================================
-   СТАРТ
-   ============================================================ */
+/* ============ PWA ============ */
+(function setupPwaManifest() {
+  const iconSvg = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">' +
+    '<rect width="192" height="192" rx="36" fill="#1e293b"/>' +
+    '<text x="96" y="128" font-size="100" text-anchor="middle">🎓</text></svg>'
+  );
+  const manifest = {
+    name: 'Учёт пропусков', short_name: 'Пропуски',
+    description: 'Школьная система учёта пропусков и причин',
+    start_url: '.', scope: '.', display: 'standalone', orientation: 'portrait',
+    background_color: '#eef2f7', theme_color: '#1e293b', lang: 'ru',
+    icons: [
+      { src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('manifestLink');
+  if (link) link.href = url;
+})();
+
+if ('serviceWorker' in navigator) {
+  const swCode = "self.addEventListener('install',e=>self.skipWaiting());" +
+    "self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));" +
+    "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;" +
+    "e.respondWith(caches.open('v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(_){}return res}).catch(()=>c.match('/')))))});";
+  try {
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  } catch (e) {}
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) btn.classList.add('show');
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) btn.classList.remove('show');
+  deferredPrompt = null;
+  toast('Приложение установлено');
+});
+
+/* ============ СТАРТ ============ */
 (async function startApp() {
   document.getElementById('installPwaBtn')?.addEventListener('click', async () => {
     if (!deferredPrompt) return toast('Установка недоступна', true);
@@ -1785,25 +1934,31 @@ async function loadBackupList() {
     document.getElementById('installPwaBtn').classList.remove('show');
   });
 
-  await new Promise(resolve => {
-    const start = Date.now();
-    const check = () => {
-      if (window.firebaseDB !== undefined) return resolve();
-      if (Date.now() - start > 3000) return resolve();
-      setTimeout(check, 50);
-    };
-    check();
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const m = document.getElementById('importModalOverlay');
+      if (m) m.remove();
+    }
   });
-
-  await initFirebaseSync();
-  firebaseReady = true;
-  updateStatusBadge();
 
   session = loadSession();
   renderApp();
 
-  // Автобэкап при загрузке (если сегодня не делали)
-  setTimeout(() => runAutoBackup(false), 2000);
+  setTimeout(async () => {
+    await new Promise(resolve => {
+      const start = Date.now();
+      const check = () => {
+        if (window.firebaseDB !== undefined) return resolve();
+        if (Date.now() - start > 3000) return resolve();
+        setTimeout(check, 50);
+      };
+      check();
+    });
+    await initFirebaseSync();
+    subscribeToFirebase();
+    updateStatusBadge();
+    setTimeout(() => runAutoBackup(false), 5000);
+  }, 100);
 })();
 </script>
 </body>
