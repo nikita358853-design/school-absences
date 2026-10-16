@@ -37,7 +37,7 @@
 
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #eef2f7; color: #1f2937; min-height: 100vh; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #eef2f7; color: #1f2937; min-height: 100vh; -webkit-text-size-adjust: 100%; }
   .loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748b; }
   .loading .spin { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -88,11 +88,11 @@
   .source-tag.student { background: #fef3c7; color: #92400e; }
   .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
   .filter-bar > * { flex: 1; min-width: 140px; }
-  .table-wrap { overflow-x: auto; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
   .form-grid .full { grid-column: 1 / -1; }
   .form-grid label { margin-top: 0; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: #16a34a; color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.15); font-size: 14px; opacity: 0; transform: translateY(20px); transition: all .25s; pointer-events: none; z-index: 1000; }
+  .toast { position: fixed; bottom: 24px; right: 24px; left: 24px; max-width: 400px; margin-left: auto; background: #16a34a; color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.15); font-size: 14px; opacity: 0; transform: translateY(20px); transition: all .25s; pointer-events: none; z-index: 1000; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.error { background: #dc2626; }
   .students-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -104,10 +104,113 @@
   .journal-header h3 { margin: 0; }
   .periods-editor-row { display: grid; grid-template-columns: 1fr 150px 150px 40px; gap: 10px; margin-bottom: 10px; align-items: center; }
   .student-self { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; }
-  @media (max-width: 640px) {
-    .topbar { padding: 12px 16px; }
-    .container { padding: 16px; }
-    .login-card { padding: 24px; }
+
+  /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
+  @media (max-width: 768px) {
+    .login-wrap { padding: 16px; }
+    .login-card { padding: 22px 18px; border-radius: 12px; }
+    .login-card h1 { font-size: 22px; }
+    .subtitle { font-size: 13px; margin-bottom: 18px; }
+    .role-tabs { gap: 4px; }
+    .role-tab { font-size: 12px; padding: 8px 4px; min-width: 0; }
+
+    .topbar { padding: 12px 14px; flex-direction: column; align-items: stretch; gap: 10px; }
+    .topbar h2 { font-size: 15px; text-align: center; }
+    .topbar .user-info { justify-content: center; gap: 8px; font-size: 13px; }
+    .topbar .user-info > span:first-child { width: 100%; text-align: center; font-weight: 500; }
+    .topbar .user-info .badge { font-size: 11px; padding: 3px 8px; }
+    .topbar .user-info .btn-sm { flex: 1; padding: 8px 10px; font-size: 12px; }
+
+    .container { padding: 12px; }
+    .card { padding: 16px; border-radius: 10px; margin-bottom: 12px; }
+    .card h3 { font-size: 15px; margin-bottom: 12px; }
+
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat { padding: 12px; border-radius: 10px; }
+    .stat .num { font-size: 22px; }
+    .stat .lbl { font-size: 11px; }
+
+    .form-grid { grid-template-columns: 1fr; gap: 10px; }
+
+    .filter-bar { gap: 8px; }
+    .filter-bar > * { min-width: 0; flex: 1 1 100%; }
+
+    /* Таблицы превращаются в карточки */
+    .table-wrap { overflow: visible; }
+    .table-wrap table thead { display: none; }
+    .table-wrap table,
+    .table-wrap table tbody,
+    .table-wrap table tr,
+    .table-wrap table td { display: block; width: 100%; }
+    .table-wrap table tr {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .table-wrap table tr:hover td { background: transparent; }
+    .table-wrap table td {
+      border: none;
+      padding: 5px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      text-align: right;
+    }
+    .table-wrap table td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #64748b;
+      font-size: 12px;
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .table-wrap table td:last-child {
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .table-wrap table td:last-child::before { content: none; }
+
+    .journal-header { flex-direction: column; align-items: stretch; gap: 10px; }
+    .journal-header > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+    .journal-header .period-select { flex: 1; }
+    .period-dates { font-size: 12px; white-space: normal; }
+
+    .periods-editor-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+    }
+    .periods-editor-row button { width: 100%; }
+
+    .students-list { gap: 6px; }
+    .student-chip { font-size: 12px; padding: 5px 10px; gap: 6px; }
+
+    .btn { padding: 10px 14px; font-size: 13px; }
+
+    .card > div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+    canvas { max-width: 100% !important; }
+
+    .reason-tag { font-size: 11px; padding: 2px 7px; }
+    .source-tag { font-size: 10px; padding: 2px 6px; margin-left: 4px; display: inline-block; margin-top: 2px; }
+  }
+
+  @media (max-width: 380px) {
+    .stats { grid-template-columns: 1fr; }
+    .topbar .user-info .btn-sm { font-size: 11px; padding: 7px 8px; }
   }
 </style>
 </head>
@@ -480,12 +583,12 @@ function renderAbsencesTable(rows, withActions) {
       ? '<span class="source-tag student">добавил ученик</span>'
       : '<span class="source-tag teacher">добавил учитель</span>';
     let row = '<tr>';
-    row += '<td>' + escapeHtml(formatDate(a.date)) + '</td>';
-    row += '<td>' + escapeHtml(a.studentName) + '</td>';
-    row += '<td>' + escapeHtml(a.class) + '</td>';
-    row += '<td>' + escapeHtml(a.subject) + '</td>';
-    row += '<td><span class="reason-tag ' + r.type + '">' + escapeHtml(r.name) + '</span>' + srcLabel + '</td>';
-    row += '<td>' + escapeHtml(a.note || '—') + '</td>';
+    row += '<td data-label="Дата">' + escapeHtml(formatDate(a.date)) + '</td>';
+    row += '<td data-label="ФИО">' + escapeHtml(a.studentName) + '</td>';
+    row += '<td data-label="Класс">' + escapeHtml(a.class) + '</td>';
+    row += '<td data-label="Предмет">' + escapeHtml(a.subject) + '</td>';
+    row += '<td data-label="Причина"><span class="reason-tag ' + r.type + '">' + escapeHtml(r.name) + '</span>' + srcLabel + '</td>';
+    row += '<td data-label="Примечание">' + escapeHtml(a.note || '—') + '</td>';
     if (withActions) row += '<td><button class="btn btn-danger btn-sm" data-del-abs="' + a.id + '">Удалить</button></td>';
     row += '</tr>';
     return row;
@@ -959,21 +1062,22 @@ function renderAllClassesSummary() {
   const grandBad = rows.reduce((s, r) => s + r.bad, 0);
 
   const body = rows.map(r =>
-    '<tr><td><b>' + escapeHtml(r.cls) + '</b></td>' +
-    '<td style="font-size:13px; color:#64748b;">' + escapeHtml(r.teacher) + '</td>' +
-    '<td>' + r.students + '</td><td>' + r.total + '</td>' +
-    '<td style="color:#166534;">' + r.good + '</td>' +
-    '<td style="color:#991b1b;">' + r.bad + '</td></tr>'
+    '<tr><td data-label="Класс"><b>' + escapeHtml(r.cls) + '</b></td>' +
+    '<td data-label="Кл. рук." style="font-size:13px; color:#64748b;">' + escapeHtml(r.teacher) + '</td>' +
+    '<td data-label="Учеников">' + r.students + '</td>' +
+    '<td data-label="Всего">' + r.total + '</td>' +
+    '<td data-label="Уваж." style="color:#166534;">' + r.good + '</td>' +
+    '<td data-label="Неуваж." style="color:#991b1b;">' + r.bad + '</td></tr>'
   ).join('');
 
   return '<div class="card"><h3>Сводная по всем классам</h3>' +
     '<div class="table-wrap"><table><thead><tr>' +
     '<th>Класс</th><th>Классный руководитель</th><th>Учеников</th><th>Всего пропусков</th><th>Уважительных</th><th>Неуважительных</th>' +
     '</tr></thead><tbody>' + body +
-    '<tr style="font-weight:700; background:#f1f5f9;"><td colspan="3">ИТОГО</td>' +
-    '<td>' + grandTotal + '</td>' +
-    '<td style="color:#166534;">' + grandGood + '</td>' +
-    '<td style="color:#991b1b;">' + grandBad + '</td></tr>' +
+    '<tr style="font-weight:700; background:#f1f5f9;"><td colspan="3" data-label="">ИТОГО</td>' +
+    '<td data-label="Всего">' + grandTotal + '</td>' +
+    '<td data-label="Уваж." style="color:#166534;">' + grandGood + '</td>' +
+    '<td data-label="Неуваж." style="color:#991b1b;">' + grandBad + '</td></tr>' +
     '</tbody></table></div></div>';
 }
 
@@ -996,7 +1100,7 @@ function renderAdminClassStats(selectedClass) {
   let topHTML = '';
   if (topStudents.length) {
     const rows = topStudents.map(([name, count], i) =>
-      '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(name) + '</td><td><b>' + count + '</b></td></tr>'
+      '<tr><td data-label="#">' + (i + 1) + '</td><td data-label="Ученик">' + escapeHtml(name) + '</td><td data-label="Пропусков"><b>' + count + '</b></td></tr>'
     ).join('');
     topHTML = '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Топ-5 учеников по пропускам</h4>' +
       '<div class="table-wrap" style="margin-bottom:20px;"><table>' +
@@ -1035,9 +1139,9 @@ function renderAdmin() {
     teachersCardHTML = '<div class="empty">Пока нет зарегистрированных учителей</div>';
   } else {
     const rows = teachers.map(t =>
-      '<tr><td><b>' + escapeHtml(t.name) + '</b></td>' +
-      '<td><select data-tclass="' + escapeHtml(t.name) + '" style="padding:6px 10px;">' + optionsHTML(CLASSES, t.class) + '</select></td>' +
-      '<td><button class="btn btn-secondary btn-sm" data-treset="' + escapeHtml(t.name) + '">Сбросить на 1234</button></td>' +
+      '<tr><td data-label="ФИО"><b>' + escapeHtml(t.name) + '</b></td>' +
+      '<td data-label="Класс"><select data-tclass="' + escapeHtml(t.name) + '" style="padding:6px 10px;">' + optionsHTML(CLASSES, t.class) + '</select></td>' +
+      '<td data-label="PIN"><button class="btn btn-secondary btn-sm" data-treset="' + escapeHtml(t.name) + '">Сбросить на 1234</button></td>' +
       '<td><button class="btn btn-danger btn-sm" data-tdel="' + escapeHtml(t.name) + '">Удалить</button></td></tr>'
     ).join('');
     teachersCardHTML = '<div class="table-wrap"><table>' +
