@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Пропуски">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%231e293b%22/><text x=%2250%22 y=%2265%22 font-size=%2255%22 text-anchor=%22middle%22>🎓</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 rx=%2236%22 fill=%22%231e293b%22/><text x=%2296%22 y=%22128%22 font-size=%22100%22 text-anchor=%22middle%22>🎓</text></svg>">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -34,7 +34,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     window.firebaseDB = { db, ref, set, onValue, get, remove };
-    console.log('✓ Firebase Realtime Database подключена');
+    console.log('✓ Firebase подключена');
   } catch (e) {
     console.error('Firebase error:', e);
     window.firebaseDB = null;
@@ -136,17 +136,31 @@
   .log-action.del { background: #fee2e2; color: #991b1b; }
   .log-action.upd { background: #fef3c7; color: #92400e; }
   .log-action.login { background: #dbeafe; color: #1e40af; }
+  .log-action.backup { background: #ede9fe; color: #5b21b6; }
 
-  /* Предупреждение о многих пропусках */
   .warning-banner { background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #dc2626; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
   .warning-banner .warn-icon { font-size: 24px; flex-shrink: 0; }
   .warning-banner .warn-text { flex: 1; font-size: 13px; color: #7f1d1d; }
   .warning-banner .warn-text b { font-size: 14px; }
 
-  /* PWA install button */
   .pwa-install-btn { display: none; position: fixed; bottom: 20px; left: 20px; background: #2563eb; color: #fff; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(37,99,235,.35); border: none; cursor: pointer; font-weight: 600; font-size: 14px; z-index: 500; align-items: center; gap: 8px; }
   .pwa-install-btn:hover { background: #1d4ed8; }
   .pwa-install-btn.show { display: flex; }
+
+  /* Расписание */
+  .schedule-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .schedule-day { background: #f8fafc; border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0; }
+  .schedule-day-title { font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #cbd5e1; }
+  .schedule-lesson { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .schedule-lesson-num { font-size: 11px; color: #94a3b8; width: 16px; text-align: right; flex-shrink: 0; }
+  .schedule-lesson select { flex: 1; padding: 6px 8px; font-size: 12px; }
+  .schedule-lesson button { background: transparent; border: none; color: #dc2626; cursor: pointer; font-size: 15px; padding: 0 4px; }
+  .schedule-add { background: transparent; border: 1px dashed #cbd5e1; color: #64748b; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%; margin-top: 4px; }
+  .schedule-add:hover { border-color: #2563eb; color: #2563eb; }
+
+  .backup-list { max-height: 300px; overflow-y: auto; }
+  .backup-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+  .backup-item:last-child { border-bottom: none; }
 
   @media (max-width: 768px) {
     .login-wrap { padding: 16px; }
@@ -197,6 +211,7 @@
     .source-tag { font-size: 10px; padding: 2px 6px; margin-left: 4px; display: inline-block; margin-top: 2px; }
     .warning-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
     .pwa-install-btn { bottom: 12px; left: 12px; right: 12px; justify-content: center; }
+    .schedule-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 380px) {
@@ -204,7 +219,6 @@
     .topbar .user-info .btn-sm { font-size: 11px; padding: 7px 8px; }
   }
 
-  /* ПЕЧАТЬ */
   .print-header { display: none; }
   .print-signature { display: none; }
   @media print {
@@ -214,10 +228,7 @@
     .card { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 0 12px 0 !important; page-break-inside: avoid; }
     .card h3 { display: none !important; }
     .card > h4 { display: none !important; }
-    .stats { display: none !important; }
-    .filter-bar { display: none !important; }
-    .journal-header { display: none !important; }
-    .btn { display: none !important; }
+    .stats, .filter-bar, .journal-header, .btn { display: none !important; }
     .container { max-width: 100% !important; padding: 0 !important; }
     .table-wrap { overflow: visible !important; }
     table { font-size: 11px !important; width: 100% !important; }
@@ -227,7 +238,6 @@
     tr.problem-row { background: none !important; }
     .reason-tag { background: none !important; color: #000 !important; padding: 0 !important; border: none !important; font-weight: 600; }
     .source-tag { display: none !important; }
-    .parent-comment-tag { color: #000; }
     .problem-badge { background: none !important; color: #000 !important; padding: 0 !important; }
     .warning-banner, .pwa-install-btn { display: none !important; }
     .print-header { display: block !important; margin-bottom: 14px; border-bottom: 2px solid #000; padding-bottom: 8px; }
@@ -258,7 +268,8 @@ const SESSION_KEY = 'school_absence_session';
 const FB_PATH = 'schoolData';
 const BACKUP_PATH = 'backups';
 const BACKUP_KEEP_DAYS = 30;
-const ABSENCE_WARNING_THRESHOLD = 5; // порог "много пропусков"
+const ABSENCE_WARNING_THRESHOLD = 5;
+const DAYS_OF_WEEK = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
 const CLASSES = (() => {
   const arr = [];
@@ -292,7 +303,7 @@ const REASONS = [
 function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASONS.length - 1]; }
 
 /* ============================================================
-   PWA MANIFEST (inline через Blob)
+   PWA
    ============================================================ */
 (function setupPwaManifest() {
   const iconSvg = 'data:image/svg+xml,' + encodeURIComponent(
@@ -302,16 +313,10 @@ function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASO
     '</svg>'
   );
   const manifest = {
-    name: 'Учёт пропусков',
-    short_name: 'Пропуски',
+    name: 'Учёт пропусков', short_name: 'Пропуски',
     description: 'Школьная система учёта пропусков и причин',
-    start_url: '.',
-    scope: '.',
-    display: 'standalone',
-    orientation: 'portrait',
-    background_color: '#eef2f7',
-    theme_color: '#1e293b',
-    lang: 'ru',
+    start_url: '.', scope: '.', display: 'standalone', orientation: 'portrait',
+    background_color: '#eef2f7', theme_color: '#1e293b', lang: 'ru',
     icons: [
       { src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
       { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
@@ -323,7 +328,19 @@ function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASO
   if (link) link.href = url;
 })();
 
-// PWA install
+// Регистрация service worker через Blob (для офлайн)
+if ('serviceWorker' in navigator) {
+  const swCode = "self.addEventListener('install',e=>self.skipWaiting());" +
+    "self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));" +
+    "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;" +
+    "e.respondWith(caches.open('v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(_){}return res}).catch(()=>c.match('/')))))});";
+  try {
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  } catch (e) {}
+}
+
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -331,33 +348,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
   const btn = document.getElementById('installPwaBtn');
   if (btn) btn.classList.add('show');
 });
-
 window.addEventListener('appinstalled', () => {
   const btn = document.getElementById('installPwaBtn');
   if (btn) btn.classList.remove('show');
   deferredPrompt = null;
-  toast('Приложение установлено на телефон');
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('installPwaBtn');
-  if (btn) {
-    btn.addEventListener('click', async () => {
-      if (!deferredPrompt) {
-        toast('Установка недоступна — откройте сайт в Chrome или Safari', true);
-        return;
-      }
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') toast('Устанавливаем приложение...');
-      deferredPrompt = null;
-      btn.classList.remove('show');
-    });
-  }
+  toast('Приложение установлено');
 });
 
 /* ============================================================
-   БАЗОВЫЕ УТИЛИТЫ
+   УТИЛИТЫ
    ============================================================ */
 function simpleHash(str) {
   let h = 0;
@@ -365,11 +364,47 @@ function simpleHash(str) {
   return 'h' + Math.abs(h).toString(36);
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function optionsHTML(items, selected, valueKey) {
+  return items.map(item => {
+    const val = valueKey ? item[valueKey] : item;
+    const label = valueKey ? item.name : item;
+    return '<option value="' + escapeHtml(val) + '"' + (val === selected ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
+  }).join('');
+}
+function toast(msg, isError, isWarn) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : (isWarn ? ' warn' : ''));
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'toast'; }, 2500);
+}
+function todayISO() { const d = new Date(); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+function formatDate(iso) { if (!iso) return ''; const p = iso.split('-'); return p[2] + '.' + p[1] + '.' + p[0]; }
+function formatDateTime(iso) {
+  if (!iso) return '';
+  try { const d = new Date(iso); return d.toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }); } catch (e) { return iso; }
+}
+function getStudentsOfClass(cls) { return data.students.filter(s => s.class === cls).sort((a, b) => a.name.localeCompare(b.name, 'ru')); }
+function getDayOfWeek(dateISO) {
+  if (!dateISO) return null;
+  try {
+    const d = new Date(dateISO + 'T00:00:00');
+    const idx = d.getDay();
+    return DAYS_OF_WEEK[(idx + 6) % 7];
+  } catch (e) { return null; }
+}
+
+/* ============================================================
+   ДАННЫЕ
+   ============================================================ */
 function buildSeedData() {
   const names = ['Иванов Иван','Петрова Мария','Сидоров Пётр','Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'];
   const students = [];
   for (const c of CLASSES) for (const n of names) students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
-  return { students, absences: [], teachers: [], parents: [], periods: {}, currentPeriod: {}, log: [], notifications: [] };
+  return { students, absences: [], teachers: [], parents: [], periods: {}, currentPeriod: {}, schedules: {}, log: [], notifications: [] };
 }
 function loadLocalData() {
   try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
@@ -381,11 +416,13 @@ if (!data.teachers) data.teachers = [];
 if (!data.parents) data.parents = [];
 if (!data.periods) data.periods = {};
 if (!data.currentPeriod) data.currentPeriod = {};
+if (!data.schedules) data.schedules = {};
 if (!data.log) data.log = [];
 if (!data.notifications) data.notifications = [];
 
 let firebaseReady = false;
 let firebaseConnected = false;
+let session = null;
 
 /* ============================================================
    СОХРАНЕНИЕ
@@ -402,7 +439,6 @@ function saveData() {
       firebaseConnected = true; updateStatusBadge();
     } catch (e) {
       firebaseConnected = false; updateStatusBadge();
-      console.error('Firebase save error:', e);
     }
   }, 400);
 }
@@ -415,22 +451,15 @@ async function runAutoBackup(force) {
   const today = todayISO();
   const lastBackup = localStorage.getItem('last_backup_date');
   if (!force && lastBackup === today) return;
-
   try {
     const { db, ref, set, get, remove } = window.firebaseDB;
-
-    // 1. Получаем список существующих бэкапов
     const snap = await get(ref(db, BACKUP_PATH));
     const existing = snap.val() || {};
     const keys = Object.keys(existing).sort();
-
-    // 2. Удаляем старые (оставляем последние BACKUP_KEEP_DAYS)
     while (keys.length >= BACKUP_KEEP_DAYS) {
       const oldest = keys.shift();
       try { await remove(ref(db, BACKUP_PATH + '/' + oldest)); } catch (e) {}
     }
-
-    // 3. Сохраняем сегодняшний бэкап
     await set(ref(db, BACKUP_PATH + '/' + today), {
       time: new Date().toISOString(),
       studentsCount: data.students.length,
@@ -438,12 +467,9 @@ async function runAutoBackup(force) {
       teachersCount: data.teachers.length,
       data: data
     });
-
     localStorage.setItem('last_backup_date', today);
-    console.log('✓ Автобэкап создан: ' + today);
-  } catch (e) {
-    console.warn('Backup error:', e);
-  }
+    console.log('✓ Автобэкап: ' + today);
+  } catch (e) { console.warn('Backup error:', e); }
 }
 
 async function listBackups() {
@@ -453,8 +479,7 @@ async function listBackups() {
     const snap = await get(ref(db, BACKUP_PATH));
     const val = snap.val() || {};
     return Object.entries(val).map(([date, info]) => ({
-      date,
-      time: info.time,
+      date, time: info.time,
       students: info.studentsCount || 0,
       absences: info.absencesCount || 0,
       teachers: info.teachersCount || 0
@@ -470,17 +495,20 @@ async function restoreBackup(date) {
     const val = snap.val();
     if (!val || !val.data) return false;
     data = val.data;
+    if (!data.teachers) data.teachers = [];
+    if (!data.periods) data.periods = {};
+    if (!data.currentPeriod) data.currentPeriod = {};
+    if (!data.schedules) data.schedules = {};
     if (!data.log) data.log = [];
     if (!data.notifications) data.notifications = [];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     saveData();
-    logAction('upd', 'Восстановлена база из бэкапа ' + date);
     return true;
   } catch (e) { return false; }
 }
 
 /* ============================================================
-   ИСТОРИЯ ИЗМЕНЕНИЙ
+   ЛОГ
    ============================================================ */
 function logAction(action, details) {
   if (!data.log) data.log = [];
@@ -488,8 +516,7 @@ function logAction(action, details) {
     time: new Date().toISOString(),
     user: session ? session.name : '—',
     role: session ? session.role : '—',
-    action: action,
-    details: details || ''
+    action, details: details || ''
   });
   if (data.log.length > 500) data.log = data.log.slice(-500);
   saveData();
@@ -499,32 +526,25 @@ function logAction(action, details) {
    УВЕДОМЛЕНИЯ
    ============================================================ */
 function requestNotificationPermission() {
-  if (!('Notification' in window)) return toast('Браузер не поддерживает уведомления', true);
+  if (!('Notification' in window)) return toast('Не поддерживается', true);
   if (Notification.permission === 'default') {
     Notification.requestPermission().then(p => {
       if (p === 'granted') toast('Уведомления включены');
-      else toast('Уведомления отклонены', true);
+      else toast('Отклонено', true);
     });
-  } else if (Notification.permission === 'granted') {
-    toast('Уведомления уже включены');
-  } else {
-    toast('Уведомления заблокированы в настройках браузера', true);
-  }
+  } else if (Notification.permission === 'granted') toast('Уже включены');
+  else toast('Заблокированы в браузере', true);
 }
-
 function showNativeNotification(title, body) {
-  if (!('Notification' in window)) return;
-  if (Notification.permission !== 'granted') return;
-  try { new Notification(title, { body: body, icon: document.querySelector('link[rel="apple-touch-icon"]').href }); } catch (e) {}
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try { new Notification(title, { body: body }); } catch (e) {}
 }
-
 function pushNotification(toRole, toUser, message, detail) {
   if (!data.notifications) data.notifications = [];
   data.notifications.push({
     id: uid(), toRole, toUser, message, detail: detail || '',
     from: session ? session.name : '—',
-    time: new Date().toISOString(),
-    read: false
+    time: new Date().toISOString(), read: false
   });
   if (data.notifications.length > 100) data.notifications = data.notifications.slice(-100);
   saveData();
@@ -532,7 +552,6 @@ function pushNotification(toRole, toUser, message, detail) {
     showNativeNotification('Учёт пропусков', message);
   }
 }
-
 function getMyNotifications() {
   if (!session || !data.notifications) return [];
   return data.notifications
@@ -550,22 +569,17 @@ function markAllRead() {
 }
 
 /* ============================================================
-   СИНХРОНИЗАЦИЯ
+   FIREBASE SYNC
    ============================================================ */
 async function initFirebaseSync() {
   if (!window.firebaseDB) { firebaseReady = true; return false; }
   const { db, ref, set, onValue } = window.firebaseDB;
   const dataRef = ref(db, FB_PATH);
-
   return new Promise((resolve) => {
     let firstLoad = true;
     onValue(dataRef, (snap) => {
       const incoming = snap.val();
-      if (!incoming) {
-        const seeded = buildSeedData();
-        set(dataRef, seeded).then(() => {});
-        return;
-      }
+      if (!incoming) { set(dataRef, buildSeedData()).then(() => {}); return; }
       if (incoming.students || incoming.absences) {
         data = {
           students: incoming.students || [],
@@ -574,6 +588,7 @@ async function initFirebaseSync() {
           parents: incoming.parents || [],
           periods: incoming.periods || {},
           currentPeriod: incoming.currentPeriod || {},
+          schedules: incoming.schedules || {},
           log: incoming.log || [],
           notifications: incoming.notifications || []
         };
@@ -584,13 +599,12 @@ async function initFirebaseSync() {
       if (firstLoad) { firstLoad = false; resolve(true); }
       else if (session) renderApp();
     }, (error) => {
-      console.error('Firebase subscribe error:', error);
+      console.error('Firebase error:', error);
       firebaseConnected = false; updateStatusBadge(); resolve(false);
     });
     setTimeout(() => resolve(false), 5000);
   });
 }
-
 function updateStatusBadge() {
   const badge = document.getElementById('syncStatus');
   if (!badge) return;
@@ -620,7 +634,6 @@ function defaultPeriodsForClass(cls) {
     { name: 'Весь год',     start: y1 + '-09-01', end: y2 + '-05-31' }
   ];
 }
-
 function ensurePeriods(cls) {
   if (!data.periods) data.periods = {};
   if (!data.periods[cls]) data.periods[cls] = defaultPeriodsForClass(cls);
@@ -644,32 +657,24 @@ function periodSelectorHTML(cls) {
 }
 
 /* ============================================================
-   УТИЛИТЫ
+   РАСПИСАНИЕ
    ============================================================ */
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+function ensureSchedule(cls) {
+  if (!data.schedules) data.schedules = {};
+  if (!data.schedules[cls]) {
+    const empty = {};
+    DAYS_OF_WEEK.forEach(d => empty[d] = []);
+    data.schedules[cls] = empty;
+    saveData();
+  }
 }
-function optionsHTML(items, selected, valueKey) {
-  return items.map(item => {
-    const val = valueKey ? item[valueKey] : item;
-    const label = valueKey ? item.name : item;
-    return '<option value="' + escapeHtml(val) + '"' + (val === selected ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
-  }).join('');
+function getLessonsFor(cls, dateISO) {
+  const day = getDayOfWeek(dateISO);
+  if (!day) return getSubjects(cls);
+  const schedule = data.schedules && data.schedules[cls] && data.schedules[cls][day];
+  if (schedule && schedule.length) return schedule;
+  return getSubjects(cls);
 }
-function toast(msg, isError) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.className = 'toast'; }, 2200);
-}
-function todayISO() { const d = new Date(); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
-function formatDate(iso) { if (!iso) return ''; const p = iso.split('-'); return p[2] + '.' + p[1] + '.' + p[0]; }
-function formatDateTime(iso) {
-  if (!iso) return '';
-  try { const d = new Date(iso); return d.toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }); } catch (e) { return iso; }
-}
-function getStudentsOfClass(cls) { return data.students.filter(s => s.class === cls).sort((a, b) => a.name.localeCompare(b.name, 'ru')); }
 
 /* ============================================================
    ПРЕДУПРЕЖДЕНИЕ "МНОГО ПРОПУСКОВ"
@@ -677,18 +682,14 @@ function getStudentsOfClass(cls) { return data.students.filter(s => s.class === 
 function getProblemStudents(absences) {
   const counts = {};
   absences.forEach(a => { counts[a.studentName] = (counts[a.studentName] || 0) + 1; });
-  return Object.entries(counts)
-    .filter(([_, n]) => n >= ABSENCE_WARNING_THRESHOLD)
-    .map(([name, n]) => ({ name, count: n }))
-    .sort((a, b) => b.count - a.count);
+  return Object.entries(counts).filter(([_, n]) => n >= ABSENCE_WARNING_THRESHOLD)
+    .map(([name, n]) => ({ name, count: n })).sort((a, b) => b.count - a.count);
 }
-
 function problemNamesSet(absences) {
   const s = new Set();
   getProblemStudents(absences).forEach(p => s.add(p.name));
   return s;
 }
-
 function warningBannerHTML(absences) {
   const problems = getProblemStudents(absences);
   if (!problems.length) return '';
@@ -697,10 +698,9 @@ function warningBannerHTML(absences) {
   return '<div class="warning-banner">' +
     '<div class="warn-icon">⚠️</div>' +
     '<div class="warn-text">' +
-      '<b>Внимание! Много пропусков (≥ ' + ABSENCE_WARNING_THRESHOLD + ') у ' + problems.length + ' учеников:</b><br>' +
+      '<b>Много пропусков (≥ ' + ABSENCE_WARNING_THRESHOLD + ') у ' + problems.length + ' учеников:</b><br>' +
       escapeHtml(names + more) +
-    '</div>' +
-    '</div>';
+    '</div></div>';
 }
 
 /* ============================================================
@@ -724,8 +724,8 @@ function drawCharts(absences, canvasPrefix) {
   const monthCounts = {};
   absences.forEach(a => { const m = a.date.slice(0, 7); monthCounts[m] = (monthCounts[m] || 0) + 1; });
   const sortedMonths = Object.keys(monthCounts).sort();
-  const monthNames = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-  const monthLabels = sortedMonths.map(m => { const p = m.split('-'); return monthNames[+p[1] - 1] + ' ' + p[0].slice(2); });
+  const mn = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+  const monthLabels = sortedMonths.map(m => { const p = m.split('-'); return mn[+p[1] - 1] + ' ' + p[0].slice(2); });
   const barCanvas = document.getElementById(canvasPrefix + 'MonthChart');
   if (barCanvas) {
     window._charts.push(new Chart(barCanvas, {
@@ -800,7 +800,6 @@ function applySearch(rows) {
 function renderAbsencesTable(rows, withActions, withParentComment, problemNames) {
   if (!rows.length) return '<div class="empty">Записей нет</div>';
   problemNames = problemNames || new Set();
-
   const arrowDate = uiState.sortBy === 'date' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowName = uiState.sortBy === 'name' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowReason = uiState.sortBy === 'reason' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
@@ -813,7 +812,6 @@ function renderAbsencesTable(rows, withActions, withParentComment, problemNames)
     const commentHTML = a.parentComment ? '<span class="parent-comment-tag">💬 Родитель: ' + escapeHtml(a.parentComment) + '</span>' : '';
     const isProblem = problemNames.has(a.studentName);
     const problemBadge = isProblem ? '<span class="problem-badge">⚠ Много</span>' : '';
-
     let row = '<tr' + (isProblem ? ' class="problem-row"' : '') + '>';
     row += '<td data-label="Дата">' + escapeHtml(formatDate(a.date)) + '</td>';
     row += '<td data-label="ФИО">' + escapeHtml(a.studentName) + problemBadge + '</td>';
@@ -828,21 +826,16 @@ function renderAbsencesTable(rows, withActions, withParentComment, problemNames)
     row += '</tr>';
     return row;
   }).join('');
-
   const parentCol = withParentComment && session.role === 'parent' ? '<th></th>' : '';
-
   return '<table><thead><tr>' +
     '<th class="sortable" data-sort="date">Дата<span class="sort-arrow ' + (uiState.sortBy === 'date' ? 'active' : '') + '">' + arrowDate + '</span></th>' +
-    '<th class="sortable" data-sort="name">ФИО ученика<span class="sort-arrow ' + (uiState.sortBy === 'name' ? 'active' : '') + '">' + arrowName + '</span></th>' +
+    '<th class="sortable" data-sort="name">ФИО<span class="sort-arrow ' + (uiState.sortBy === 'name' ? 'active' : '') + '">' + arrowName + '</span></th>' +
     '<th>Класс</th>' +
     '<th class="sortable" data-sort="subject">Предмет</th>' +
     '<th class="sortable" data-sort="reason">Причина<span class="sort-arrow ' + (uiState.sortBy === 'reason' ? 'active' : '') + '">' + arrowReason + '</span></th>' +
-    '<th>Примечание</th>' +
-    parentCol +
-    (withActions ? '<th></th>' : '') +
+    '<th>Примечание</th>' + parentCol + (withActions ? '<th></th>' : '') +
     '</tr></thead><tbody>' + body + '</tbody></table>';
 }
-
 function bindSortHandlers() {
   document.querySelectorAll('th.sortable').forEach(th => {
     th.addEventListener('click', () => {
@@ -862,7 +855,6 @@ function bellHTML() {
   if (count === 0) return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn">🔔</button></div>';
   return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn">🔔<span class="bell-count">' + count + '</span></button></div>';
 }
-
 function bindBell() {
   const btn = document.getElementById('bellBtn');
   if (!btn) return;
@@ -879,9 +871,7 @@ function bindBell() {
       '<div class="notif-item' + (n.read ? '' : ' unread') + '">' +
       '<div class="n-title">' + escapeHtml(n.message) + '</div>' +
       (n.detail ? '<div class="n-text">' + escapeHtml(n.detail) + '</div>' : '') +
-      '<div class="n-time">' + escapeHtml(formatDateTime(n.time)) + '</div>' +
-      '</div>'
-    ).join('');
+      '<div class="n-time">' + escapeHtml(formatDateTime(n.time)) + '</div></div>').join('');
     document.body.appendChild(panel);
     markAllRead();
     setTimeout(() => {
@@ -897,8 +887,6 @@ function bindBell() {
 /* ============================================================
    СЕССИЯ
    ============================================================ */
-let session = null;
-
 function saveSession() {
   if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   else localStorage.removeItem(SESSION_KEY);
@@ -920,11 +908,13 @@ function loadSession() {
     return s;
   } catch (e) { return null; }
 }
-
 let loginState = { role: 'teacher', teacherName: '', teacherClass: CLASSES[0], studentClass: CLASSES[0], studentName: '' };
-
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
 function isAdminPassword(pwd) { return simpleHash(pwd) === ADMIN_PASSWORD_HASH; }
+function findTeacher(name) {
+  if (!data.teachers) data.teachers = [];
+  return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase());
+}
 
 /* ============================================================
    ГЛАВНЫЙ РЕНДЕР
@@ -956,7 +946,7 @@ function renderLogin() {
     formHTML = '<label for="adminPwd">Пароль администратора</label>' +
       '<input type="password" id="adminPwd" placeholder="••••••••" required autocomplete="off">';
   } else {
-    const sNamesHTML = studentNames.length ? optionsHTML(studentNames, loginState.studentName) : '<option>— в классе нет учеников —</option>';
+    const sNamesHTML = studentNames.length ? optionsHTML(studentNames, loginState.studentName) : '<option>— нет —</option>';
     formHTML = '<label for="sClass">Класс</label>' +
       '<select id="sClass">' + optionsHTML(CLASSES, loginState.studentClass) + '</select>' +
       '<label for="sName">ФИО ' + (loginState.role === 'parent' ? 'ребёнка' : 'ученика') + '</label>' +
@@ -974,17 +964,15 @@ function renderLogin() {
       '<button class="role-tab ' + (loginState.role === 'admin' ? 'active' : '') + '" data-role="admin">Админ</button>' +
     '</div>' +
     '<form id="loginForm">' + formHTML +
-    '<button type="submit" class="btn btn-full">Войти в систему</button>' +
+    '<button type="submit" class="btn btn-full">Войти</button>' +
     '<div style="text-align:center; margin-top:14px;"><a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">Забыли PIN?</a></div>' +
     '<div style="text-align:center; margin-top:12px; font-size:12px; color:#64748b;" id="syncStatus"></div>' +
     '</form></div></div>';
 
   updateStatusBadge();
-
   document.querySelectorAll('.role-tab').forEach(tab => {
     tab.addEventListener('click', () => { loginState.role = tab.dataset.role; renderLogin(); });
   });
-
   const tName = document.getElementById('tName');
   const sClass = document.getElementById('sClass');
   const sName = document.getElementById('sName');
@@ -997,72 +985,137 @@ function renderLogin() {
     if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
       const pinValue = (document.getElementById('tPin')?.value || '').trim();
-      if (!name) return toast('Введите ФИО', true);
-      if (!pinValue) return toast('Введите PIN-код', true);
+      if (!name || !pinValue) return toast('Заполните поля', true);
       const teacher = findTeacher(name);
       if (!teacher) return toast('Учитель не зарегистрирован', true);
       if (simpleHash(pinValue) !== teacher.pin) {
         document.getElementById('tPin').value = '';
-        return toast('Неверный PIN-код', true);
+        return toast('Неверный PIN', true);
       }
       session = { role: 'teacher', name: teacher.name, class: teacher.class };
-      logAction('login', 'Учитель вошёл в систему');
     } else if (loginState.role === 'admin') {
       const pwd = document.getElementById('adminPwd').value;
-      if (!pwd) return toast('Введите пароль', true);
       if (!isAdminPassword(pwd)) return toast('Неверный пароль', true);
       session = { role: 'admin', name: 'Администратор' };
-      logAction('login', 'Администратор вошёл');
     } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
       const st = data.students.find(s => s.class === sClass.value && s.name === loginState.studentName);
       if (!st) return toast('Ученик не найден', true);
       if (!st.pin) { st.pin = simpleHash('1234'); saveData(); toast('PIN по умолчанию: 1234'); }
-      const entered = prompt('Введите PIN для "' + st.name + '"\n\nЕсли не меняли — введите 1234');
+      const entered = prompt('Введите PIN для "' + st.name + '"');
       if (entered === null) return;
       if (simpleHash(entered) !== st.pin) return toast('Неверный PIN', true);
       session = { role: loginState.role, name: loginState.studentName, class: sClass.value };
-      logAction('login', (loginState.role === 'parent' ? 'Родитель' : 'Ученик') + ' вошёл');
     }
     ensurePeriods(session.class);
+    if (session.class) ensureSchedule(session.class);
     saveSession();
+    logAction('login', session.role + ' вошёл');
     uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0], searchQuery: '', sortBy: 'date', sortDir: 'desc', logFilter: '' };
     renderApp();
+    runAutoBackup(false);
   });
 
   const forgot = document.getElementById('forgotPin');
   if (forgot) {
     forgot.addEventListener('click', (e) => {
       e.preventDefault();
-      const master = prompt('Мастер-пароль для сброса PIN\n(по умолчанию: school21)');
-      if (master !== 'school21') return toast('Неверный мастер-пароль', true);
+      const master = prompt('Мастер-пароль (по умолчанию: school21)');
+      if (master !== 'school21') return toast('Неверный', true);
       const targetName = prompt('Чьё ФИО сбросить?');
       if (!targetName) return;
       const t = findTeacher(targetName);
       const s = data.students.find(st => st.name.toLowerCase() === targetName.toLowerCase());
-      if (t) { t.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN учителя ' + t.name); toast('PIN учителя сброшен'); }
-      else if (s) { s.pin = simpleHash('1234'); saveData(); logAction('upd', 'Сброшен PIN ученика ' + s.name); toast('PIN ученика сброшен'); }
-      else toast('Пользователь не найден', true);
+      if (t) { t.pin = simpleHash('1234'); saveData(); toast('PIN сброшен'); }
+      else if (s) { s.pin = simpleHash('1234'); saveData(); toast('PIN сброшен'); }
+      else toast('Не найден', true);
     });
   }
 }
 
-function findTeacher(name) {
-  if (!data.teachers) data.teachers = [];
-  return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase());
-}
-
-function topbarHTML(title, extraUserInfo) {
+/* ============================================================
+   ШАПКА
+   ============================================================ */
+function topbarHTML(title, extra) {
   const showBell = session.role === 'teacher' || session.role === 'admin';
-  return '<div class="topbar">' +
-    '<h2>' + escapeHtml(title) + '</h2>' +
+  return '<div class="topbar"><h2>' + escapeHtml(title) + '</h2>' +
     '<div class="user-info">' +
       '<span>' + escapeHtml(session.name) + '</span>' +
       (session.class ? '<span class="badge">' + escapeHtml(session.class) + '</span>' : '') +
-      extraUserInfo +
+      (extra || '') +
       (showBell ? bellHTML() : '') +
       '<button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>' +
     '</div></div>';
+}
+function bindLogout() {
+  document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    logAction('login', 'Выход');
+    session = null; saveSession(); renderApp();
+  });
+}
+
+/* ============================================================
+   КАРТОЧКА РАСПИСАНИЯ (для учителя)
+   ============================================================ */
+function renderScheduleCard(cls) {
+  ensureSchedule(cls);
+  const schedule = data.schedules[cls];
+  const subjects = getSubjects(cls);
+
+  const daysHTML = DAYS_OF_WEEK.map(day => {
+    const lessons = schedule[day] || [];
+    const lessonsHTML = lessons.map((lesson, idx) =>
+      '<div class="schedule-lesson">' +
+        '<span class="schedule-lesson-num">' + (idx + 1) + '.</span>' +
+        '<select data-sched-day="' + day + '" data-sched-idx="' + idx + '">' + optionsHTML(subjects, lesson) + '</select>' +
+        '<button data-sched-del="' + day + '|' + idx + '">×</button>' +
+      '</div>').join('');
+    return '<div class="schedule-day">' +
+      '<div class="schedule-day-title">' + day + '</div>' +
+      lessonsHTML +
+      '<button class="schedule-add" data-sched-add="' + day + '">+ Добавить урок</button>' +
+      '</div>';
+  }).join('');
+
+  return '<div class="card"><h3>📅 Расписание — ' + escapeHtml(cls) + '</h3>' +
+    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Уроки по дням недели. Предметы подставляются автоматически при добавлении пропуска.</p>' +
+    '<div class="schedule-grid">' + daysHTML + '</div>' +
+    '<button class="btn btn-secondary btn-sm" id="clearScheduleBtn" style="margin-top:12px;">Очистить всё расписание</button>' +
+    '</div>';
+}
+
+function bindScheduleEvents(cls) {
+  document.querySelectorAll('[data-sched-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const day = btn.dataset.schedAdd;
+      ensureSchedule(cls);
+      if (!data.schedules[cls][day]) data.schedules[cls][day] = [];
+      if (data.schedules[cls][day].length >= 10) return toast('Максимум 10 уроков', true);
+      data.schedules[cls][day].push(getSubjects(cls)[0]);
+      saveData(); renderTeacher();
+    });
+  });
+  document.querySelectorAll('[data-sched-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parts = btn.dataset.schedDel.split('|');
+      const day = parts[0], idx = +parts[1];
+      data.schedules[cls][day].splice(idx, 1);
+      saveData(); renderTeacher();
+    });
+  });
+  document.querySelectorAll('[data-sched-day]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const day = sel.dataset.schedDay, idx = +sel.dataset.schedIdx;
+      data.schedules[cls][day][idx] = e.target.value;
+      saveData();
+    });
+  });
+  document.getElementById('clearScheduleBtn')?.addEventListener('click', () => {
+    if (!confirm('Очистить всё расписание ' + cls + '?')) return;
+    const empty = {}; DAYS_OF_WEEK.forEach(d => empty[d] = []);
+    data.schedules[cls] = empty;
+    saveData(); renderTeacher();
+  });
 }
 
 /* ============================================================
@@ -1072,9 +1125,7 @@ function renderTeacher() {
   const cls = session.class;
   const students = getStudentsOfClass(cls);
   const subjects = getSubjects(cls);
-
   const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
-
   let absences = absencesAll.filter(a => {
     if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
     if (uiState.filterStudent && a.studentName !== uiState.filterStudent) return false;
@@ -1094,8 +1145,8 @@ function renderTeacher() {
     ? students.map(s => {
         const isProblem = problemNames.has(s.name);
         return '<span class="student-chip' + (isProblem ? ' problem' : '') + '">' + escapeHtml(s.name) +
-          '<button data-reset-pin="' + s.id + '" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>' +
-          '<button data-del-student="' + s.id + '" title="Удалить">×</button></span>';
+          '<button data-reset-pin="' + s.id + '" style="color:#f59e0b;">🔑</button>' +
+          '<button data-del-student="' + s.id + '">×</button></span>';
       }).join('')
     : '<div class="empty">Пока нет учеников.</div>';
 
@@ -1105,22 +1156,18 @@ function renderTeacher() {
       '<input type="date" value="' + p.start + '" data-pstart="' + i + '">' +
       '<input type="date" value="' + p.end + '" data-pend="' + i + '">' +
       '<button class="btn btn-danger btn-sm" data-pdel="' + i + '"' + (data.periods[cls].length <= 1 ? ' disabled' : '') + '>×</button>' +
-    '</div>'
-  ).join('');
+    '</div>').join('');
 
   const app = document.getElementById('app');
   app.innerHTML =
-    topbarHTML('Учёт пропусков — панель классного руководителя',
-      '<button class="btn btn-secondary btn-sm" id="changeTeacherPinBtn">Сменить PIN</button>') +
-
+    topbarHTML('Панель классного руководителя', '<button class="btn btn-secondary btn-sm" id="changeTeacherPinBtn">Сменить PIN</button>') +
     '<div class="container">' +
       warningBannerHTML(absencesAll) +
-
       '<div class="stats">' +
         '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего пропусков</div></div>' +
         '<div class="stat"><div class="num">' + goodCount + '</div><div class="lbl">Уважительных</div></div>' +
         '<div class="stat"><div class="num">' + badCount + '</div><div class="lbl">Неуважительных</div></div>' +
-        '<div class="stat"><div class="num">' + uniqueStudents + '</div><div class="lbl">Учеников с пропусками</div></div>' +
+        '<div class="stat"><div class="num">' + uniqueStudents + '</div><div class="lbl">Учеников</div></div>' +
       '</div>' +
 
       '<div class="card"><h3>Аналитика за период</h3>' +
@@ -1133,9 +1180,631 @@ function renderTeacher() {
         '<div class="form-grid">' +
           '<div><label for="aDate">Дата</label><input type="date" id="aDate" value="' + todayISO() + '" required></div>' +
           '<div><label for="aStudent">ФИО ученика</label><select id="aStudent" required' + (students.length ? '' : ' disabled') + '>' +
-            (students.length ? optionsHTML(students.map(s => s.name), '') : '<option>— нет учеников —</option>') + '</select></div>' +
-          '<div><label for="aSubject">Предмет</label><select id="aSubject" required>' + optionsHTML(subjects, '') + '</select></div>' +
+            (students.length ? optionsHTML(students.map(s => s.name), '') : '<option>— нет —</option>') + '</select></div>' +
+          '<div><label for="aSubject">Предмет</label><select id="aSubject" required>' +
+            optionsHTML(getLessonsFor(cls, todayISO()), '') + '</select></div>' +
           '<div><label for="aReason">Причина</label><select id="aReason" required>' + optionsHTML(REASONS, '', 'id') + '</select></div>' +
-          '<div class="full"><label for="aNote">Примечание</label><input type="text" id="aNote" placeholder="Например: справка №123"></div>' +
+          '<div class="full"><label for="aNote">Примечание</label><input type="text" id="aNote" placeholder="Справка №123"></div>' +
         '</div>' +
-        '<button type="submit" class="btn" style="margin-top:16px;"' + (students.length ? '' : ' disabled') + '
+        '<button type="submit" class="btn" style="margin-top:16px;"' + (students.length ? '' : ' disabled') + '>Добавить</button>' +
+      '</form></div>' +
+
+      '<div class="card"><h3>Ученики класса (' + students.length + ')</h3>' +
+        '<div class="students-list">' + studentChips + '</div>' +
+        '<form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">' +
+          '<input type="text" id="newStudentName" placeholder="Иванов Иван" value="' + escapeHtml(uiState.newStudentName) + '" style="flex:1; min-width:200px;">' +
+          '<button type="submit" class="btn">Добавить ученика</button>' +
+        '</form></div>' +
+
+      renderScheduleCard(cls) +
+
+      '<div class="card"><h3>Периоды</h3><div>' + periodRows +
+        '<button class="btn btn-secondary" id="addPeriodBtn" type="button" style="margin-top:8px;">+ Добавить период</button>' +
+      '</div></div>' +
+
+      '<div class="card">' +
+        '<div class="print-header" id="printHeader"></div>' +
+        '<div class="journal-header"><h3>Журнал — ' + escapeHtml(cls) + '</h3>' +
+          '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
+            periodSelectorHTML(cls) +
+            '<button class="btn btn-secondary btn-sm" id="notifyPermBtn">🔔</button>' +
+            '<button class="btn btn-secondary btn-sm" id="printBtn">🖨 Печать</button>' +
+          '</div>' +
+        '</div>' +
+        '<input type="text" id="searchInput" placeholder="🔍 Поиск по ФИО..." value="' + escapeHtml(uiState.searchQuery) + '" style="margin-bottom:12px;">' +
+        '<div class="filter-bar">' +
+          '<select id="fStudent"><option value="">Все ученики</option>' + optionsHTML(students.map(s => s.name), uiState.filterStudent) + '</select>' +
+          '<select id="fReason"><option value="">Все причины</option>' +
+            REASONS.map(r => '<option value="' + r.id + '"' + (uiState.filterReason === r.id ? ' selected' : '') + '>' + escapeHtml(r.name) + '</option>').join('') +
+          '</select>' +
+          '<input type="date" id="fDate" value="' + uiState.filterDate + '">' +
+          '<button class="btn btn-secondary" id="clearFilters" type="button">Сбросить</button>' +
+        '</div>' +
+        '<div class="table-wrap">' + renderAbsencesTable(absences, true, false, problemNames) + '</div>' +
+        '<div class="print-signature" id="printSignature"></div>' +
+      '</div>' +
+    '</div>';
+
+  drawCharts(absencesAll, 't');
+  bindTeacherEvents();
+  bindSortHandlers();
+  bindBell();
+  bindScheduleEvents(cls);
+}
+
+function bindTeacherEvents() {
+  bindLogout();
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
+    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
+    saveData(); renderTeacher();
+  });
+  document.getElementById('printBtn')?.addEventListener('click', () => {
+    const period = getCurrentPeriod(session.class);
+    printJournal(session.class, period.name);
+  });
+  document.getElementById('notifyPermBtn')?.addEventListener('click', requestNotificationPermission);
+
+  document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
+    const teacher = findTeacher(session.name);
+    if (!teacher) return toast('Ошибка', true);
+    const oldPin = prompt('Текущий PIN:');
+    if (oldPin === null || simpleHash(oldPin) !== teacher.pin) return toast('Неверный PIN', true);
+    const newPin = prompt('Новый PIN (4+ цифры):');
+    if (!newPin || !/^\d{4,}$/.test(newPin)) return toast('Минимум 4 цифры', true);
+    if (prompt('Повторите:') !== newPin) return toast('Не совпадает', true);
+    teacher.pin = simpleHash(newPin);
+    saveData();
+    logAction('upd', 'Учитель сменил PIN');
+    toast('PIN изменён');
+  });
+
+  document.getElementById('absenceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = document.getElementById('aDate').value;
+    const studentName = document.getElementById('aStudent').value;
+    const subject = document.getElementById('aSubject').value;
+    const reason = document.getElementById('aReason').value;
+    const note = document.getElementById('aNote').value.trim();
+    if (!date || !studentName || !subject || !reason) return toast('Заполните поля', true);
+    data.absences.push({ id: uid(), date, class: session.class, studentName, subject, reason, note, addedBy: session.name, addedByRole: 'teacher' });
+    logAction('add', 'Пропуск: ' + studentName + ' (' + date + ')');
+    saveData();
+    toast('Запись добавлена');
+    renderTeacher();
+  });
+
+  // Авто-подстановка предметов при смене даты
+  document.getElementById('aDate')?.addEventListener('change', e => {
+    const date = e.target.value;
+    const lessons = getLessonsFor(session.class, date);
+    const sel = document.getElementById('aSubject');
+    if (sel) sel.innerHTML = optionsHTML(lessons, '');
+  });
+
+  document.getElementById('searchInput')?.addEventListener('input', e => {
+    uiState.searchQuery = e.target.value;
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => {
+      const input = document.getElementById('searchInput');
+      const pos = input ? input.selectionStart : 0;
+      renderTeacher();
+      const ni = document.getElementById('searchInput');
+      if (ni) { ni.focus(); ni.setSelectionRange(pos, pos); }
+    }, 300);
+  });
+
+  document.getElementById('fStudent').addEventListener('change', e => { uiState.filterStudent = e.target.value; renderTeacher(); });
+  document.getElementById('fReason').addEventListener('change', e => { uiState.filterReason = e.target.value; renderTeacher(); });
+  document.getElementById('fDate').addEventListener('change', e => { uiState.filterDate = e.target.value; renderTeacher(); });
+  document.getElementById('clearFilters').addEventListener('click', () => {
+    uiState.filterReason = ''; uiState.filterStudent = ''; uiState.filterDate = ''; uiState.searchQuery = '';
+    renderTeacher();
+  });
+
+  document.querySelectorAll('[data-reset-pin]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const st = data.students.find(s => s.id === btn.dataset.resetPin);
+      if (!st || !confirm('Сбросить PIN "' + st.name + '"?')) return;
+      st.pin = simpleHash('1234'); saveData();
+      logAction('upd', 'Сброшен PIN ' + st.name);
+      toast('PIN сброшен');
+    });
+  });
+
+  document.querySelectorAll('[data-del-abs]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const abs = data.absences.find(a => a.id === btn.dataset.delAbs);
+      if (!abs || !confirm('Удалить запись?')) return;
+      data.absences = data.absences.filter(a => a.id !== btn.dataset.delAbs);
+      logAction('del', 'Удалён пропуск ' + abs.studentName + ' (' + formatDate(abs.date) + ')');
+      saveData(); toast('Удалено'); renderTeacher();
+    });
+  });
+
+  document.getElementById('addStudentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = (document.getElementById('newStudentName').value || '').trim();
+    if (!name) return toast('Введите ФИО', true);
+    if (data.students.some(s => s.class === session.class && s.name.toLowerCase() === name.toLowerCase())) return toast('Уже есть', true);
+    data.students.push({ id: uid(), class: session.class, name, pin: simpleHash('1234') });
+    logAction('add', 'Ученик ' + name + ' в ' + session.class);
+    saveData();
+    uiState.newStudentName = '';
+    toast('Ученик добавлен');
+    renderTeacher();
+  });
+  document.getElementById('newStudentName').addEventListener('input', e => { uiState.newStudentName = e.target.value; });
+
+  document.querySelectorAll('[data-del-student]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const st = data.students.find(s => s.id === btn.dataset.delStudent);
+      if (!st || !confirm('Удалить ученика "' + st.name + '"?')) return;
+      data.students = data.students.filter(s => s.id !== st.id);
+      data.absences = data.absences.filter(a => !(a.class === st.class && a.studentName === st.name));
+      logAction('del', 'Ученик ' + st.name);
+      saveData(); toast('Удалено'); renderTeacher();
+    });
+  });
+
+  document.querySelectorAll('[data-pname]').forEach(inp => {
+    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pname].name = e.target.value.trim(); saveData(); });
+  });
+  document.querySelectorAll('[data-pstart]').forEach(inp => {
+    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pstart].start = e.target.value; saveData(); });
+  });
+  document.querySelectorAll('[data-pend]').forEach(inp => {
+    inp.addEventListener('change', e => { data.periods[session.class][+e.target.dataset.pend].end = e.target.value; saveData(); });
+  });
+  document.querySelectorAll('[data-pdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.pdel;
+      if (!confirm('Удалить период?')) return;
+      data.periods[session.class].splice(i, 1);
+      if (data.currentPeriod[session.class] >= data.periods[session.class].length) data.currentPeriod[session.class] = data.periods[session.class].length - 1;
+      saveData(); renderTeacher();
+    });
+  });
+  document.getElementById('addPeriodBtn')?.addEventListener('click', () => {
+    const list = data.periods[session.class];
+    const last = list[list.length - 1];
+    list.push({ name: 'Новый период', start: last?.end || todayISO(), end: last?.end || todayISO() });
+    saveData(); renderTeacher();
+  });
+}
+
+/* ============================================================
+   УЧЕНИК
+   ============================================================ */
+function renderStudent() {
+  const cls = session.class;
+  let myAbsences = filterByPeriod(data.absences.filter(a => a.class === cls && a.studentName === session.name), cls);
+  myAbsences = sortAbsences(myAbsences);
+  const problemNames = problemNamesSet(myAbsences);
+  const total = myAbsences.length;
+  const good = myAbsences.filter(a => reasonById(a.reason).type === 'good').length;
+  const bad = myAbsences.filter(a => reasonById(a.reason).type === 'bad').length;
+
+  const app = document.getElementById('app');
+  app.innerHTML =
+    topbarHTML('Личный кабинет ученика', '<button class="btn btn-secondary btn-sm" id="changePinBtn">Сменить PIN</button>') +
+    '<div class="container">' +
+      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У вас ' + total + ' пропусков за период.</b><br>Пожалуйста, проверьте причины с классным руководителем.</div></div>' : '') +
+      '<div class="stats">' +
+        '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
+        '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уважительных</div></div>' +
+        '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуважительных</div></div>' +
+      '</div>' +
+      '<div class="card"><h3>Добавить свой пропуск</h3><form id="studentAbsenceForm">' +
+        '<div class="form-grid">' +
+          '<div class="full"><div class="student-self">ФИО: <b>' + escapeHtml(session.name) + '</b> · Класс: <b>' + escapeHtml(cls) + '</b></div></div>' +
+          '<div><label for="saDate">Дата</label><input type="date" id="saDate" value="' + todayISO() + '" required></div>' +
+          '<div><label for="saSubject">Предмет</label><select id="saSubject" required>' + optionsHTML(getLessonsFor(cls, todayISO()), '') + '</select></div>' +
+          '<div><label for="saReason">Причина</label><select id="saReason" required>' + optionsHTML(REASONS, '', 'id') + '</select></div>' +
+          '<div class="full"><label for="saNote">Примечание</label><input type="text" id="saNote" placeholder="Необязательно"></div>' +
+        '</div>' +
+        '<button type="submit" class="btn" style="margin-top:16px;">Добавить</button>' +
+      '</form></div>' +
+      '<div class="card">' +
+        '<div class="journal-header"><h3>Мои пропуски</h3>' +
+          '<div style="display:flex; gap:10px; align-items:center;">' + periodSelectorHTML(cls) + '</div>' +
+        '</div>' +
+        '<div class="table-wrap">' + renderAbsencesTable(myAbsences, false, false, problemNames) + '</div>' +
+      '</div>' +
+    '</div>';
+
+  bindLogout();
+  document.getElementById('changePinBtn')?.addEventListener('click', () => {
+    const st = data.students.find(s => s.class === session.class && s.name === session.name);
+    if (!st) return toast('Ошибка', true);
+    const oldPin = prompt('Текущий PIN:');
+    if (oldPin === null || simpleHash(oldPin) !== st.pin) return toast('Неверный', true);
+    const newPin = prompt('Новый PIN (4+):');
+    if (!newPin || !/^\d{4,}$/.test(newPin)) return toast('Минимум 4 цифры', true);
+    if (prompt('Повторите:') !== newPin) return toast('Не совпадает', true);
+    st.pin = simpleHash(newPin);
+    saveData(); toast('PIN изменён');
+  });
+  document.getElementById('studentAbsenceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = document.getElementById('saDate').value;
+    const subject = document.getElementById('saSubject').value;
+    const reason = document.getElementById('saReason').value;
+    const note = document.getElementById('saNote').value.trim();
+    if (!date || !subject || !reason) return toast('Заполните поля', true);
+    data.absences.push({ id: uid(), date, class: cls, studentName: session.name, subject, reason, note, addedBy: session.name, addedByRole: 'student' });
+    logAction('add', 'Ученик ' + session.name + ' добавил пропуск');
+    const teacher = (data.teachers || []).find(t => t.class === cls);
+    if (teacher) pushNotification('teacher', teacher.name, session.name + ' добавил пропуск', formatDate(date) + ' — ' + reasonById(reason).name);
+    saveData(); toast('Запись добавлена'); renderStudent();
+  });
+  document.getElementById('saDate')?.addEventListener('change', e => {
+    const lessons = getLessonsFor(cls, e.target.value);
+    document.getElementById('saSubject').innerHTML = optionsHTML(lessons, '');
+  });
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
+    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
+    saveData(); renderStudent();
+  });
+  bindSortHandlers();
+}
+
+/* ============================================================
+   РОДИТЕЛЬ
+   ============================================================ */
+function renderParent() {
+  const cls = session.class;
+  const childName = session.name;
+  let absences = filterByPeriod(data.absences.filter(a => a.class === cls && a.studentName === childName), cls);
+  absences = sortAbsences(absences);
+  const problemNames = problemNamesSet(absences);
+  const total = absences.length;
+  const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
+  const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
+
+  const app = document.getElementById('app');
+  app.innerHTML =
+    topbarHTML('Кабинет родителя', '') +
+    '<div class="container">' +
+      (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У ' + escapeHtml(childName) + ' ' + total + ' пропусков за период.</b></div></div>' : '') +
+      '<div class="stats">' +
+        '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
+        '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уваж.</div></div>' +
+        '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуваж.</div></div>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="student-self" style="margin-bottom:16px;">Ребёнок: <b>' + escapeHtml(childName) + '</b> · Класс: <b>' + escapeHtml(cls) + '</b></div>' +
+        '<div class="print-header" id="printHeader"></div>' +
+        '<div class="journal-header"><h3>Пропуски</h3>' +
+          '<div style="display:flex; gap:10px; align-items:center;">' + periodSelectorHTML(cls) +
+            '<button class="btn btn-secondary btn-sm" id="parentPrintBtn">🖨 Печать</button></div>' +
+        '</div>' +
+        '<div class="table-wrap">' + renderAbsencesTable(absences, false, true, problemNames) + '</div>' +
+        '<div class="print-signature" id="printSignature"></div>' +
+      '</div>' +
+    '</div>';
+
+  bindLogout();
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
+    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
+    saveData(); renderParent();
+  });
+  document.getElementById('parentPrintBtn')?.addEventListener('click', () => {
+    const period = getCurrentPeriod(cls);
+    printJournal(cls, period.name, { studentName: childName });
+  });
+  document.querySelectorAll('[data-parent-comment]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const abs = data.absences.find(a => a.id === btn.dataset.parentComment);
+      if (!abs) return;
+      const current = abs.parentComment || '';
+      const comment = prompt('Комментарий к пропуску:', current);
+      if (comment === null) return;
+      if (comment.trim()) abs.parentComment = comment.trim();
+      else delete abs.parentComment;
+      logAction('upd', 'Родитель ' + childName + ' прокомментировал пропуск');
+      saveData(); toast('Сохранено'); renderParent();
+    });
+  });
+  bindSortHandlers();
+}
+
+/* ============================================================
+   АДМИН
+   ============================================================ */
+function renderAllClassesSummary() {
+  const rows = CLASSES.map(cls => {
+    ensurePeriods(cls);
+    const absences = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
+    const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
+    const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
+    const teacher = (data.teachers || []).find(t => t.class === cls);
+    return { cls, total: absences.length, good, bad, students: data.students.filter(s => s.class === cls).length, teacher: teacher ? teacher.name : '—' };
+  });
+  const gT = rows.reduce((s, r) => s + r.total, 0);
+  const gG = rows.reduce((s, r) => s + r.good, 0);
+  const gB = rows.reduce((s, r) => s + r.bad, 0);
+  const body = rows.map(r => '<tr><td data-label="Класс"><b>' + escapeHtml(r.cls) + '</b></td>' +
+    '<td data-label="Кл. рук." style="font-size:13px; color:#64748b;">' + escapeHtml(r.teacher) + '</td>' +
+    '<td data-label="Учеников">' + r.students + '</td><td data-label="Всего">' + r.total + '</td>' +
+    '<td data-label="Уваж." style="color:#166534;">' + r.good + '</td>' +
+    '<td data-label="Неуваж." style="color:#991b1b;">' + r.bad + '</td></tr>').join('');
+  return '<div class="card"><h3>Сводная по классам</h3><div class="table-wrap"><table><thead><tr>' +
+    '<th>Класс</th><th>Кл. руководитель</th><th>Учеников</th><th>Всего</th><th>Уваж.</th><th>Неуваж.</th>' +
+    '</tr></thead><tbody>' + body +
+    '<tr style="font-weight:700; background:#f1f5f9;"><td colspan="3" data-label="">ИТОГО</td><td data-label="Всего">' + gT + '</td>' +
+    '<td data-label="Уваж." style="color:#166534;">' + gG + '</td>' +
+    '<td data-label="Неуваж." style="color:#991b1b;">' + gB + '</td></tr></tbody></table></div></div>';
+}
+function renderAdminClassStats(selectedClass) {
+  ensurePeriods(selectedClass);
+  const absences = filterByPeriod(data.absences.filter(a => a.class === selectedClass), selectedClass).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const problemNames = problemNamesSet(absences);
+  const total = absences.length;
+  const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
+  const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
+  const neutral = total - good - bad;
+  const uniq = new Set(absences.map(a => a.studentName)).size;
+  const inClass = data.students.filter(s => s.class === selectedClass).length;
+
+  const byStudent = {};
+  absences.forEach(a => { byStudent[a.studentName] = (byStudent[a.studentName] || 0) + 1; });
+  const top = Object.entries(byStudent).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  let topHTML = '';
+  if (top.length) {
+    const rows = top.map(([n, c], i) => '<tr><td data-label="#">' + (i + 1) + '</td><td data-label="Ученик">' + escapeHtml(n) + '</td><td data-label="Пропусков"><b>' + c + '</b></td></tr>').join('');
+    topHTML = '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Топ-5</h4><div class="table-wrap" style="margin-bottom:20px;">' +
+      '<table><thead><tr><th>#</th><th>Ученик</th><th>Пропусков</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  return '<div class="card"><div class="print-header" id="printHeader"></div>' +
+    '<div class="journal-header"><h3>Статистика класса</h3>' +
+      '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
+        '<select id="adminClassSelect" class="period-select">' + optionsHTML(CLASSES, selectedClass) + '</select>' +
+        periodSelectorHTML(selectedClass) +
+        '<button class="btn btn-secondary btn-sm" id="adminExportBtn">CSV</button>' +
+        '<button class="btn btn-secondary btn-sm" id="adminPrintBtn">🖨</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="stats">' +
+      '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
+      '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уваж.</div></div>' +
+      '<div class="stat"><div class="num">' + bad + '</div><div class="lbl">Неуваж.</div></div>' +
+      '<div class="stat"><div class="num">' + neutral + '</div><div class="lbl">Прочих</div></div>' +
+      '<div class="stat"><div class="num">' + uniq + '</div><div class="lbl">Учеников</div></div>' +
+      '<div class="stat"><div class="num">' + inClass + '</div><div class="lbl">В классе</div></div>' +
+    '</div>' + topHTML +
+    '<h4 style="margin:20px 0 10px; font-size:14px; color:#475569;">Журнал</h4>' +
+    '<div class="table-wrap">' + renderAbsencesTable(absences, false, false, problemNames) + '</div>' +
+    '<div class="print-signature" id="printSignature"></div></div>';
+}
+function renderHistoryLog() {
+  const log = (data.log || []).slice().sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+  const q = (uiState.logFilter || '').toLowerCase();
+  const filtered = q ? log.filter(l => (l.user || '').toLowerCase().includes(q) || (l.details || '').toLowerCase().includes(q)) : log;
+  const rows = filtered.slice(0, 100).map(l => {
+    let cls = 'upd';
+    if (l.action === 'add') cls = 'add';
+    else if (l.action === 'del') cls = 'del';
+    else if (l.action === 'login') cls = 'login';
+    else if (l.action === 'backup') cls = 'backup';
+    return '<tr class="log-row"><td data-label="Время">' + escapeHtml(formatDateTime(l.time)) + '</td>' +
+      '<td data-label="Кто">' + escapeHtml(l.user) + '</td>' +
+      '<td data-label="Роль">' + escapeHtml(l.role) + '</td>' +
+      '<td data-label="Действие"><span class="log-action ' + cls + '">' + escapeHtml(l.action) + '</span></td>' +
+      '<td data-label="Детали">' + escapeHtml(l.details || '') + '</td></tr>';
+  }).join('');
+  return '<div class="card"><div class="journal-header"><h3>📜 История (только админ)</h3>' +
+    '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
+      '<input type="text" id="logSearch" placeholder="🔍 Поиск..." value="' + escapeHtml(uiState.logFilter) + '" style="min-width:200px;">' +
+      '<button class="btn btn-secondary btn-sm" id="clearLogBtn">Очистить</button>' +
+    '</div></div>' +
+    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Всего: ' + log.length + ' (показано 100)</p>' +
+    (filtered.length ? '<div class="table-wrap"><table><thead><tr><th>Время</th><th>Кто</th><th>Роль</th><th>Действие</th><th>Детали</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty">Записей нет</div>') +
+    '</div>';
+}
+function renderBackupsCard() {
+  return '<div class="card"><h3>💾 Резервные копии</h3>' +
+    '<p style="font-size:12px; color:#64748b; margin:0 0 12px;">Автобэкап создаётся раз в день при входе в систему. Хранятся последние ' + BACKUP_KEEP_DAYS + ' дней.</p>' +
+    '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">' +
+      '<button class="btn btn-secondary btn-sm" id="manualBackupBtn">💾 Создать бэкап сейчас</button>' +
+      '<button class="btn btn-secondary btn-sm" id="refreshBackupsBtn">🔄 Обновить</button>' +
+    '</div>' +
+    '<div class="backup-list" id="backupList"><div class="empty">Нажмите «Обновить» для загрузки</div></div>' +
+    '</div>';
+}
+
+function renderAdmin() {
+  if (!data.teachers) data.teachers = [];
+  const teachers = [...data.teachers].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  let tCard = '';
+  if (teachers.length === 0) tCard = '<div class="empty">Нет учителей</div>';
+  else {
+    const rows = teachers.map(t =>
+      '<tr><td data-label="ФИО"><b>' + escapeHtml(t.name) + '</b></td>' +
+      '<td data-label="Класс"><select data-tclass="' + escapeHtml(t.name) + '" style="padding:6px 10px;">' + optionsHTML(CLASSES, t.class) + '</select></td>' +
+      '<td data-label="PIN"><button class="btn btn-secondary btn-sm" data-treset="' + escapeHtml(t.name) + '">Сброс 1234</button></td>' +
+      '<td><button class="btn btn-danger btn-sm" data-tdel="' + escapeHtml(t.name) + '">Удалить</button></td></tr>').join('');
+    tCard = '<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th>PIN</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  const app = document.getElementById('app');
+  app.innerHTML =
+    topbarHTML('Панель администратора', '') +
+    '<div class="container">' +
+      '<div class="card"><h3>Зарегистрировать учителя</h3><form id="addTeacherForm">' +
+        '<div class="form-grid">' +
+          '<div><label for="newTeacherName">ФИО</label><input type="text" id="newTeacherName" required></div>' +
+          '<div><label for="newTeacherClass">Класс</label><select id="newTeacherClass" required>' + optionsHTML(CLASSES, CLASSES[0]) + '</select></div>' +
+          '<div><label for="newTeacherPin">PIN (пусто=1234)</label><input type="text" id="newTeacherPin" maxlength="8"></div>' +
+        '</div>' +
+        '<button type="submit" class="btn" style="margin-top:16px;">Добавить</button>' +
+      '</form></div>' +
+      '<div class="card"><h3>Учителя (' + teachers.length + ')</h3>' + tCard + '</div>' +
+      renderAllClassesSummary() +
+      renderAdminClassStats(uiState.adminSelectedClass || CLASSES[0]) +
+      renderBackupsCard() +
+      renderHistoryLog() +
+    '</div>';
+
+  bindLogout();
+  document.getElementById('addTeacherForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('newTeacherName').value.trim();
+    const cls = document.getElementById('newTeacherClass').value;
+    const pinRaw = document.getElementById('newTeacherPin').value.trim();
+    if (!name) return toast('Введите ФИО', true);
+    if (findTeacher(name)) return toast('Уже есть', true);
+    const pin = pinRaw || '1234';
+    if (!/^\d{4,8}$/.test(pin)) return toast('PIN 4-8 цифр', true);
+    data.teachers.push({ name, class: cls, pin: simpleHash(pin), createdAt: new Date().toISOString() });
+    logAction('add', 'Учитель ' + name + ' (класс ' + cls + ')');
+    saveData(); toast('Учитель добавлен'); renderAdmin();
+  });
+  document.querySelectorAll('[data-tclass]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const t = findTeacher(sel.dataset.tclass);
+      if (!t) return;
+      const old = t.class;
+      t.class = e.target.value;
+      logAction('upd', 'Класс ' + t.name + ' с ' + old + ' на ' + t.class);
+      saveData(); toast('Класс изменён');
+    });
+  });
+  document.querySelectorAll('[data-treset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.treset;
+      const t = findTeacher(name);
+      if (!t || !confirm('Сбросить PIN?')) return;
+      t.pin = simpleHash('1234'); saveData();
+      logAction('upd', 'Сброшен PIN ' + name);
+      toast('PIN сброшен');
+    });
+  });
+  document.querySelectorAll('[data-tdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.tdel;
+      if (!confirm('Удалить учителя "' + name + '"?')) return;
+      data.teachers = data.teachers.filter(t => t.name !== name);
+      logAction('del', 'Учитель ' + name);
+      saveData(); toast('Удалён'); renderAdmin();
+    });
+  });
+  document.getElementById('adminClassSelect')?.addEventListener('change', e => { uiState.adminSelectedClass = e.target.value; renderAdmin(); });
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
+    const cls = uiState.adminSelectedClass || CLASSES[0];
+    data.currentPeriod[cls] = parseInt(e.target.value, 10);
+    saveData(); renderAdmin();
+  });
+  document.getElementById('adminExportBtn')?.addEventListener('click', () => {
+    const cls = uiState.adminSelectedClass || CLASSES[0];
+    const period = getCurrentPeriod(cls);
+    const rows = [['Дата', 'ФИО', 'Класс', 'Предмет', 'Причина', 'Примечание']];
+    filterByPeriod(data.absences.filter(a => a.class === cls), cls).forEach(a => {
+      rows.push([a.date, a.studentName, a.class, a.subject, reasonById(a.reason).name, a.note || '']);
+    });
+    const csv = '\uFEFF' + rows.map(r => r.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'пропуски_' + cls + '_' + period.name + '.csv';
+    link.click();
+    toast('Скачано');
+  });
+  document.getElementById('adminPrintBtn')?.addEventListener('click', () => {
+    const cls = uiState.adminSelectedClass || CLASSES[0];
+    const period = getCurrentPeriod(cls);
+    printJournal(cls, period.name);
+  });
+  document.getElementById('logSearch')?.addEventListener('input', e => {
+    uiState.logFilter = e.target.value;
+    clearTimeout(window._logTimer);
+    window._logTimer = setTimeout(() => {
+      const input = document.getElementById('logSearch');
+      const pos = input ? input.selectionStart : 0;
+      renderAdmin();
+      const ni = document.getElementById('logSearch');
+      if (ni) { ni.focus(); ni.setSelectionRange(pos, pos); }
+    }, 300);
+  });
+  document.getElementById('clearLogBtn')?.addEventListener('click', () => {
+    if (!confirm('Очистить всю историю?')) return;
+    data.log = []; saveData(); toast('Очищено'); renderAdmin();
+  });
+  document.getElementById('manualBackupBtn')?.addEventListener('click', async () => {
+    toast('Создаю бэкап...');
+    await runAutoBackup(true);
+    logAction('backup', 'Ручной бэкап');
+    toast('Бэкап создан');
+    loadBackupList();
+  });
+  document.getElementById('refreshBackupsBtn')?.addEventListener('click', loadBackupList);
+  loadBackupList();
+  bindSortHandlers();
+  bindBell();
+}
+
+async function loadBackupList() {
+  const list = document.getElementById('backupList');
+  if (!list) return;
+  list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">Загрузка...</div>';
+  const backups = await listBackups();
+  if (!backups.length) {
+    list.innerHTML = '<div class="empty">Нет резервных копий</div>';
+    return;
+  }
+  list.innerHTML = backups.map(b =>
+    '<div class="backup-item">' +
+      '<div><b>' + escapeHtml(b.date) + '</b><br>' +
+        '<span style="font-size:11px; color:#64748b;">' + escapeHtml(formatDateTime(b.time)) + ' · учеников: ' + b.students + ' · пропусков: ' + b.absences + '</span></div>' +
+      '<button class="btn btn-secondary btn-sm" data-restore="' + escapeHtml(b.date) + '">Восстановить</button>' +
+    '</div>').join('');
+  document.querySelectorAll('[data-restore]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const date = btn.dataset.restore;
+      if (!confirm('Восстановить базу из бэкапа ' + date + '?\nВсе текущие данные будут заменены.')) return;
+      const ok = await restoreBackup(date);
+      if (ok) {
+        logAction('upd', 'Восстановление из бэкапа ' + date);
+        toast('База восстановлена');
+        renderApp();
+      } else toast('Ошибка', true);
+    });
+  });
+}
+
+/* ============================================================
+   СТАРТ
+   ============================================================ */
+(async function startApp() {
+  document.getElementById('installPwaBtn')?.addEventListener('click', async () => {
+    if (!deferredPrompt) return toast('Установка недоступна', true);
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome === 'accepted') toast('Устанавливаем...');
+    deferredPrompt = null;
+    document.getElementById('installPwaBtn').classList.remove('show');
+  });
+
+  await new Promise(resolve => {
+    const start = Date.now();
+    const check = () => {
+      if (window.firebaseDB !== undefined) return resolve();
+      if (Date.now() - start > 3000) return resolve();
+      setTimeout(check, 50);
+    };
+    check();
+  });
+
+  await initFirebaseSync();
+  firebaseReady = true;
+  updateStatusBadge();
+
+  session = loadSession();
+  renderApp();
+
+  // Автобэкап при загрузке (если сегодня не делали)
+  setTimeout(() => runAutoBackup(false), 2000);
+})();
+</script>
+</body>
+</html>
