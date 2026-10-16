@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head> <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -28,11 +29,13 @@
   .role-tabs {
     display: flex; background: #f1f5f9; border-radius: 10px;
     padding: 4px; margin-bottom: 22px;
+    flex-wrap: wrap;
   }
   .role-tab {
     flex: 1; padding: 10px; border: none; background: transparent;
     cursor: pointer; border-radius: 8px; font-size: 14px;
     font-weight: 500; color: #475569; transition: all .15s;
+    min-width: 100px;
   }
   .role-tab.active {
     background: #fff; color: #1d4ed8;
@@ -48,7 +51,7 @@
   input:focus, select:focus, textarea:focus {
     outline: 2px solid #93c5fd; border-color: #3b82f6;
   }
-   input[type="password"]#tPin,
+  input[type="password"]#tPin,
   input[type="password"]#adminPwd {
     letter-spacing: 6px;
     font-size: 16px;
@@ -73,7 +76,7 @@
     flex-wrap: wrap; gap: 12px;
   }
   .topbar h2 { margin: 0; font-size: 18px; }
-  .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: 14px; flex-wrap: wrap; }
   .topbar .badge { background: #334155; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
 
   .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
@@ -166,8 +169,6 @@
     margin-bottom: 10px;
     align-items: center;
   }
-   .role-tabs { flex-wrap: wrap; }
-  .role-tab { min-width: 100px; }
   .student-self {
     background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
     padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -189,6 +190,7 @@
    1. КОНСТАНТЫ
    ========================================================= */
 const STORAGE_KEY = 'school_absence_v2';
+const SESSION_KEY = 'school_absence_session';
 
 const CLASSES = (() => {
   const arr = [];
@@ -242,7 +244,6 @@ function reasonById(id) {
    2. ХРАНИЛИЩЕ
    ========================================================= */
 function simpleHash(str) {
-  // Простейший хэш — для школьного проекта достаточно
   let h = 0;
   for (let i = 0; i < str.length; i++) {
     h = ((h << 5) - h) + str.charCodeAt(i);
@@ -250,7 +251,8 @@ function simpleHash(str) {
   }
   return 'h' + Math.abs(h).toString(36);
 }
- function uid() {
+
+function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
@@ -274,15 +276,16 @@ function seedData() {
   const students = [];
   for (const c of CLASSES) {
     for (const n of names) {
-    students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
+      students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
     }
   }
   const seeded = { students, absences: [], teachers: [], periods: {}, currentPeriod: {} };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
   return seeded;
 }
+
 /* =========================================================
-   ПЕРИОДЫ (четверти / полугодия)
+   ПЕРИОДЫ
    ========================================================= */
 function defaultPeriodsForClass(cls) {
   const grade = parseInt(cls, 10);
@@ -306,15 +309,14 @@ function defaultPeriodsForClass(cls) {
     { name: 'Весь год',     start: `${y1}-09-01`, end: `${y2}-05-31` }
   ];
 }
- /* =========================================================
-   ГРАФИКИ (Chart.js)
+
+/* =========================================================
+   ГРАФИКИ
    ========================================================= */
 function drawCharts(absences, canvasPrefix) {
-  // Уничтожаем старые графики, чтобы не накладывались
   if (window._charts) window._charts.forEach(c => c.destroy());
   window._charts = [];
 
-  // --- Круговая: по причинам ---
   const reasonCounts = {};
   absences.forEach(a => {
     const name = reasonById(a.reason).name;
@@ -343,10 +345,9 @@ function drawCharts(absences, canvasPrefix) {
     }));
   }
 
-  // --- Столбчатая: по месяцам ---
   const monthCounts = {};
   absences.forEach(a => {
-    const m = a.date.slice(0, 7); // YYYY-MM
+    const m = a.date.slice(0, 7);
     monthCounts[m] = (monthCounts[m] || 0) + 1;
   });
   const sortedMonths = Object.keys(monthCounts).sort();
@@ -376,7 +377,11 @@ function drawCharts(absences, canvasPrefix) {
     }));
   }
 }
- function ensureTeachers() {
+
+/* =========================================================
+   УЧИТЕЛЯ
+   ========================================================= */
+function ensureTeachers() {
   if (!data.teachers) {
     data.teachers = [];
     saveData();
@@ -392,7 +397,7 @@ function registerTeacher(name, cls) {
   ensureTeachers();
   const existing = findTeacher(name);
   if (existing) {
-    existing.class = cls; // обновляем класс, если поменялся
+    existing.class = cls;
     saveData();
     return existing;
   }
@@ -406,20 +411,22 @@ function registerTeacher(name, cls) {
   saveData();
   return t;
 }
- /* =========================================================
+
+/* =========================================================
    АДМИНИСТРАТОР
    ========================================================= */
-// Мастер-пароль админа. Смени на свой!
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
 
 function isAdminPassword(pwd) {
   return simpleHash(pwd) === ADMIN_PASSWORD_HASH;
 }
+
 let data = loadData();
- // Гарантируем, что структура полная
+
 if (!data.teachers) data.teachers = [];
 if (!data.periods) data.periods = {};
 if (!data.currentPeriod) data.currentPeriod = {};
+
 function ensurePeriods(cls) {
   if (!data.periods) data.periods = {};
   if (!data.periods[cls]) {
@@ -456,15 +463,11 @@ function periodSelectorHTML(cls) {
     <span class="period-dates">${escapeHtml(formatDate(periods[cur].start))} — ${escapeHtml(formatDate(periods[cur].end))}</span>
   `;
 }
+
 /* =========================================================
    3. СОСТОЯНИЕ UI
    ========================================================= */
 let session = null;
-
-/* =========================================================
-   СОХРАНЕНИЕ СЕССИИ
-   ========================================================= */
-const SESSION_KEY = 'school_absence_session';
 
 function saveSession() {
   if (session) {
@@ -479,22 +482,21 @@ function loadSession() {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    // Проверяем, что такой пользователь всё ещё существует
     if (s.role === 'teacher') {
       const t = data.teachers?.find(t => t.name === s.name);
-      if (!t) return null; // учителя удалили — разлогиниваем
-      // Обновляем класс из базы (мог поменяться)
+      if (!t) return null;
       s.class = t.class;
     }
     if (s.role === 'student') {
       const st = data.students.find(st => st.class === s.class && st.name === s.name);
-      if (!st) return null; // ученика удалили
+      if (!st) return null;
     }
     return s;
   } catch (e) {
     return null;
   }
 }
+
 let loginState = {
   role: 'teacher',
   teacherName: '',
@@ -502,6 +504,7 @@ let loginState = {
   studentClass: CLASSES[0],
   studentName: ''
 };
+
 let uiState = {
   filterReason: '',
   filterStudent: '',
@@ -570,7 +573,7 @@ function renderLogin() {
         <h1>Учёт пропусков</h1>
         <p class="subtitle">Школьная система учёта пропусков и причин</p>
 
-                <div class="role-tabs">
+        <div class="role-tabs">
           <button class="role-tab ${loginState.role === 'teacher' ? 'active' : ''}" data-role="teacher">
             Учитель
           </button>
@@ -583,8 +586,7 @@ function renderLogin() {
         </div>
 
         <form id="loginForm">
-                 <form id="loginForm">
-                    ${loginState.role === 'teacher'
+          ${loginState.role === 'teacher'
             ? `
               <label for="tName">ФИО классного руководителя</label>
               <input type="text" id="tName" placeholder="Иванова И.И."
@@ -617,8 +619,14 @@ function renderLogin() {
             : ''}
 
           <button type="submit" class="btn btn-full">Войти в систему</button>
-   
+          <div style="text-align:center; margin-top:14px;">
+            <a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">
+              Забыли PIN?
+            </a>
+          </div>
         </form>
+      </div>
+    </div>
   `;
 
   document.querySelectorAll('.role-tab').forEach(tab => {
@@ -629,12 +637,10 @@ function renderLogin() {
   });
 
   const tName = document.getElementById('tName');
-  const tClass = document.getElementById('tClass');
   const sClass = document.getElementById('sClass');
   const sName = document.getElementById('sName');
 
   if (tName) tName.addEventListener('input', () => loginState.teacherName = tName.value);
-  if (tClass) tClass.addEventListener('change', () => loginState.teacherClass = tClass.value);
   if (sClass) sClass.addEventListener('change', () => {
     loginState.studentClass = sClass.value;
     renderLogin();
@@ -643,30 +649,26 @@ function renderLogin() {
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-              if (loginState.role === 'teacher') {
+
+    if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
       const pinValue = (document.getElementById('tPin')?.value || '').trim();
 
       if (!name) return toast('Введите ФИО', true);
       if (!pinValue) return toast('Введите PIN-код', true);
 
-      // 1. Ищем учителя в списке, зарегистрированных админом
       const teacher = findTeacher(name);
       if (!teacher) {
         return toast('Учитель не зарегистрирован. Обратитесь к администратору.', true);
       }
 
-      // 2. Проверяем PIN
       if (simpleHash(pinValue) !== teacher.pin) {
-        // Очищаем поле PIN, чтобы можно было сразу ввести заново
         document.getElementById('tPin').value = '';
         return toast('Неверный PIN-код', true);
       }
 
-      // 3. Создаём сессию
       session = { role: 'teacher', name: teacher.name, class: teacher.class };
     } else if (loginState.role === 'admin') {
-      // Вход администратора
       const pwd = document.getElementById('adminPwd').value;
       if (!pwd) return toast('Введите пароль', true);
       if (!isAdminPassword(pwd)) return toast('Неверный пароль администратора', true);
@@ -674,50 +676,46 @@ function renderLogin() {
     } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
 
-      // 1. Находим ученика в базе
       const st = data.students.find(s =>
         s.class === sClass.value && s.name === loginState.studentName
       );
       if (!st) return toast('Ученик не найден в базе', true);
 
-      // 2. Если PIN не задан — ставим стандартный "1234"
       if (!st.pin) {
         st.pin = simpleHash('1234');
         saveData();
         toast('PIN по умолчанию: 1234', false);
       }
 
-      // 3. Спрашиваем PIN у ученика
       const entered = prompt(
         `Введите PIN для "${st.name}"\n\nЕсли не меняли — введите 1234`
       );
-      if (entered === null) return; // пользователь нажал "Отмена"
+      if (entered === null) return;
 
-      // 4. Проверяем
       if (simpleHash(entered) !== st.pin) {
         return toast('Неверный PIN. Попробуйте 1234', true);
       }
 
-      // 5. Всё ок — создаём сессию
       session = {
         role: 'student',
         name: loginState.studentName,
         class: sClass.value
       };
     }
-        ensurePeriods(session.class);
-    saveSession();                               // ← добавили
-    uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '' };
+
+    ensurePeriods(session.class);
+    saveSession();
+    uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0] };
     renderApp();
   });
-   // Секретная ссылка «Забыли PIN?»
+
   const forgot = document.getElementById('forgotPin');
   if (forgot) {
     forgot.addEventListener('click', (e) => {
       e.preventDefault();
       const master = prompt(
         'Введите мастер-пароль для сброса PIN\n' +
-        '(по умолчанию: school2024)'
+        '(по умолчанию: school21)'
       );
       if (master !== 'school21') return toast('Неверный мастер-пароль', true);
 
@@ -750,7 +748,8 @@ function renderTeacher() {
   const cls = session.class;
   const students = getStudentsOfClass(cls);
   const subjects = getSubjects(cls);
-    const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
+
+  const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
   const absences = absencesAll.filter(a => {
     if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
     if (uiState.filterStudent && a.studentName !== uiState.filterStudent) return false;
@@ -765,7 +764,7 @@ function renderTeacher() {
 
   const app = document.getElementById('app');
   app.innerHTML = `
-     <div class="topbar">
+    <div class="topbar">
       <h2>Учёт пропусков — панель классного руководителя</h2>
       <div class="user-info">
         <span>${escapeHtml(session.name)}</span>
@@ -782,7 +781,8 @@ function renderTeacher() {
         <div class="stat"><div class="num">${badCount}</div><div class="lbl">Неуважительных</div></div>
         <div class="stat"><div class="num">${uniqueStudents}</div><div class="lbl">Учеников с пропусками</div></div>
       </div>
-            <div class="card">
+
+      <div class="card">
         <h3>Аналитика за период</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
           <div style="height:260px;"><canvas id="tReasonChart"></canvas></div>
@@ -832,12 +832,13 @@ function renderTeacher() {
       <div class="card">
         <h3>Ученики класса (${students.length})</h3>
         <div class="students-list" id="studentsList">
-            ${students.map(s => `
-          <span class="student-chip">
-            ${escapeHtml(s.name)}
-            <button data-reset-pin="${s.id}" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>
-            <button data-del-student="${s.id}" title="Удалить">×</button>
-          </span>`).join('')}
+          ${students.length
+            ? students.map(s => `
+                <span class="student-chip">
+                  ${escapeHtml(s.name)}
+                  <button data-reset-pin="${s.id}" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>
+                  <button data-del-student="${s.id}" title="Удалить">×</button>
+                </span>`).join('')
             : '<div class="empty">Пока нет учеников. Добавьте первого ниже.</div>'}
         </div>
         <form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -846,7 +847,8 @@ function renderTeacher() {
           <button type="submit" class="btn">Добавить ученика</button>
         </form>
       </div>
-            <div class="card">
+
+      <div class="card">
         <h3>Периоды — ${escapeHtml(cls)} класс</h3>
         <div id="periodsEditor">
           ${data.periods[cls].map((p, i) => `
@@ -861,7 +863,7 @@ function renderTeacher() {
         </div>
       </div>
 
-            <div class="card">
+      <div class="card">
         <div class="journal-header">
           <h3>Журнал пропусков — ${escapeHtml(cls)} класс</h3>
           <div style="display:flex; gap:10px; align-items:center;">
@@ -888,6 +890,7 @@ function renderTeacher() {
       </div>
     </div>
   `;
+
   drawCharts(absencesAll, 't');
   bindTeacherEvents();
 }
@@ -930,42 +933,39 @@ function renderAbsencesTable(rows, withActions) {
 }
 
 function bindTeacherEvents() {
-   document.getElementById('periodSelect')?.addEventListener('change', e => {
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
     data.currentPeriod[session.class] = parseInt(e.target.value, 10);
     saveData();
     renderTeacher();
   });
+
   document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
     const teacher = findTeacher(session.name);
     if (!teacher) return toast('Ошибка: учитель не найден', true);
 
-    // 1. Старый PIN
     const oldPin = prompt('Текущий PIN:');
     if (oldPin === null) return;
     if (simpleHash(oldPin) !== teacher.pin) {
       return toast('Неверный текущий PIN', true);
     }
 
-    // 2. Новый PIN
     const newPin = prompt('Новый PIN (минимум 4 цифры):');
     if (newPin === null) return;
     if (!/^\d{4,}$/.test(newPin)) {
       return toast('PIN должен содержать минимум 4 цифры', true);
     }
 
-    // 3. Подтверждение
     const confirmPin = prompt('Повторите новый PIN:');
     if (confirmPin !== newPin) {
       return toast('PIN не совпадает', true);
     }
 
-    // 4. Сохраняем
     teacher.pin = simpleHash(newPin);
     saveData();
     toast('PIN успешно изменён');
   });
 
-   document.getElementById('logoutBtn').addEventListener('click', () => {
+  document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
     saveSession();
     renderApp();
@@ -1010,6 +1010,7 @@ function bindTeacherEvents() {
     uiState.filterDate = '';
     renderTeacher();
   });
+
   document.querySelectorAll('[data-reset-pin]').forEach(btn => {
     btn.addEventListener('click', () => {
       const st = data.students.find(s => s.id === btn.dataset.resetPin);
@@ -1020,6 +1021,7 @@ function bindTeacherEvents() {
       toast(`PIN ученика ${st.name} сброшен на 1234`);
     });
   });
+
   document.querySelectorAll('[data-del-abs]').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.delAbs;
@@ -1037,10 +1039,10 @@ function bindTeacherEvents() {
     if (!name) return toast('Введите ФИО', true);
     const exists = data.students.some(s => s.class === session.class && s.name.toLowerCase() === name.toLowerCase());
     if (exists) return toast('Такой ученик уже есть в классе', true);
-    data.students.push({ id: uid(), class: session.class, name });
+    data.students.push({ id: uid(), class: session.class, name, pin: simpleHash('1234') });
     saveData();
     uiState.newStudentName = '';
-    toast('Ученик добавлен');
+    toast('Ученик добавлен (PIN 1234)');
     renderTeacher();
   });
 
@@ -1061,7 +1063,7 @@ function bindTeacherEvents() {
       renderTeacher();
     });
   });
-   // Редактор периодов
+
   document.querySelectorAll('[data-pname]').forEach(inp => {
     inp.addEventListener('change', e => {
       data.periods[session.class][+e.target.dataset.pname].name = e.target.value.trim();
@@ -1111,7 +1113,7 @@ function bindTeacherEvents() {
 function renderStudent() {
   const cls = session.class;
   const subjects = getSubjects(cls);
-    const myAbsences = filterByPeriod(
+  const myAbsences = filterByPeriod(
     data.absences.filter(a => a.class === cls && a.studentName === session.name),
     cls
   ).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -1122,7 +1124,7 @@ function renderStudent() {
 
   const app = document.getElementById('app');
   app.innerHTML = `
-       <div class="topbar">
+    <div class="topbar">
       <h2>Учёт пропусков — личный кабинет ученика</h2>
       <div class="user-info">
         <span>${escapeHtml(session.name)}</span>
@@ -1173,7 +1175,7 @@ function renderStudent() {
         </form>
       </div>
 
-           <div class="card">
+      <div class="card">
         <div class="journal-header">
           <h3>Мои пропуски</h3>
           <div style="display:flex; gap:10px; align-items:center;">
@@ -1186,39 +1188,36 @@ function renderStudent() {
       </div>
     </div>
   `;
+
   document.getElementById('changePinBtn').addEventListener('click', () => {
     const st = data.students.find(s =>
       s.class === session.class && s.name === session.name
     );
     if (!st) return toast('Ошибка: ученик не найден', true);
 
-    // 1. Спрашиваем старый PIN
     const oldPin = prompt('Текущий PIN:');
     if (oldPin === null) return;
     if (simpleHash(oldPin) !== st.pin) {
       return toast('Неверный текущий PIN', true);
     }
 
-    // 2. Спрашиваем новый PIN
     const newPin = prompt('Новый PIN (минимум 4 цифры):');
     if (newPin === null) return;
     if (!/^\d{4,}$/.test(newPin)) {
       return toast('PIN должен содержать минимум 4 цифры', true);
     }
 
-    // 3. Подтверждение
     const confirmPin = prompt('Повторите новый PIN:');
     if (confirmPin !== newPin) {
       return toast('PIN не совпадает', true);
     }
 
-    // 4. Сохраняем
     st.pin = simpleHash(newPin);
     saveData();
     toast('PIN успешно изменён');
   });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+  document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
     saveSession();
     renderApp();
@@ -1250,18 +1249,19 @@ function renderStudent() {
     toast('Запись добавлена');
     renderStudent();
   });
-   document.getElementById('periodSelect')?.addEventListener('change', e => {
+
+  document.getElementById('periodSelect')?.addEventListener('change', e => {
     data.currentPeriod[session.class] = parseInt(e.target.value, 10);
     saveData();
     renderStudent();
   });
 }
- /* =========================================================
+
+/* =========================================================
    СТАТИСТИКА КЛАССА ДЛЯ АДМИНА
    ========================================================= */
 function renderAdminClassStats(selectedClass) {
   ensurePeriods(selectedClass);
-  const subjects = getSubjects(selectedClass);
 
   const allAbsences = data.absences.filter(a => a.class === selectedClass);
   const absences = filterByPeriod(allAbsences, selectedClass)
@@ -1274,7 +1274,6 @@ function renderAdminClassStats(selectedClass) {
   const uniqueStudents = new Set(absences.map(a => a.studentName)).size;
   const studentsInClass = data.students.filter(s => s.class === selectedClass).length;
 
-  // Топ учеников по пропускам
   const byStudent = {};
   absences.forEach(a => {
     byStudent[a.studentName] = (byStudent[a.studentName] || 0) + 1;
@@ -1287,7 +1286,7 @@ function renderAdminClassStats(selectedClass) {
     <div class="card">
       <div class="journal-header">
         <h3>Статистика класса</h3>
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <select id="adminClassSelect" class="period-select">
             ${optionsHTML(CLASSES, selectedClass)}
           </select>
@@ -1330,7 +1329,8 @@ function renderAdminClassStats(selectedClass) {
     </div>
   `;
 }
- function renderAllClassesSummary() {
+
+function renderAllClassesSummary() {
   const rows = CLASSES.map(cls => {
     ensurePeriods(cls);
     const absences = filterByPeriod(
@@ -1387,9 +1387,13 @@ function renderAdminClassStats(selectedClass) {
     </div>
   `;
 }
+
+/* =========================================================
+   РЕНДЕР: АДМИН
+   ========================================================= */
 function renderAdmin() {
   ensureTeachers();
-  const teachers = data.teachers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const teachers = [...data.teachers].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
 
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -1425,7 +1429,7 @@ function renderAdmin() {
           <button type="submit" class="btn" style="margin-top:16px;">Добавить учителя</button>
         </form>
       </div>
-      
+
       <div class="card">
         <h3>Учителя (${teachers.length})</h3>
         ${teachers.length === 0
@@ -1442,7 +1446,7 @@ function renderAdmin() {
                 </tr>
               </thead>
               <tbody>
-                ${teachers.map((t, i) => `
+                ${teachers.map(t => `
                   <tr>
                     <td><b>${escapeHtml(t.name)}</b></td>
                     <td>
@@ -1463,7 +1467,7 @@ function renderAdmin() {
               </tbody>
             </table>
           </div>
-                `}
+          `}
       </div>
 
       ${renderAllClassesSummary()}
@@ -1472,14 +1476,12 @@ function renderAdmin() {
     </div>
   `;
 
-  // Выход
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+  document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
     saveSession();
     renderApp();
   });
 
-  // Добавить учителя
   document.getElementById('addTeacherForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = document.getElementById('newTeacherName').value.trim();
@@ -1503,7 +1505,6 @@ function renderAdmin() {
     renderAdmin();
   });
 
-  // Смена класса
   document.querySelectorAll('[data-tclass]').forEach(sel => {
     sel.addEventListener('change', e => {
       const name = sel.dataset.tclass;
@@ -1515,7 +1516,6 @@ function renderAdmin() {
     });
   });
 
-  // Сброс PIN
   document.querySelectorAll('[data-treset]').forEach(btn => {
     btn.addEventListener('click', () => {
       const name = btn.dataset.treset;
@@ -1527,20 +1527,31 @@ function renderAdmin() {
       toast(`PIN учителя ${name} сброшен на 1234`);
     });
   });
- 
-  // Переключение класса в блоке статистики
+
+  document.querySelectorAll('[data-tdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.tdel;
+      if (!confirm(`Удалить учителя "${name}"?`)) return;
+      data.teachers = data.teachers.filter(t => t.name !== name);
+      saveData();
+      toast(`Учитель ${name} удалён`);
+      renderAdmin();
+    });
+  });
+
   document.getElementById('adminClassSelect')?.addEventListener('change', e => {
     uiState.adminSelectedClass = e.target.value;
     renderAdmin();
   });
 
-  // Переключение периода в блоке статистики
   document.getElementById('periodSelect')?.addEventListener('change', e => {
     const cls = uiState.adminSelectedClass || CLASSES[0];
     data.currentPeriod[cls] = parseInt(e.target.value, 10);
     saveData();
     renderAdmin();
-     document.getElementById('adminExportBtn')?.addEventListener('click', () => {
+  });
+
+  document.getElementById('adminExportBtn')?.addEventListener('click', () => {
     const cls = uiState.adminSelectedClass || CLASSES[0];
     ensurePeriods(cls);
     const period = getCurrentPeriod(cls);
@@ -1559,19 +1570,8 @@ function renderAdmin() {
     link.click();
     toast('Файл скачан');
   });
+}
 
-
-  // Удаление учителя
-  document.querySelectorAll('[data-tdel]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const name = btn.dataset.tdel;
-      if (!confirm(`Удалить учителя "${name}"?`)) return;
-      data.teachers = data.teachers.filter(t => t.name !== name);
-      saveData();
-      toast(`Учитель ${name} удалён`);
-      renderAdmin();
-    });
-   
 /* =========================================================
    8. ГЛАВНЫЙ РЕНДЕР
    ========================================================= */
@@ -1580,8 +1580,7 @@ function renderApp() {
   if (session.role === 'admin') renderAdmin();
   else if (session.role === 'teacher') renderTeacher();
   else if (session.role === 'student') renderStudent();
-  else if (session.role === 'parent') renderParent();
-  else if (session.role === 'head') renderHead();
+  else { session = null; saveSession(); renderLogin(); }
 }
 
 // При загрузке пробуем восстановить сессию
