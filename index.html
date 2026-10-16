@@ -1428,7 +1428,7 @@ function renderParent() {
   bindSortHandlers();
 }
 
-/* ============ ИМПОРТ CSV ============ */
+/* ============ ИМПОРТ УЧЕНИКОВ ИЗ CSV ============ */
 function parseStudentsCSV(text, defaultClass) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0);
   if (!lines.length) return [];
@@ -1581,6 +1581,213 @@ function openImportModal(defaultClass) {
   });
 }
 
+/* ============ ИМПОРТ УЧИТЕЛЕЙ ИЗ CSV ============ */
+function parseTeachersCSV(text, defaultClass) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!lines.length) return [];
+  const first = lines[0];
+  let sep = ';';
+  if (first.split('\t').length > first.split(';').length && first.split('\t').length > first.split(',').length) sep = '\t';
+  else if (first.split(',').length > first.split(';').length) sep = ',';
+
+  const firstRow = first.split(sep).map(s => s.trim().toLowerCase());
+  const hasHeader = firstRow.some(c =>
+    c.includes('фио') || c === 'имя' || c.includes('учител') || c.includes('преподав') ||
+    c === 'класс' || c === 'class' || c === 'pin' || c === 'пин' || c === 'name'
+  );
+  let nameIdx = 0, classIdx = -1, pinIdx = -1;
+  if (hasHeader) {
+    firstRow.forEach((c, i) => {
+      if (c.includes('фио') || c === 'имя' || c.includes('учител') || c.includes('преподав') || c === 'name') nameIdx = i;
+      if (c.includes('класс') || c === 'class') classIdx = i;
+      if (c === 'pin' || c === 'пин' || c.includes('код')) pinIdx = i;
+    });
+  }
+
+  const startIdx = hasHeader ? 1 : 0;
+  const result = [];
+
+  for (let i = startIdx; i < lines.length; i++) {
+    const parts = lines[i].split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
+    const name = parts[nameIdx] || '';
+    if (!name || name.length < 3) {
+      result.push({ name: parts.join(' '), cls: null, pin: null, status: 'err', reason: 'Некорректное ФИО' });
+      continue;
+    }
+
+    let cls = defaultClass;
+    if (classIdx >= 0 && parts[classIdx]) {
+      cls = parts[classIdx].trim().toUpperCase().replace(/\s+/g, '');
+      if (!CLASSES.includes(cls)) {
+        result.push({ name, cls: parts[classIdx], pin: null, status: 'err', reason: 'Класс "' + parts[classIdx] + '" не существует' });
+        continue;
+      }
+    }
+
+    let pin = '1234';
+    if (pinIdx >= 0 && parts[pinIdx]) {
+      const rawPin = parts[pinIdx].trim();
+      if (/^\d{4,8}$/.test(rawPin)) pin = rawPin;
+      else {
+        result.push({ name, cls, pin: null, status: 'err', reason: 'PIN должен быть 4–8 цифр' });
+        continue;
+      }
+    }
+
+    const classBusy = data.teachers.find(t => t.class === cls && t.name.toLowerCase() !== name.toLowerCase());
+    const exists = data.teachers.some(t => t.name.toLowerCase() === name.toLowerCase());
+    result.push({
+      name, cls, pin,
+      status: exists ? 'dup' : 'ok',
+      reason: exists ? 'Уже зарегистрирован' : (classBusy ? 'Класс занят: ' + classBusy.name : '')
+    });
+  }
+  return result;
+}
+
+function openImportTeachersModal(defaultClass) {
+  const existing = document.getElementById('importTeachersModalOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'importTeachersModalOverlay';
+  overlay.innerHTML =
+    '<div class="modal" onclick="event.stopPropagation()">' +
+      '<div class="modal-header">' +
+        '<h3>📥 Импорт учителей из CSV</h3>' +
+        '<button class="modal-close" id="importTeachersCloseBtn">×</button>' +
+      '</div>' +
+      '<div class="modal-body">' +
+        '<div class="drop-zone" id="dropTeachersZone">' +
+          '<div class="big-icon">📄</div>' +
+          '<div><b>Перетащите CSV-файл сюда</b><br>или нажмите, чтобы выбрать</div>' +
+          '<input type="file" id="csvTeachersInput" accept=".csv,.txt" style="display:none;">' +
+        '</div>' +
+        '<div id="importTeachersPreviewBox"></div>' +
+        '<div class="csv-hint">' +
+          '<b>Формат файла:</b><br>' +
+          '• Одна колонка — ФИО: <code>Иванова Ирина Ивановна</code><br>' +
+          '• Две колонки — ФИО;Класс: <code>Иванова И.И.;7А</code><br>' +
+          '• Три колонки — ФИО;Класс;PIN: <code>Иванова И.И.;7А;5678</code><br>' +
+          '• С заголовком: <code>ФИО;Класс;PIN</code><br>' +
+          '• Разделитель: <code>;</code>, <code>,</code> или табуляция<br>' +
+          '<b>Если PIN не указан — ставится 1234</b>' +
+        '</div>' +
+        '<div style="margin-top:14px;">' +
+          '<label>Класс по умолчанию (если в файле не указан)</label>' +
+          '<select id="importTeachersDefaultClass">' + optionsHTML(CLASSES, defaultClass) + '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn btn-secondary" id="importTeachersCancelBtn">Отмена</button>' +
+        '<button class="btn" id="importTeachersConfirmBtn" disabled>Импортировать</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  let parsedRows = [];
+  const dropZone = document.getElementById('dropTeachersZone');
+  const fileInput = document.getElementById('csvTeachersInput');
+  const previewBox = document.getElementById('importTeachersPreviewBox');
+  const confirmBtn = document.getElementById('importTeachersConfirmBtn');
+  const defaultClassSel = document.getElementById('importTeachersDefaultClass');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleFile(f); });
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0]; if (f) handleFile(f);
+  });
+  defaultClassSel.addEventListener('change', () => {
+    if (window._lastTeachersCsvText) {
+      parsedRows = parseTeachersCSV(window._lastTeachersCsvText, defaultClassSel.value);
+      renderPreview();
+    }
+  });
+
+  function handleFile(file) {
+    if (file.size > 1024 * 1024) return toast('Файл больше 1 МБ', true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      window._lastTeachersCsvText = e.target.result;
+      parsedRows = parseTeachersCSV(e.target.result, defaultClassSel.value);
+      renderPreview();
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function renderPreview() {
+    if (!parsedRows.length) {
+      previewBox.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">Файл пуст</div>';
+      confirmBtn.disabled = true;
+      return;
+    }
+    const ok = parsedRows.filter(r => r.status === 'ok').length;
+    const dup = parsedRows.filter(r => r.status === 'dup').length;
+    const err = parsedRows.filter(r => r.status === 'err').length;
+
+    const rowsHTML = parsedRows.slice(0, 200).map(r => {
+      const cls = r.status === 'ok' ? 'ok' : (r.status === 'dup' ? 'dup' : 'err');
+      const icon = r.status === 'ok' ? '✓' : (r.status === 'dup' ? '⚠' : '✕');
+      let note = '';
+      if (r.status === 'ok') {
+        note = 'добавить · ' + escapeHtml(r.cls) + ' · PIN ' + escapeHtml(r.pin);
+        if (r.reason) note += ' (' + escapeHtml(r.reason) + ')';
+      } else {
+        note = r.reason;
+      }
+      return '<div class="import-row ' + cls + '">' +
+        '<span>' + icon + ' ' + escapeHtml(r.name) +
+        ' <b style="color:#2563eb;">' + escapeHtml(r.cls || '') + '</b></span>' +
+        '<span>' + note + '</span></div>';
+    }).join('');
+
+    previewBox.innerHTML =
+      '<div class="import-summary">' +
+        '<span>Всего: <b>' + parsedRows.length + '</b></span>' +
+        '<span style="color:#166534;">Новых: <b>' + ok + '</b></span>' +
+        '<span style="color:#92400e;">Дубликатов: <b>' + dup + '</b></span>' +
+        '<span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span>' +
+      '</div>' +
+      '<div class="import-preview">' + rowsHTML + '</div>' +
+      (parsedRows.length > 200 ? '<p style="font-size:12px; color:#64748b; margin:8px 0 0;">Показано 200 из ' + parsedRows.length + '</p>' : '');
+
+    confirmBtn.disabled = ok === 0;
+    confirmBtn.textContent = ok > 0 ? 'Импортировать (' + ok + ')' : 'Импортировать';
+  }
+
+  function closeModal() {
+    overlay.remove();
+    window._lastTeachersCsvText = null;
+  }
+
+  document.getElementById('importTeachersCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('importTeachersCancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  confirmBtn.addEventListener('click', () => {
+    const toAdd = parsedRows.filter(r => r.status === 'ok');
+    if (!toAdd.length) return;
+    toAdd.forEach(r => {
+      data.teachers.push({
+        name: r.name,
+        class: r.cls,
+        pin: simpleHash(r.pin || '1234'),
+        createdAt: new Date().toISOString()
+      });
+    });
+    logAction('add', 'Импортировано ' + toAdd.length + ' учителей из CSV');
+    saveData();
+    toast('Добавлено учителей: ' + toAdd.length);
+    closeModal();
+    renderApp();
+  });
+}
+
 /* ============ АДМИН ============ */
 function renderAllClassesSummary() {
   const rows = CLASSES.map(cls => {
@@ -1701,10 +1908,13 @@ function renderAdmin() {
     '<div class="container">' +
       '<div class="card">' +
         '<div class="journal-header">' +
-          '<h3>📥 Импорт учеников из CSV</h3>' +
-          '<button class="btn" id="adminImportBtn">Выбрать файл</button>' +
+          '<h3>📥 Импорт из CSV</h3>' +
+          '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
+            '<button class="btn" id="adminImportBtn">👨‍🎓 Ученики</button>' +
+            '<button class="btn btn-secondary" id="adminImportTeachersBtn">👩‍🏫 Учителя</button>' +
+          '</div>' +
         '</div>' +
-        '<p style="font-size:13px; color:#64748b; margin:0;">Загрузите файл со списком учеников.</p>' +
+        '<p style="font-size:13px; color:#64748b; margin:0;">Загрузите файл со списком учеников или учителей. Для учителей класс указывается в файле или выбирается по умолчанию.</p>' +
       '</div>' +
       '<div class="card"><h3>Зарегистрировать учителя</h3><form id="addTeacherForm">' +
         '<div class="form-grid">' +
@@ -1734,6 +1944,7 @@ function renderAdmin() {
 
   bindLogout();
   document.getElementById('adminImportBtn')?.addEventListener('click', () => openImportModal(CLASSES[0]));
+  document.getElementById('adminImportTeachersBtn')?.addEventListener('click', () => openImportTeachersModal(CLASSES[0]));
   document.getElementById('addTeacherForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = document.getElementById('newTeacherName').value.trim();
@@ -1936,8 +2147,10 @@ window.addEventListener('appinstalled', () => {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const m = document.getElementById('importModalOverlay');
-      if (m) m.remove();
+      const m1 = document.getElementById('importModalOverlay');
+      if (m1) m1.remove();
+      const m2 = document.getElementById('importTeachersModalOverlay');
+      if (m2) m2.remove();
     }
   });
 
