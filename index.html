@@ -129,7 +129,36 @@
     border: none; background: transparent; color: #dc2626;
     cursor: pointer; font-size: 15px; line-height: 1; padding: 0;
   }
-
+  .period-select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .period-dates {
+    color: #64748b;
+    font-size: 13px;
+    align-self: center;
+    white-space: nowrap;
+  }
+  .journal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .journal-header h3 { margin: 0; }
+  .periods-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 150px 150px 40px;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
   .student-self {
     background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
     padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -234,9 +263,68 @@ function seedData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
   return seeded;
 }
+/* =========================================================
+   ПЕРИОДЫ (четверти / полугодия)
+   ========================================================= */
+function defaultPeriodsForClass(cls) {
+  const grade = parseInt(cls, 10);
+  const year = new Date().getFullYear();
+  const startYear = new Date().getMonth() >= 7 ? year : year - 1;
+  const y1 = startYear;
+  const y2 = startYear + 1;
 
+  if (grade >= 10) {
+    return [
+      { name: 'I полугодие',  start: `${y1}-09-01`, end: `${y1}-12-28` },
+      { name: 'II полугодие', start: `${y2}-01-09`, end: `${y2}-05-25` },
+      { name: 'Весь год',     start: `${y1}-09-01`, end: `${y2}-05-31` }
+    ];
+  }
+  return [
+    { name: 'I четверть',   start: `${y1}-09-01`, end: `${y1}-10-27` },
+    { name: 'II четверть',  start: `${y1}-11-05`, end: `${y1}-12-28` },
+    { name: 'III четверть', start: `${y2}-01-09`, end: `${y2}-03-22` },
+    { name: 'IV четверть',  start: `${y2}-04-01`, end: `${y2}-05-25` },
+    { name: 'Весь год',     start: `${y1}-09-01`, end: `${y2}-05-31` }
+  ];
+}
 let data = loadData();
+function ensurePeriods(cls) {
+  if (!data.periods) data.periods = {};
+  if (!data.periods[cls]) {
+    data.periods[cls] = defaultPeriodsForClass(cls);
+  }
+  if (!data.currentPeriod) data.currentPeriod = {};
+  if (data.currentPeriod[cls] === undefined) {
+    data.currentPeriod[cls] = data.periods[cls].length - 1;
+  }
+  saveData();
+}
 
+function getCurrentPeriod(cls) {
+  ensurePeriods(cls);
+  return data.periods[cls][data.currentPeriod[cls]];
+}
+
+function filterByPeriod(rows, cls) {
+  const p = getCurrentPeriod(cls);
+  if (!p) return rows;
+  return rows.filter(a => a.date >= p.start && a.date <= p.end);
+}
+
+function periodSelectorHTML(cls) {
+  ensurePeriods(cls);
+  const periods = data.periods[cls];
+  const cur = data.currentPeriod[cls];
+  return `
+    <select id="periodSelect" class="period-select" title="Учебный период">
+      ${periods.map((p, i) =>
+        `<option value="${i}" ${i === cur ? 'selected' : ''}>${escapeHtml(p.name)}</option>`
+      ).join('')}
+    </select>
+    <span class="period-dates">${escapeHtml(formatDate(periods[cur].start))} — ${escapeHtml(formatDate(periods[cur].end))}</span>
+  `;
+}
 /* =========================================================
    3. СОСТОЯНИЕ UI
    ========================================================= */
@@ -382,7 +470,7 @@ function renderLogin() {
       const name = (tName.value || '').trim();
       if (!name) return toast('Введите ФИО', true);
       session = { role: 'teacher', name, class: tClass.value };
-    } else {
+       } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
       session = {
         role: 'student',
@@ -390,6 +478,7 @@ function renderLogin() {
         class: sClass.value
       };
     }
+    ensurePeriods(session.class);
     uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '' };
     renderApp();
   });
@@ -402,8 +491,7 @@ function renderTeacher() {
   const cls = session.class;
   const students = getStudentsOfClass(cls);
   const subjects = getSubjects(cls);
-
-  const absencesAll = data.absences.filter(a => a.class === cls);
+    const absencesAll = filterByPeriod(data.absences.filter(a => a.class === cls), cls);
   const absences = absencesAll.filter(a => {
     if (uiState.filterReason && a.reason !== uiState.filterReason) return false;
     if (uiState.filterStudent && a.studentName !== uiState.filterStudent) return false;
@@ -491,9 +579,28 @@ function renderTeacher() {
           <button type="submit" class="btn">Добавить ученика</button>
         </form>
       </div>
+            <div class="card">
+        <h3>Периоды — ${escapeHtml(cls)} класс</h3>
+        <div id="periodsEditor">
+          ${data.periods[cls].map((p, i) => `
+            <div class="periods-editor-row">
+              <input type="text" value="${escapeHtml(p.name)}" data-pname="${i}" placeholder="Название">
+              <input type="date" value="${p.start}" data-pstart="${i}">
+              <input type="date" value="${p.end}" data-pend="${i}">
+              <button class="btn btn-danger btn-sm" data-pdel="${i}" ${data.periods[cls].length <= 1 ? 'disabled' : ''}>×</button>
+            </div>
+          `).join('')}
+          <button class="btn btn-secondary" id="addPeriodBtn" type="button" style="margin-top:8px;">+ Добавить период</button>
+        </div>
+      </div>
 
-      <div class="card">
-        <h3>Журнал пропусков — ${escapeHtml(cls)} класс</h3>
+            <div class="card">
+        <div class="journal-header">
+          <h3>Журнал пропусков — ${escapeHtml(cls)} класс</h3>
+          <div style="display:flex; gap:10px; align-items:center;">
+            ${periodSelectorHTML(cls)}
+          </div>
+        </div>
 
         <div class="filter-bar">
           <select id="fStudent">
@@ -556,6 +663,12 @@ function renderAbsencesTable(rows, withActions) {
 }
 
 function bindTeacherEvents() {
+   document.getElementById('periodSelect')?.addEventListener('change', e => {
+    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
+    saveData();
+    renderTeacher();
+  });
+
   document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
     renderApp();
@@ -642,6 +755,48 @@ function bindTeacherEvents() {
       renderTeacher();
     });
   });
+   // Редактор периодов
+  document.querySelectorAll('[data-pname]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      data.periods[session.class][+e.target.dataset.pname].name = e.target.value.trim();
+      saveData();
+    });
+  });
+  document.querySelectorAll('[data-pstart]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      data.periods[session.class][+e.target.dataset.pstart].start = e.target.value;
+      saveData();
+    });
+  });
+  document.querySelectorAll('[data-pend]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      data.periods[session.class][+e.target.dataset.pend].end = e.target.value;
+      saveData();
+    });
+  });
+  document.querySelectorAll('[data-pdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.pdel;
+      if (!confirm(`Удалить период "${data.periods[session.class][i].name}"?`)) return;
+      data.periods[session.class].splice(i, 1);
+      if (data.currentPeriod[session.class] >= data.periods[session.class].length) {
+        data.currentPeriod[session.class] = data.periods[session.class].length - 1;
+      }
+      saveData();
+      renderTeacher();
+    });
+  });
+  document.getElementById('addPeriodBtn')?.addEventListener('click', () => {
+    const list = data.periods[session.class];
+    const last = list[list.length - 1];
+    list.push({
+      name: 'Новый период',
+      start: last?.end || todayISO(),
+      end: last?.end || todayISO()
+    });
+    saveData();
+    renderTeacher();
+  });
 }
 
 /* =========================================================
@@ -650,9 +805,10 @@ function bindTeacherEvents() {
 function renderStudent() {
   const cls = session.class;
   const subjects = getSubjects(cls);
-  const myAbsences = data.absences
-    .filter(a => a.class === cls && a.studentName === session.name)
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const myAbsences = filterByPeriod(
+    data.absences.filter(a => a.class === cls && a.studentName === session.name),
+    cls
+  ).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const total = myAbsences.length;
   const good = myAbsences.filter(a => reasonById(a.reason).type === 'good').length;
@@ -710,8 +866,13 @@ function renderStudent() {
         </form>
       </div>
 
-      <div class="card">
-        <h3>Мои пропуски</h3>
+           <div class="card">
+        <div class="journal-header">
+          <h3>Мои пропуски</h3>
+          <div style="display:flex; gap:10px; align-items:center;">
+            ${periodSelectorHTML(cls)}
+          </div>
+        </div>
         <div class="table-wrap">
           ${renderAbsencesTable(myAbsences, false)}
         </div>
@@ -748,6 +909,11 @@ function renderStudent() {
     });
     saveData();
     toast('Запись добавлена');
+    renderStudent();
+  });
+   document.getElementById('periodSelect')?.addEventListener('change', e => {
+    data.currentPeriod[session.class] = parseInt(e.target.value, 10);
+    saveData();
     renderStudent();
   });
 }
