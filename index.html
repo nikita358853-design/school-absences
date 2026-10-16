@@ -233,7 +233,16 @@ function reasonById(id) {
 /* =========================================================
    2. ХРАНИЛИЩЕ
    ========================================================= */
-function uid() {
+function simpleHash(str) {
+  // Простейший хэш — для школьного проекта достаточно
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i);
+    h |= 0;
+  }
+  return 'h' + Math.abs(h).toString(36);
+}
+ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
@@ -257,7 +266,7 @@ function seedData() {
   const students = [];
   for (const c of CLASSES) {
     for (const n of names) {
-      students.push({ id: uid(), class: c, name: n });
+    students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
     }
   }
   const seeded = { students, absences: [] };
@@ -541,8 +550,34 @@ function renderLogin() {
       const name = (tName.value || '').trim();
       if (!name) return toast('Введите ФИО', true);
       session = { role: 'teacher', name, class: tClass.value };
-       } else {
+           } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
+
+      // 1. Находим ученика в базе
+      const st = data.students.find(s =>
+        s.class === sClass.value && s.name === loginState.studentName
+      );
+      if (!st) return toast('Ученик не найден в базе', true);
+
+      // 2. Если PIN не задан — ставим стандартный "1234"
+      if (!st.pin) {
+        st.pin = simpleHash('1234');
+        saveData();
+        toast('PIN по умолчанию: 1234', false);
+      }
+
+      // 3. Спрашиваем PIN у ученика
+      const entered = prompt(
+        `Введите PIN для "${st.name}"\n\nЕсли не меняли — введите 1234`
+      );
+      if (entered === null) return; // пользователь нажал "Отмена"
+
+      // 4. Проверяем
+      if (simpleHash(entered) !== st.pin) {
+        return toast('Неверный PIN. Попробуйте 1234', true);
+      }
+
+      // 5. Всё ок — создаём сессию
       session = {
         role: 'student',
         name: loginState.studentName,
@@ -643,12 +678,12 @@ function renderTeacher() {
       <div class="card">
         <h3>Ученики класса (${students.length})</h3>
         <div class="students-list" id="studentsList">
-          ${students.length
-            ? students.map(s => `
-                <span class="student-chip">
-                  ${escapeHtml(s.name)}
-                  <button data-del-student="${s.id}" title="Удалить">×</button>
-                </span>`).join('')
+            ${students.map(s => `
+          <span class="student-chip">
+            ${escapeHtml(s.name)}
+            <button data-reset-pin="${s.id}" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>
+            <button data-del-student="${s.id}" title="Удалить">×</button>
+          </span>`).join('')}
             : '<div class="empty">Пока нет учеников. Добавьте первого ниже.</div>'}
         </div>
         <form id="addStudentForm" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -791,7 +826,16 @@ function bindTeacherEvents() {
     uiState.filterDate = '';
     renderTeacher();
   });
-
+  document.querySelectorAll('[data-reset-pin]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const st = data.students.find(s => s.id === btn.dataset.resetPin);
+      if (!st) return;
+      if (!confirm(`Сбросить PIN для "${st.name}"?\nНовый PIN будет 1234.`)) return;
+      st.pin = simpleHash('1234');
+      saveData();
+      toast(`PIN ученика ${st.name} сброшен на 1234`);
+    });
+  });
   document.querySelectorAll('[data-del-abs]').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.delAbs;
@@ -894,11 +938,12 @@ function renderStudent() {
 
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="topbar">
+       <div class="topbar">
       <h2>Учёт пропусков — личный кабинет ученика</h2>
       <div class="user-info">
         <span>${escapeHtml(session.name)}</span>
         <span class="badge">${escapeHtml(cls)} класс</span>
+        <button class="btn btn-secondary btn-sm" id="changePinBtn">Сменить PIN</button>
         <button class="btn btn-secondary btn-sm" id="logoutBtn">Выйти</button>
       </div>
     </div>
@@ -957,6 +1002,37 @@ function renderStudent() {
       </div>
     </div>
   `;
+  document.getElementById('changePinBtn').addEventListener('click', () => {
+    const st = data.students.find(s =>
+      s.class === session.class && s.name === session.name
+    );
+    if (!st) return toast('Ошибка: ученик не найден', true);
+
+    // 1. Спрашиваем старый PIN
+    const oldPin = prompt('Текущий PIN:');
+    if (oldPin === null) return;
+    if (simpleHash(oldPin) !== st.pin) {
+      return toast('Неверный текущий PIN', true);
+    }
+
+    // 2. Спрашиваем новый PIN
+    const newPin = prompt('Новый PIN (минимум 4 цифры):');
+    if (newPin === null) return;
+    if (!/^\d{4,}$/.test(newPin)) {
+      return toast('PIN должен содержать минимум 4 цифры', true);
+    }
+
+    // 3. Подтверждение
+    const confirmPin = prompt('Повторите новый PIN:');
+    if (confirmPin !== newPin) {
+      return toast('PIN не совпадает', true);
+    }
+
+    // 4. Сохраняем
+    st.pin = simpleHash(newPin);
+    saveData();
+    toast('PIN успешно изменён');
+  });
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
     session = null;
