@@ -5,15 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- =========================================================
+     FIREBASE REALTIME DATABASE
+     ========================================================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue }
+    from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyApvOfvU5bgp_olxbuiG_nYvxdnVG_H4Fg",
+    authDomain: "school-absences-71570.firebaseapp.com",
+    databaseURL: "https://school-absences-71570-default-rtdb.firebaseio.com",
+    projectId: "school-absences-71570",
+    storageBucket: "school-absences-71570.firebasestorage.app",
+    messagingSenderId: "126572050967",
+    appId: "1:126572050967:web:77c24adfee0ad3786a7a52"
+  };
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.firebaseDB = { db, ref, set, onValue };
+    console.log('✓ Firebase Realtime Database подключена');
+  } catch (e) {
+    console.error('Firebase error:', e);
+    window.firebaseDB = null;
+  }
+</script>
+
 <style>
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #eef2f7;
-    color: #1f2937;
-    min-height: 100vh;
-  }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #eef2f7; color: #1f2937; min-height: 100vh; }
+  .loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748b; }
+  .loading .spin { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .login-card { background: #fff; border-radius: 16px; padding: 36px; width: 100%; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
   .login-card h1 { margin: 0 0 6px; font-size: 26px; }
@@ -37,6 +64,9 @@
   .topbar h2 { margin: 0; font-size: 18px; }
   .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: 14px; flex-wrap: wrap; }
   .topbar .badge { background: #334155; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .status-dot.online { background: #22c55e; }
+  .status-dot.offline { background: #ef4444; }
   .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
   .card { background: #fff; border-radius: 12px; padding: 22px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
   .card h3 { margin: 0 0 16px; font-size: 17px; }
@@ -82,13 +112,19 @@
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+  <div class="loading">
+    <div class="spin"></div>
+    <div>Загрузка данных…</div>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <script>
 /* ========== КОНСТАНТЫ ========== */
 const STORAGE_KEY = 'school_absence_v2';
 const SESSION_KEY = 'school_absence_session';
+const FB_PATH = 'schoolData';
 
 const CLASSES = (() => {
   const arr = [];
@@ -139,19 +175,7 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return seedData();
-}
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function seedData() {
+function buildSeedData() {
   const names = ['Иванов Иван','Петрова Мария','Сидоров Пётр','Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'];
   const students = [];
   for (const c of CLASSES) {
@@ -159,9 +183,113 @@ function seedData() {
       students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234') });
     }
   }
-  const seeded = { students, absences: [], teachers: [], periods: {}, currentPeriod: {} };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-  return seeded;
+  return { students, absences: [], teachers: [], periods: {}, currentPeriod: {} };
+}
+
+function loadLocalData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return buildSeedData();
+}
+
+let data = loadLocalData();
+let firebaseReady = false;
+let firebaseConnected = false;
+
+/* ========== СОХРАНЕНИЕ ========== */
+let saveTimer = null;
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  if (!firebaseReady || !window.firebaseDB) return;
+
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      const { db, ref, set } = window.firebaseDB;
+      await set(ref(db, FB_PATH), data);
+      firebaseConnected = true;
+      updateStatusBadge();
+      console.log('✓ Сохранено в Firebase');
+    } catch (e) {
+      firebaseConnected = false;
+      updateStatusBadge();
+      console.error('Firebase save error:', e);
+    }
+  }, 400);
+}
+
+/* ========== СИНХРОНИЗАЦИЯ ========== */
+async function initFirebaseSync() {
+  if (!window.firebaseDB) {
+    console.warn('Firebase не настроен — работаем локально');
+    firebaseReady = true;
+    return false;
+  }
+
+  const { db, ref, set, onValue } = window.firebaseDB;
+  const dataRef = ref(db, FB_PATH);
+
+  return new Promise((resolve) => {
+    let firstLoad = true;
+
+    onValue(dataRef,
+      (snap) => {
+        const incoming = snap.val();
+
+        if (!incoming) {
+          console.log('База пуста, создаю начальные данные...');
+          const seeded = buildSeedData();
+          set(dataRef, seeded).then(() => {});
+          return;
+        }
+
+        if (incoming.students || incoming.absences) {
+          data = {
+            students: incoming.students || [],
+            absences: incoming.absences || [],
+            teachers: incoming.teachers || [],
+            periods: incoming.periods || {},
+            currentPeriod: incoming.currentPeriod || {}
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        firebaseConnected = true;
+        updateStatusBadge();
+
+        if (firstLoad) {
+          firstLoad = false;
+          resolve(true);
+        } else {
+          if (session) renderApp();
+        }
+      },
+      (error) => {
+        console.error('Firebase subscribe error:', error);
+        firebaseConnected = false;
+        updateStatusBadge();
+        resolve(false);
+      }
+    );
+
+    setTimeout(() => resolve(false), 5000);
+  });
+}
+
+function updateStatusBadge() {
+  const badge = document.getElementById('syncStatus');
+  if (!badge) return;
+  if (!firebaseReady) {
+    badge.innerHTML = '<span class="status-dot offline"></span>Локально';
+  } else if (firebaseConnected) {
+    badge.innerHTML = '<span class="status-dot online"></span>Онлайн — синхронизация с облаком';
+  } else {
+    badge.innerHTML = '<span class="status-dot offline"></span>Офлайн — нет связи';
+  }
 }
 
 /* ========== ПЕРИОДЫ ========== */
@@ -226,6 +354,7 @@ function getStudentsOfClass(cls) {
 
 /* ========== ГРАФИКИ ========== */
 function drawCharts(absences, canvasPrefix) {
+  if (typeof Chart === 'undefined') return;
   if (window._charts) window._charts.forEach(c => c.destroy());
   window._charts = [];
 
@@ -265,8 +394,7 @@ function drawCharts(absences, canvasPrefix) {
   }
 }
 
-/* ========== ДАННЫЕ ========== */
-let data = loadData();
+/* ========== БАЗА ========== */
 if (!data.teachers) data.teachers = [];
 if (!data.periods) data.periods = {};
 if (!data.currentPeriod) data.currentPeriod = {};
@@ -310,12 +438,9 @@ function periodSelectorHTML(cls) {
     '<span class="period-dates">' + escapeHtml(formatDate(periods[cur].start)) + ' — ' + escapeHtml(formatDate(periods[cur].end)) + '</span>';
 }
 
-/* ========== АДМИН-ПАРОЛЬ ========== */
+/* ========== АДМИН ========== */
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
-
-function isAdminPassword(pwd) {
-  return simpleHash(pwd) === ADMIN_PASSWORD_HASH;
-}
+function isAdminPassword(pwd) { return simpleHash(pwd) === ADMIN_PASSWORD_HASH; }
 
 /* ========== СЕССИЯ ========== */
 let session = null;
@@ -346,7 +471,7 @@ function loadSession() {
 let loginState = { role: 'teacher', teacherName: '', teacherClass: CLASSES[0], studentClass: CLASSES[0], studentName: '' };
 let uiState = { filterReason: '', filterStudent: '', filterDate: '', newStudentName: '', adminSelectedClass: CLASSES[0] };
 
-/* ========== ТАБЛИЦА ПРОПУСКОВ (общая) ========== */
+/* ========== ТАБЛИЦА ========== */
 function renderAbsencesTable(rows, withActions) {
   if (!rows.length) return '<div class="empty">Записей нет</div>';
   const body = rows.map(a => {
@@ -417,7 +542,10 @@ function renderLogin() {
     '<form id="loginForm">' + formHTML +
     '<button type="submit" class="btn btn-full">Войти в систему</button>' +
     '<div style="text-align:center; margin-top:14px;"><a href="#" id="forgotPin" style="color:#2563eb; font-size:13px; text-decoration:none;">Забыли PIN?</a></div>' +
+    '<div style="text-align:center; margin-top:12px; font-size:12px; color:#64748b;" id="syncStatus"></div>' +
     '</form></div></div>';
+
+  updateStatusBadge();
 
   document.querySelectorAll('.role-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -512,7 +640,7 @@ function renderTeacher() {
         '<button data-reset-pin="' + s.id + '" title="Сбросить PIN" style="color:#f59e0b;">🔑</button>' +
         '<button data-del-student="' + s.id + '" title="Удалить">×</button></span>'
       ).join('')
-    : '<div class="empty">Пока нет учеников. Добавьте первого ниже.</div>';
+    : '<div class="empty">Пока нет учеников.</div>';
 
   const periodRows = data.periods[cls].map((p, i) =>
     '<div class="periods-editor-row">' +
@@ -838,7 +966,7 @@ function renderAllClassesSummary() {
     '<td style="color:#991b1b;">' + r.bad + '</td></tr>'
   ).join('');
 
-  return '<div class="card"><h3>Сводная по всем классам (текущий период)</h3>' +
+  return '<div class="card"><h3>Сводная по всем классам</h3>' +
     '<div class="table-wrap"><table><thead><tr>' +
     '<th>Класс</th><th>Классный руководитель</th><th>Учеников</th><th>Всего пропусков</th><th>Уважительных</th><th>Неуважительных</th>' +
     '</tr></thead><tbody>' + body +
@@ -1023,8 +1151,24 @@ function renderAdmin() {
 }
 
 /* ========== СТАРТ ========== */
-session = loadSession();
-renderApp();
+(async function startApp() {
+  await new Promise(resolve => {
+    const start = Date.now();
+    const check = () => {
+      if (window.firebaseDB !== undefined) return resolve();
+      if (Date.now() - start > 3000) return resolve();
+      setTimeout(check, 50);
+    };
+    check();
+  });
+
+  await initFirebaseSync();
+  firebaseReady = true;
+  updateStatusBadge();
+
+  session = loadSession();
+  renderApp();
+})();
 </script>
 </body>
 </html>
