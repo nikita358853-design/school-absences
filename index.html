@@ -2653,7 +2653,7 @@ document.addEventListener('keydown',function(e){
   setTimeout(async function(){
     const t0=Date.now();
     await new Promise(function(resolve){function check(){if(window.firebaseDB!==undefined)return resolve();if(Date.now()-t0>3000)return resolve();setTimeout(check,50);}check();});
-    await firebaseReady=true;
+   firebaseReady=true;
     subscribeToFirebase();
     updateStatusBadge();
     setTimeout(function(){runAutoBackup(false);},5000);
