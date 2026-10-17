@@ -114,12 +114,20 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
   border:1.5px dashed var(--border-strong);border-radius:14px;color:var(--text-mid);
   font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .forgot-link:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);border-style:solid}
+
+/* ===== TOPBAR ===== */
 .topbar{background:var(--topbar-bg);backdrop-filter:blur(24px) saturate(1.4);
   -webkit-backdrop-filter:blur(24px) saturate(1.4);color:#fff;padding:14px 28px;
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
   border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:100}
-.topbar h2{margin:0;font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
-.topbar h2::before{content:"◈";font-size:22px;font-weight:400;color:#c4b5fd}
+.topbar-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.menu-toggle{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;
+  font-size:20px;cursor:pointer;padding:8px 14px;border-radius:11px;min-width:44px;height:44px;
+  display:inline-flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit;line-height:1;flex-shrink:0}
+.menu-toggle:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
+.menu-toggle svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.topbar h2{margin:0;font-size:15.5px;font-weight:700;color:#f1ecff;letter-spacing:-.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .topbar .user-info{display:flex;align-items:center;gap:10px;font-size:13.5px;flex-wrap:wrap}
 .topbar .user-info>span:first-child{color:#f1ecff;font-weight:600}
 .topbar .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
@@ -133,19 +141,57 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
   appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 10px center;width:auto;min-width:100px}
 .icon-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;
-  font-size:17px;cursor:pointer;padding:8px 13px;border-radius:11px;transition:all .2s;font-family:inherit;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px}
+  font-size:17px;cursor:pointer;padding:8px 13px;border-radius:11px;transition:all .2s;font-family:inherit;
+  line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px}
 .icon-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
 .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.subnav{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 24px;
-  display:flex;gap:4px;overflow-x:auto;position:sticky;top:64px;z-index:99;box-shadow:var(--shadow-xs)}
-.subnav::-webkit-scrollbar{height:0}
-.subnav-tab{padding:15px 16px;border:none;background:transparent;cursor:pointer;font-family:inherit;
-  font-size:13px;font-weight:600;color:var(--text-dim);border-bottom:3px solid transparent;
-  white-space:nowrap;display:flex;align-items:center;gap:6px;position:relative;flex-shrink:0;transition:all .15s;letter-spacing:-.005em}
-.subnav-tab:hover{color:var(--text);background:var(--bg-subtle)}
-.subnav-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* ===== SIDE MENU (top-left) ===== */
+.side-menu{
+  position:fixed;
+  top:72px;
+  left:16px;
+  width:290px;
+  max-height:calc(100vh - 92px);
+  overflow-y:auto;
+  background:var(--bg-card);
+  border-radius:20px;
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+  z-index:250;
+  padding:10px;
+  opacity:0;
+  transform:translateY(-8px) scale(.98);
+  pointer-events:none;
+  transition:opacity .2s, transform .2s;
+}
+.side-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.side-menu-header{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 12px 12px;font-weight:800;font-size:12px;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);margin-bottom:8px}
+.side-menu-close{background:transparent;border:none;font-size:22px;color:var(--muted);
+  cursor:pointer;padding:0 6px;line-height:1;border-radius:6px}
+.side-menu-close:hover{background:var(--danger-soft);color:var(--danger)}
+.side-menu-group{margin-bottom:8px}
+.side-menu-group-title{padding:8px 12px 5px;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);font-weight:800}
+.side-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;
+  border:none;background:transparent;border-radius:10px;cursor:pointer;font-family:inherit;
+  font-size:13.5px;font-weight:600;color:var(--text-mid);text-align:left;transition:all .15s;margin-bottom:1px}
+.side-menu-item:hover{background:var(--bg-subtle);color:var(--text)}
+.side-menu-item.active{background:var(--primary-soft);color:var(--primary);font-weight:700}
+.side-menu-icon{font-size:16px;width:22px;text-align:center;color:var(--text-dim);flex-shrink:0}
+.side-menu-item.active .side-menu-icon{color:var(--primary)}
+.side-menu-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-menu-backdrop{position:fixed;inset:0;background:rgba(26,11,61,.28);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:249;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.side-menu-backdrop.show{opacity:1;pointer-events:auto}
 .subnav-badge{background:var(--gradient-accent);color:#fff;font-size:10px;font-weight:800;
-  padding:2px 7px;border-radius:var(--radius-full);min-width:18px;text-align:center;box-shadow:0 2px 6px rgba(236,72,153,.35)}
+  padding:2px 7px;border-radius:var(--radius-full);min-width:18px;text-align:center;
+  box-shadow:0 2px 6px rgba(236,72,153,.35);flex-shrink:0}
+
+/* ===== CONTAINER & CARDS ===== */
 .container{max-width:1200px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .3s ease}
 .card{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;margin-bottom:18px;
   box-shadow:var(--shadow);border:1px solid var(--border);transition:box-shadow .25s}
@@ -428,7 +474,6 @@ body.dark .post-toggle.is-not:hover{color:#fca5a5}
 .week-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);flex-wrap:wrap}
 .week-actions .btn{flex:1;min-width:150px;font-size:12.5px;padding:9px 14px}
 details summary{user-select:none}
-/* New modules */
 .late-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:var(--radius-full);
   background:var(--warn-soft);color:#92400e;font-size:11.5px;font-weight:800;border:1px solid rgba(217,119,6,.3)}
 body.dark .late-chip{color:#fcd34d}
@@ -453,20 +498,25 @@ body.dark .trip-price{color:var(--primary-light)}
 .subst-arrow{font-size:15px;color:var(--text-mid);font-weight:600;margin:0 6px}
 .subst-meta{font-size:12px;color:var(--text-dim);margin-top:2px}
 .subst-reason{font-size:12.5px;color:var(--text-mid);margin-top:8px;padding:8px 10px;background:var(--bg-card);border-radius:8px;border-left:3px solid var(--warn)}
-.menu-edit-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:11px;margin-bottom:6px;font-size:13px}
-.menu-edit-row input{padding:6px 10px;font-size:13px;border-radius:8px}
+.menu-edit-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:11px;margin-bottom:6px;font-size:13px}
+
 @media(max-width:768px){
   input,select,textarea{font-size:16px !important;padding:13px !important;min-height:46px}
   .btn{min-height:44px;padding:11px 16px !important;font-size:13.5px !important}
   .btn-sm{min-height:36px;padding:8px 12px !important;font-size:12.5px !important}
   .btn-xs{min-height:32px;padding:6px 10px !important;font-size:12px !important}
   .topbar{padding:12px 14px;flex-direction:column;align-items:stretch;gap:10px;position:static}
-  .topbar h2{font-size:14.5px;justify-content:center}
+  .topbar-left{justify-content:center}
+  .topbar h2{font-size:14.5px;justify-content:center;text-align:center}
   .topbar .user-info{justify-content:center;gap:8px;font-size:13px}
   .topbar .user-info>span:first-child{width:100%;text-align:center;font-size:13.5px}
   .topbar select.class-switch{width:100%}
-  .subnav{padding:0 8px;top:0}
-  .subnav-tab{padding:12px 11px;font-size:12.5px;gap:5px}
+  .side-menu{top:auto;bottom:0;left:0;right:0;width:100%;max-width:none;max-height:80vh;
+    border-radius:22px 22px 0 0;transform:translateY(100%);transition:opacity .25s, transform .25s}
+  .side-menu.open{transform:translateY(0)}
+  .side-menu-header{padding-top:20px;position:relative}
+  .side-menu-header::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:44px;height:4px;background:var(--border-strong);border-radius:2px}
   .container{padding:14px 12px 64px}
   .card{padding:16px;border-radius:16px;margin-bottom:12px}
   .card h3{font-size:15px;margin-bottom:14px}
@@ -509,8 +559,9 @@ body.dark .trip-price{color:var(--primary-light)}
 <div id="toast" class="toast"></div>
 
 <script>
-const STORAGE_KEY='school_helper_v9';
-const SESSION_KEY='school_helper_session_v9';
+/* ============ КОНСТАНТЫ ============ */
+const STORAGE_KEY='school_helper_v10';
+const SESSION_KEY='school_helper_session_v10';
 const FB_PATH='schoolData';
 const BACKUP_PATH='backups';
 const BACKUP_KEEP_DAYS=30;
@@ -562,6 +613,7 @@ const DEFAULT_POSTS=[
   {id:'p3',name:'1 этаж'},{id:'p4',name:'2 этаж'},{id:'p5',name:'3 этаж'}
 ];
 
+/* ============ УТИЛИТЫ ============ */
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function optionsHTML(items,selected,valueKey){const p=[];for(const it of items){const v=valueKey?it[valueKey]:it;const l=valueKey?it.name:it;p.push('<option value="'+escapeHtml(v)+'"'+(v===selected?' selected':'')+'>'+escapeHtml(l)+'</option>');}return p.join('');}
@@ -651,6 +703,7 @@ function ensurePeriods(cls){if(!cls)return;if(!data.periods[cls]){const g=parseI
 function getCurrentPeriod(cls){ensurePeriods(cls);if(!data.periods[cls])return null;return data.periods[cls][data.currentPeriod[cls]];}
 function filterByPeriod(rows,cls){const p=getCurrentPeriod(cls);if(!p)return rows;return rows.filter(function(a){return a.date>=p.start&&a.date<=p.end;});}
 function ensureSchedule(cls){if(!cls)return;if(!data.schedules[cls]){const e={};for(const d of DAYS_OF_WEEK)e[d]=[];data.schedules[cls]=e;saveData();}}
+function getLessonsFor(cls,dateISO){const day=dayOfWeekName(dateISO);if(!day)return getSubjects(cls);ensureSchedule(cls);const s=data.schedules[cls][day];return s&&s.length?s:getSubjects(cls);}
 function hasFullAccess(){return session&&(session.isHomeroom||session.isManager);}
 function canEditSchedule(){return session&&(session.isManager||(session.role==='teacher'&&session.isHomeroom));}
 function canManageUsers(){return session&&(session.role==='admin'||session.isDirector);}
@@ -673,7 +726,6 @@ function getMyClubsForStudent(name){return data.clubs.filter(function(c){return 
 function getClubsForTeacher(name){return data.clubs.filter(function(c){return c.teacherName===name;});}
 function getActiveSchoolWeek(){const today=todayISO();return data.schoolDutyWeeks.find(function(w){return w.startDate<=today&&today<=w.endDate;});}
 function getStudentLatesThisWeek(name,cls){const today=todayISO();const weekAgo=addDays(today,-7);return data.lates.filter(function(l){return l.class===cls&&l.studentName===name&&l.date>=weekAgo&&l.date<=today;}).length;}
-function getStudentLatesThisMonth(name,cls){const today=todayISO();const monthStart=today.slice(0,7)+'-01';return data.lates.filter(function(l){return l.class===cls&&l.studentName===name&&l.date>=monthStart&&l.date<=today;}).length;}
 
 function getStudentFlags(name,cls){
   const flags=[];
@@ -703,7 +755,7 @@ function getSchoolSummary(){
   return {rows:rows,grandTotal:gt,grandGood:gg,grandBad:gb,grandLates:gl};
 }
 
-/* ============ ШКОЛЬНОЕ ДЕЖУРСТВО ============ */
+/* ============ ДЕЖУРСТВО ============ */
 function createSchoolDutyWeek(cls,startDate){
   if(!DUTY_CLASSES.includes(cls))return null;
   const start=new Date(startDate+'T00:00:00');
@@ -732,7 +784,7 @@ function transferSchoolDuty(weekId){
   const p=function(n){return String(n).padStart(2,'0');};
   const newStartISO=newStart.getFullYear()+'-'+p(newStart.getMonth()+1)+'-'+p(newStart.getDate());
   const existing=data.schoolDutyWeeks.find(function(w){return w.startDate===newStartISO&&!w.transferred;});
-  if(existing)return toast('Уже есть неделя с '+formatDate(newStartISO)+' ('+existing.class+')',true);
+  if(existing)return toast('Уже есть неделя с '+formatDate(newStartISO),true);
   week.transferred=true;
   createSchoolDutyWeek(nextCls,newStartISO);
   logAction('upd','Дежурство: '+week.class+' → '+nextCls);
@@ -770,7 +822,6 @@ function createMenuForYear(template,overwrite){
 }
 
 /* ============ FIREBASE ============ */
-async function initFirebaseSync(){firebaseReady=true;return!!window.firebaseDB;}
 function subscribeToFirebase(){
   if(!window.firebaseDB)return;
   const{db,ref,onValue,set}=window.firebaseDB;
@@ -798,13 +849,13 @@ function updateStatusBadge(){const b=document.getElementById('syncStatus');if(!b
 async function runAutoBackup(force){
   if(!window.firebaseDB)return;
   const today=todayISO();
-  if(!force&&localStorage.getItem('last_backup_v9')===today)return;
+  if(!force&&localStorage.getItem('last_backup_v10')===today)return;
   try{
     const{db,ref,set,get,remove}=window.firebaseDB;
     const snap=await get(ref(db,BACKUP_PATH));const ex=snap.val()||{};const keys=Object.keys(ex).sort();
     while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}}
     await set(ref(db,BACKUP_PATH+'/'+today),{time:new Date().toISOString(),data:JSON.parse(JSON.stringify(data))});
-    localStorage.setItem('last_backup_v9',today);
+    localStorage.setItem('last_backup_v10',today);
   }catch(e){}
 }
 async function listBackups(){
@@ -896,7 +947,7 @@ let currentView='home';
 let uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',cafeteriaDate:null,selectedClubId:null,menuManageDate:null};
 let loginState={role:'teacher',teacherName:'',studentClass:CLASSES[0],studentName:''};
 
-/* ============ NAV ============ */
+/* ============ NAV ITEMS ============ */
 function getNavItems(){
   if(!session)return[];
   if(session.role==='teacher'){
@@ -986,8 +1037,90 @@ function getNavItems(){
     {id:'log',icon:'≡',label:'История'}
   ];
 }
-function renderSubnav(){
-  const nav=getNavItems();const cnt={};
+
+/* ============ ГРУППИРОВКА МЕНЮ ============ */
+function getNavGroups(nav){
+  const map={};
+  nav.forEach(function(n){map[n.id]=n;});
+  const role=session.role;
+  let defs=[];
+  if(session.isCafeteria){
+    defs=[
+      {title:'Столовая',ids:['cafeteria']},
+      {title:'Управление',ids:['settings']}
+    ];
+  }else if(role==='teacher'&&session.isManager){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Посещаемость',ids:['attendance','lates']},
+      {title:'Учёба',ids:['schedule','substitutions']},
+      {title:'Активности',ids:['clubs','events','trips']},
+      {title:'Коммуникация',ids:['announcements','teacherAnn','questions']},
+      {title:'Столовая',ids:['cafeteria']},
+      {title:'Ученики',ids:['students','notes']},
+      {title:'Дежурства',ids:['duties']},
+      {title:'Документы',ids:['requests','reports']},
+      {title:'Управление',ids:['users','settings']}
+    ];
+  }else if(role==='teacher'&&session.isHomeroom){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Посещаемость',ids:['attendance','lates']},
+      {title:'Учёба',ids:['homework','schedule']},
+      {title:'Активности',ids:['clubs','events','trips']},
+      {title:'Коммуникация',ids:['announcements','teacherAnn','questions']},
+      {title:'Столовая',ids:['cafeteria']},
+      {title:'Ученики',ids:['students','notes']},
+      {title:'Дежурства',ids:['duties']},
+      {title:'Документы',ids:['reports']},
+      {title:'Управление',ids:['settings']}
+    ];
+  }else if(role==='teacher'){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Посещаемость',ids:['attendance','lates']},
+      {title:'Учёба',ids:['homework','schedule']},
+      {title:'Активности',ids:['clubs','events','trips']},
+      {title:'Коммуникация',ids:['teacherAnn']},
+      {title:'Ученики',ids:['students','notes']},
+      {title:'Документы',ids:['reports']},
+      {title:'Управление',ids:['settings']}
+    ];
+  }else if(role==='student'){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Учёба',ids:['homework','schedule']},
+      {title:'Посещаемость',ids:['absences','lates']},
+      {title:'Активности',ids:['clubs','events','trips']},
+      {title:'Столовая',ids:['cafeteria']},
+      {title:'Коммуникация',ids:['announcements','questions']},
+      {title:'Документы',ids:['requests']}
+    ];
+  }else if(role==='parent'){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Посещаемость',ids:['absences','lates']},
+      {title:'Учёба',ids:['schedule']},
+      {title:'Активности',ids:['clubs','events','trips']},
+      {title:'Столовая',ids:['cafeteria']},
+      {title:'Документы',ids:['requests']},
+      {title:'Коммуникация',ids:['messages','notes']}
+    ];
+  }else{
+    defs=[
+      {title:'Управление',ids:['users']},
+      {title:'Контент',ids:['allclubs','allevents','menuadmin','belladmin']},
+      {title:'Система',ids:['backups','log']}
+    ];
+  }
+  return defs.map(function(g){
+    return {title:g.title,items:g.ids.map(function(id){return map[id];}).filter(Boolean)};
+  }).filter(function(g){return g.items.length;});
+}
+
+/* ============ РЕНДЕР МЕНЮ ============ */
+function getNavCounts(){
+  const cnt={};
   if(session.role==='teacher'&&!session.isCafeteria){
     cnt.questions=getSessionQuestions().filter(function(q){return !q.answered;}).length;
     cnt.attendance=getSessionAbsences().filter(function(a){return a.status==='pending';}).length;
@@ -998,17 +1131,49 @@ function renderSubnav(){
   if(session.role==='parent'||session.role==='student'){
     cnt.requests=data.requests.filter(function(r){return r.studentName===session.name&&r.status==='ready';}).length;
   }
-  let html='<div class="subnav">';
-  for(const n of nav){
-    const active=currentView===n.id?' active':'';
-    html+='<button class="subnav-tab'+active+'" data-view="'+n.id+'"><span style="font-size:15px">'+n.icon+'</span><span>'+escapeHtml(n.label)+'</span>';
-    if(cnt[n.id])html+='<span class="subnav-badge">'+cnt[n.id]+'</span>';
-    html+='</button>';
+  return cnt;
+}
+
+function renderMenu(){
+  const nav=getNavItems();
+  const cnt=getNavCounts();
+  const groups=getNavGroups(nav);
+  let html='<div class="side-menu" id="sideMenu">';
+  html+='<div class="side-menu-header"><span>Меню</span><button class="side-menu-close" id="sideMenuClose" title="Закрыть">×</button></div>';
+  for(const g of groups){
+    html+='<div class="side-menu-group"><div class="side-menu-group-title">'+escapeHtml(g.title)+'</div>';
+    for(const item of g.items){
+      const active=currentView===item.id?' active':'';
+      html+='<button class="side-menu-item'+active+'" data-view="'+item.id+'">';
+      html+='<span class="side-menu-icon">'+item.icon+'</span>';
+      html+='<span class="side-menu-label">'+escapeHtml(item.label)+'</span>';
+      if(cnt[item.id])html+='<span class="subnav-badge">'+cnt[item.id]+'</span>';
+      html+='</button>';
+    }
+    html+='</div>';
   }
   html+='</div>';
+  html+='<div class="side-menu-backdrop" id="sideMenuBackdrop"></div>';
   return html;
 }
-function bindSubnav(){document.querySelectorAll('[data-view]').forEach(function(t){t.addEventListener('click',function(){currentView=t.dataset.view;renderApp();window.scrollTo({top:0,behavior:'smooth'});});});}
+
+function openSideMenu(){
+  const m=document.getElementById('sideMenu');
+  const b=document.getElementById('sideMenuBackdrop');
+  if(m)m.classList.add('open');
+  if(b)b.classList.add('show');
+}
+function closeSideMenu(){
+  const m=document.getElementById('sideMenu');
+  const b=document.getElementById('sideMenuBackdrop');
+  if(m)m.classList.remove('open');
+  if(b)b.classList.remove('show');
+}
+function toggleSideMenu(){
+  const m=document.getElementById('sideMenu');
+  if(!m)return;
+  if(m.classList.contains('open'))closeSideMenu();else openSideMenu();
+}
 
 /* ============ DETAILS STATE ============ */
 function saveOpenDetails(){document.querySelectorAll('details[data-did]').forEach(function(d){if(d.open)_openDetails[d.dataset.did]=true;else delete _openDetails[d.dataset.did];});}
@@ -1017,7 +1182,10 @@ function restoreOpenDetails(){document.querySelectorAll('details[data-did]').for
 /* ============ TOPBAR ============ */
 function topbarHTML(title){
   const isDark=document.body.classList.contains('dark');
-  let html='<div class="topbar"><h2>'+escapeHtml(title)+'</h2><div class="user-info"><span>'+escapeHtml(session.name)+'</span>';
+  let html='<div class="topbar"><div class="topbar-left">';
+  html+='<button class="menu-toggle" id="menuToggle" title="Меню"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>';
+  html+='<h2>'+escapeHtml(title)+'</h2></div>';
+  html+='<div class="user-info"><span>'+escapeHtml(session.name)+'</span>';
   if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria)){
     const pos=positionById(session.position);
     const extraCls=session.isCafeteria?' cafe':'';
@@ -1163,7 +1331,7 @@ function openEditTeacherModal(name){
   document.getElementById('editTeacherOverlay')?.remove();
   const o=document.createElement('div');o.className='modal-overlay';o.id='editTeacherOverlay';
   let html='<div class="modal" style="max-width:600px"><div class="modal-header"><h3>Редактирование</h3><button class="modal-close" id="etClose">×</button></div><div class="modal-body">';
-  html+='<div class="edit-info"><b>'+escapeHtml(t.name)+'</b><br>Должность, классное руководство, предметы и классы.</div>';
+  html+='<div class="edit-info"><b>'+escapeHtml(t.name)+'</b></div>';
   html+='<label>Должность</label><select id="etPosition">'+optionsHTML(POSITIONS,t.position||'teacher','id')+'</select>';
   html+='<label>Классное руководство</label><select id="etHrClass"><option value="">— нет —</option>'+optionsHTML(CLASSES,t.class||'')+'</select>';
   html+='<details style="margin-top:14px" open><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">Предметы</summary><div class="checkbox-group">';
@@ -1196,7 +1364,7 @@ function openYearMenuModal(editMode){
   document.getElementById('yearMenuOverlay')?.remove();
   const o=document.createElement('div');o.className='modal-overlay';o.id='yearMenuOverlay';
   let html='<div class="modal" style="max-width:760px"><div class="modal-header"><h3>'+(editMode?'Изменение меню на год':'Создать меню на весь год')+'</h3><button class="modal-close" id="ymClose">×</button></div><div class="modal-body">';
-  html+='<div class="edit-info">Шаблон на каждый будний день. Меню создастся до <b>'+formatDate(endDate)+'</b>. '+(editMode?'Существующее меню на эти дни будет <b>перезаписано</b>.':'Уже существующие блюда не перезапишутся.')+'</div>';
+  html+='<div class="edit-info">Шаблон на каждый будний день до <b>'+formatDate(endDate)+'</b>. '+(editMode?'<b>Перезапишет</b> существующее.':'Существующее не перезапишется.')+'</div>';
   const days=['Пн','Вт','Ср','Чт','Пт'];
   const existingTemplate={};
   if(editMode){
@@ -1213,10 +1381,10 @@ function openYearMenuModal(editMode){
     html+='<div style="background:var(--bg-subtle);padding:12px 14px;border-radius:12px;margin-bottom:10px;border:1px solid var(--border)">';
     html+='<div style="font-weight:800;font-size:13.5px;margin-bottom:10px">'+d+'</div>';
     html+='<div class="grid-2">';
-    html+='<div><label style="margin-top:0">Завтрак</label><input type="text" data-ym-day="'+d+'" data-ym-field="breakfast" placeholder="Каша, чай" value="'+escapeHtml(t.breakfast)+'"></div>';
-    html+='<div><label style="margin-top:0">Цена завтрака (₽)</label><input type="number" data-ym-day="'+d+'" data-ym-field="bfPrice" value="'+t.bfPrice+'" min="0"></div>';
-    html+='<div><label style="margin-top:0">Обед</label><input type="text" data-ym-day="'+d+'" data-ym-field="lunch" placeholder="Суп, второе" value="'+escapeHtml(t.lunch)+'"></div>';
-    html+='<div><label style="margin-top:0">Цена обеда (₽)</label><input type="number" data-ym-day="'+d+'" data-ym-field="lnPrice" value="'+t.lnPrice+'" min="0"></div>';
+    html+='<div><label style="margin-top:0">Завтрак</label><input type="text" data-ym-day="'+d+'" data-ym-field="breakfast" value="'+escapeHtml(t.breakfast)+'"></div>';
+    html+='<div><label style="margin-top:0">Цена (₽)</label><input type="number" data-ym-day="'+d+'" data-ym-field="bfPrice" value="'+t.bfPrice+'" min="0"></div>';
+    html+='<div><label style="margin-top:0">Обед</label><input type="text" data-ym-day="'+d+'" data-ym-field="lunch" value="'+escapeHtml(t.lunch)+'"></div>';
+    html+='<div><label style="margin-top:0">Цена (₽)</label><input type="number" data-ym-day="'+d+'" data-ym-field="lnPrice" value="'+t.lnPrice+'" min="0"></div>';
     html+='</div></div>';
   }
   html+='</div><div class="modal-footer"><button class="btn btn-secondary" id="ymCancel">Отмена</button><button class="btn '+(editMode?'btn-danger':'btn-success')+'" id="ymCreate">'+(editMode?'Перезаписать':'Создать')+'</button></div></div>';
@@ -1236,7 +1404,7 @@ function openYearMenuModal(editMode){
       if(bf||ln)template[d]={breakfast:bf,bfPrice:bfP,lunch:ln,lnPrice:lnP};
     }
     if(!Object.keys(template).length)return toast('Заполните хотя бы один день',true);
-    if(!confirm((editMode?'Перезаписать':'Создать')+' меню на весь учебный год?'))return;
+    if(!confirm((editMode?'Перезаписать':'Создать')+' меню?'))return;
     const added=createMenuForYear(template,editMode);
     logAction(editMode?'upd':'add','Меню на год: '+added+' дней');
     toast((editMode?'Обновлено ':'Добавлено ')+added+' блюд');close();renderApp();
@@ -1263,7 +1431,7 @@ function openEditMenuItemModal(itemId){
   });
 }
 
-/* ============ ГЛАВНЫЙ RENDER ============ */
+/* ============ RENDER APP ============ */
 function renderApp(){
   saveOpenDetails();
   if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');else document.body.classList.remove('dark');
@@ -1276,13 +1444,35 @@ function renderApp(){
     else if(session.role==='parent')body=renderParentView();
     else body=renderAdminView();
   }catch(e){console.error('Render error:',e);body='<div class="card"><h3>Ошибка</h3><p>'+escapeHtml(e.message)+'</p></div>';}
-  document.getElementById('app').innerHTML=topbarHTML(titles[session.role]||'Классный')+renderSubnav()+'<div class="container">'+body+'</div>';
+  document.getElementById('app').innerHTML=topbarHTML(titles[session.role]||'Классный')+renderMenu()+'<div class="container">'+body+'</div>';
   bindLogout();bindBell();bindThemeToggle();bindSubnav();bindClassSwitch();bindAllEvents();
   restoreOpenDetails();
   setTimeout(function(){if(currentView==='reports')drawReportsCharts();},50);
 }
 
-/* ============ TEACHER VIEW ============ */
+/* ============ BIND SUBNAV (меню) ============ */
+function bindSubnav(){
+  document.getElementById('menuToggle')?.addEventListener('click',function(e){
+    e.stopPropagation();
+    toggleSideMenu();
+  });
+  document.getElementById('sideMenuClose')?.addEventListener('click',function(){
+    closeSideMenu();
+  });
+  document.getElementById('sideMenuBackdrop')?.addEventListener('click',function(){
+    closeSideMenu();
+  });
+  document.querySelectorAll('[data-view]').forEach(function(t){
+    t.addEventListener('click',function(){
+      currentView=t.dataset.view;
+      closeSideMenu();
+      renderApp();
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+}
+
+/* ============ TEACHER ============ */
 function renderTeacherView(){
   if(session.isCafeteria){if(currentView==='settings')return renderSettings();return renderCafeteria();}
   if(currentView==='homework'&&session.isManager){currentView='home';return renderTeacherHome();}
@@ -1297,7 +1487,6 @@ function renderTeacherView(){
   };
   return (dispatch[currentView]||renderTeacherHome)();
 }
-
 function renderTeacherHome(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
@@ -1317,63 +1506,54 @@ function renderTeacherHome(){
   const todaySubs=data.substitutions.filter(function(s){return s.date===todayISO();});
   const scheduleToday=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
   const allFlags=students.map(function(s){return {student:s,flags:getStudentFlags(s.name,cls)};}).filter(function(x){return x.flags.length>0;});
-  const myClubs=getClubsForTeacher(session.name);
   const upcomingEvents=data.events.filter(function(e){return e.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3);
-
   let html='';
-  if(session.isDirector)html+='<div class="manager-info">Вы <b>директор школы</b>. Доступны все классы, отчёты и управление пользователями.</div>';
-  else if(session.position==='zavuch')html+='<div class="manager-info">Вы <b>завуч</b>. Доступны все классы, расписание, отчёты по всей школе.</div>';
+  if(session.isDirector)html+='<div class="manager-info">Вы <b>директор школы</b>.</div>';
+  else if(session.position==='zavuch')html+='<div class="manager-info">Вы <b>завуч</b>.</div>';
   else if(!session.isHomeroom)html+='<div class="teacher-role-info">Вы вошли как <b>учитель-предметник</b> в '+escapeHtml(cls)+' классе.</div>';
   else if(session.homeroomClass)html+='<div class="teacher-role-info">Вы <b>классный руководитель</b> '+escapeHtml(cls)+' класса.</div>';
-
   html+='<div class="stats">';
   html+='<div class="stat"><div class="num">'+students.length+'</div><div class="lbl">Учеников</div></div>';
   html+='<div class="stat"><div class="num'+(todayAbs.length>0?' warn':'')+'">'+todayAbs.length+'</div><div class="lbl">Отсутствуют</div></div>';
-  html+='<div class="stat"><div class="num'+(todayLates.length>0?' warn':'')+'">'+todayLates.length+'</div><div class="lbl">Опоздали сегодня</div></div>';
+  html+='<div class="stat"><div class="num'+(todayLates.length>0?' warn':'')+'">'+todayLates.length+'</div><div class="lbl">Опоздали</div></div>';
   if(!session.isManager)html+='<div class="stat"><div class="num'+(debtors.length>0?' warn':' ok')+'">'+debtors.length+'</div><div class="lbl">Должников</div></div>';
   else html+='<div class="stat"><div class="num">'+pendingAbs.length+'</div><div class="lbl">На рассмотрении</div></div>';
   html+='</div>';
-
   const attention=[];
   if(pendingAbs.length)attention.push({type:'danger',text:'Пропусков на рассмотрении: '+pendingAbs.length,block:'attendance'});
   if(!session.isManager&&debtors.length)attention.push({type:'danger',text:'Учеников с долгами: '+debtors.length,block:'homework'});
   if(pendingReqs.length)attention.push({type:'info',text:'Заявок на справки: '+pendingReqs.length,block:'requests'});
   if(openQ.length)attention.push({type:'info',text:'Вопросов без ответа: '+openQ.length,block:'questions'});
-  if(todayDuties.length)attention.push({type:'info',text:'Дежурят по классу: '+todayDuties.map(function(d){return d.studentName;}).join(', '),block:'duties'});
+  if(todayDuties.length)attention.push({type:'info',text:'Дежурят: '+todayDuties.map(function(d){return d.studentName;}).join(', '),block:'duties'});
   if(todaySubs.length)attention.push({type:'info',text:'Замен сегодня: '+todaySubs.length,block:'substitutions'});
-  if(activeWeek){const doneCount=activeWeek.posts.filter(function(p){return p.done;}).length;const total=activeWeek.posts.length;const allDone=doneCount===total;attention.push({type:allDone?'success':'danger',text:'Дежурство по школе: '+activeWeek.class+' — '+doneCount+'/'+total,block:'duties'});}
-
+  if(activeWeek){const doneCount=activeWeek.posts.filter(function(p){return p.done;}).length;const total=activeWeek.posts.length;attention.push({type:doneCount===total?'success':'danger',text:'Дежурство по школе: '+activeWeek.class+' — '+doneCount+'/'+total,block:'duties'});}
   if(attention.length){
     html+='<div class="card"><h3>Требует внимания</h3><div class="attention-list">';
-    for(const a of attention){html+='<div class="attention-item '+(a.type||'info')+'" data-attention-block="'+a.block+'"><div class="attention-text"><b>'+escapeHtml(a.text)+'</b></div><button class="btn btn-secondary btn-sm">Перейти</button></div>';}
+    for(const a of attention)html+='<div class="attention-item '+(a.type||'info')+'" data-attention-block="'+a.block+'"><div class="attention-text"><b>'+escapeHtml(a.text)+'</b></div><button class="btn btn-secondary btn-sm">Перейти</button></div>';
     html+='</div></div>';
   }
-
   if(session.isManager){
     const sum=getSchoolSummary();
-    html+='<div class="card"><h3>Общая сводка по школе</h3>';
+    html+='<div class="card"><h3>Сводка по школе</h3>';
     html+='<div class="stats" style="margin-bottom:14px">';
     html+='<div class="stat"><div class="num">'+sum.grandTotal+'</div><div class="lbl">Всего пропусков</div></div>';
     html+='<div class="stat"><div class="num ok">'+sum.grandGood+'</div><div class="lbl">Уважительных</div></div>';
     html+='<div class="stat"><div class="num warn">'+sum.grandBad+'</div><div class="lbl">Неуважительных</div></div>';
-    html+='<div class="stat"><div class="num">'+sum.grandLates+'</div><div class="lbl">Всего опозданий</div></div>';
-    html+='</div>';
-    html+='<div class="school-summary-row header"><div>Класс</div><div>Классрук</div><div style="text-align:right">Проп.</div><div style="text-align:right">Опозд.</div><div style="text-align:right">Учеников</div></div>';
-    for(const r of sum.rows){html+='<div class="school-summary-row"><div class="cls">'+escapeHtml(r.cls)+'</div><div style="color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(r.teacher)+'</div><div style="text-align:right;font-weight:700">'+r.total+'</div><div style="text-align:right;color:var(--warn)">'+r.lates+'</div><div style="text-align:right">'+r.students+'</div></div>';}
+    html+='<div class="stat"><div class="num">'+sum.grandLates+'</div><div class="lbl">Опозданий</div></div></div>';
+    html+='<div class="school-summary-row header"><div>Класс</div><div>Классрук</div><div style="text-align:right">Проп.</div><div style="text-align:right">Опозд.</div><div style="text-align:right">Уч.</div></div>';
+    for(const r of sum.rows)html+='<div class="school-summary-row"><div class="cls">'+escapeHtml(r.cls)+'</div><div style="color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(r.teacher)+'</div><div style="text-align:right;font-weight:700">'+r.total+'</div><div style="text-align:right;color:var(--warn)">'+r.lates+'</div><div style="text-align:right">'+r.students+'</div></div>';
     html+='</div>';
   }
-
   html+='<div class="grid-2">';
-  html+='<div class="card"><h3>Расписание на сегодня</h3>';
+  html+='<div class="card"><h3>Расписание сегодня</h3>';
   if(scheduleToday.length){for(let i=0;i<scheduleToday.length;i++){const subj=scheduleToday[i];const has=session.isHomeroom||session.isManager||session.subjects.indexOf(subj)>=0;html+='<div class="hw-card" style="'+(has?'':'opacity:.5')+'"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(subj)+'</div></div>';}}
   else html+='<div class="empty">Уроков нет</div>';
   html+='</div>';
-  html+='<div class="card"><h3>Ближайшие мероприятия</h3>';
-  if(upcomingEvents.length){for(const e of upcomingEvents){const t=eventTypeById(e.type);html+='<div class="hw-card"><span class="event-type '+t.cls+'">'+t.name+'</span><div class="hw-card-title" style="margin-top:4px">'+escapeHtml(e.title)+'</div><div class="hw-card-meta">'+formatDate(e.date)+(e.place?' · '+escapeHtml(e.place):'')+'</div></div>';}}
+  html+='<div class="card"><h3>Ближайшее</h3>';
+  if(upcomingEvents.length){for(const e of upcomingEvents){const t=eventTypeById(e.type);html+='<div class="hw-card"><span class="event-type '+t.cls+'">'+t.name+'</span><div class="hw-card-title" style="margin-top:4px">'+escapeHtml(e.title)+'</div><div class="hw-card-meta">'+formatDate(e.date)+'</div></div>';}}
   else html+='<div class="empty">Мероприятий нет</div>';
-  if(upcomingTrips.length){html+='<div style="margin-top:14px"><b style="font-size:13px">Экскурсии:</b> ';for(const t of upcomingTrips){html+='<div class="hw-card" style="margin-top:6px"><div class="hw-card-title">➤ '+escapeHtml(t.title)+'</div><div class="hw-card-meta">'+formatDate(t.date)+(t.place?' · '+escapeHtml(t.place):'')+'</div></div>';}html+='</div>';}
+  if(upcomingTrips.length){html+='<div style="margin-top:14px"><b style="font-size:13px">Экскурсии:</b>';for(const t of upcomingTrips)html+='<div class="hw-card" style="margin-top:6px"><div class="hw-card-title">➤ '+escapeHtml(t.title)+'</div><div class="hw-card-meta">'+formatDate(t.date)+'</div></div>';html+='</div>';}
   html+='</div></div>';
-
   if(allFlags.length){
     html+='<div class="card"><h3>Ученики требуют внимания</h3>';
     for(const x of allFlags){const initials=x.student.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');html+='<div class="student-card" data-open-student="'+escapeHtml(x.student.name)+'"><div class="student-avatar">'+escapeHtml(initials)+'</div><div class="student-info"><div class="student-name">'+escapeHtml(x.student.name)+'</div><div class="student-meta">';for(const f of x.flags)html+='<span class="flag-badge '+f.type+'">'+escapeHtml(f.text)+'</span>';html+='</div></div></div>';}
@@ -1382,52 +1562,36 @@ function renderTeacherHome(){
   return html;
 }
 
-/* === ОПОЗДАНИЯ (учитель) === */
 function renderLates(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
   const latesAll=getSessionLates();
   let list=latesAll.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(b.time||'').localeCompare(a.time||'');});
-  const canEdit=!session.isManager||true;
   const todayCount=list.filter(function(l){return l.date===todayISO();}).length;
   const weekAgo=addDays(todayISO(),-7);
   const weekCount=list.filter(function(l){return l.date>=weekAgo;}).length;
-
   let html='<div class="stats">';
   html+='<div class="stat"><div class="num">'+list.length+'</div><div class="lbl">Всего опозданий</div></div>';
   html+='<div class="stat"><div class="num'+(todayCount>0?' warn':'')+'">'+todayCount+'</div><div class="lbl">Сегодня</div></div>';
-  html+='<div class="stat"><div class="num'+(weekCount>0?' warn':'')+'">'+weekCount+'</div><div class="lbl">За неделю</div></div>';
-  html+='</div>';
-
-  if(canEdit){
-    const availableSubjects=getSessionAvailableSubjects();
-    html+='<div class="card"><h3>Отметить опоздание</h3><form id="lateForm"><div class="grid-2">';
-    html+='<div><label>Дата</label><input type="date" id="ltDate" value="'+todayISO()+'"></div>';
-    html+='<div><label>Ученик</label><select id="ltStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
-    html+='<div><label>Предмет</label><select id="ltSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
-    html+='<div><label>Время прихода</label><input type="time" id="ltTime" value="08:15"></div>';
-    html+='</div><label>Комментарий</label><input type="text" id="ltNote" placeholder="Причина / примечание">';
-    html+='<button type="submit" class="btn" style="margin-top:14px">Отметить</button></form></div>';
-  }
-
+  html+='<div class="stat"><div class="num'+(weekCount>0?' warn':'')+'">'+weekCount+'</div><div class="lbl">За неделю</div></div></div>';
+  const availableSubjects=getSessionAvailableSubjects();
+  html+='<div class="card"><h3>Отметить опоздание</h3><form id="lateForm"><div class="grid-2">';
+  html+='<div><label>Дата</label><input type="date" id="ltDate" value="'+todayISO()+'"></div>';
+  html+='<div><label>Ученик</label><select id="ltStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
+  html+='<div><label>Предмет</label><select id="ltSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
+  html+='<div><label>Время прихода</label><input type="time" id="ltTime" value="08:15"></div>';
+  html+='</div><label>Комментарий</label><input type="text" id="ltNote">';
+  html+='<button type="submit" class="btn" style="margin-top:14px">Отметить</button></form></div>';
   html+='<div class="card"><h3>Журнал опозданий ('+list.length+')</h3>';
   if(list.length){
     html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Время</th><th>ФИО</th><th>Предмет</th><th>Примечание</th><th></th></tr></thead><tbody>';
-    for(const l of list){
-      html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td>';
-      html+='<td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td>';
-      html+='<td data-label="ФИО">'+escapeHtml(l.studentName)+'</td>';
-      html+='<td data-label="Предмет">'+escapeHtml(l.subject)+'</td>';
-      html+='<td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td>';
-      html+='<td><div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn btn-danger btn-sm" data-del-late="'+l.id+'">Удалить</button></div></td></tr>';
-    }
+    for(const l of list){html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td><td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td><td data-label="ФИО">'+escapeHtml(l.studentName)+'</td><td data-label="Предмет">'+escapeHtml(l.subject)+'</td><td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn btn-danger btn-sm" data-del-late="'+l.id+'">Удалить</button></div></td></tr>';}
     html+='</tbody></table></div>';
   }else html+='<div class="empty">Опозданий нет</div>';
   html+='</div>';
   return html;
 }
 
-/* === ЗАМЕНЫ === */
 function renderSubstitutions(){
   const canEdit=canManageSubstitutions();
   const all=data.substitutions.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
@@ -1441,10 +1605,10 @@ function renderSubstitutions(){
     html+='<div><label>Дата</label><input type="date" id="subDate" value="'+todayISO()+'"></div>';
     html+='<div><label>Класс</label><select id="subClass">'+optionsHTML(CLASSES,'')+'</select></div>';
     html+='<div><label>Предмет</label><select id="subSubject">'+optionsHTML(getSubjects(CLASSES[0]),'')+'</select></div>';
-    html+='<div><label>Кто болеет/отсутствует</label><input type="text" id="subOriginal" placeholder="Иванова И.И."></div>';
+    html+='<div><label>Кто отсутствует</label><input type="text" id="subOriginal" placeholder="Иванова И.И."></div>';
     html+='<div><label>Кто заменяет</label><input type="text" id="subSubstitute" placeholder="Петрова А.С."></div>';
-    html+='<div class="full"><label>Причина</label><input type="text" id="subReason" placeholder="Болезнь, отпуск..."></div>';
-    html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать замену</button></form></div>';
+    html+='<div class="full"><label>Причина</label><input type="text" id="subReason"></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
   const renderGroup=function(title,items){
     if(!items.length)return '';
@@ -1452,8 +1616,7 @@ function renderSubstitutions(){
     for(const s of items){
       h+='<div class="subst-card"><div class="subst-head"><div><div class="subst-title">'+escapeHtml(s.class)+' · '+escapeHtml(s.subject)+'</div><div class="subst-meta">'+formatDate(s.date)+'</div></div>';
       if(canEdit)h+='<button class="btn btn-danger btn-sm" data-del-subst="'+s.id+'">✕</button>';
-      h+='</div>';
-      h+='<div style="font-size:13.5px;margin-top:6px"><span style="color:var(--danger);font-weight:700;text-decoration:line-through">'+escapeHtml(s.originalTeacher)+'</span><span class="subst-arrow">→</span><span style="color:var(--success);font-weight:700">'+escapeHtml(s.substituteTeacher)+'</span></div>';
+      h+='</div><div style="font-size:13.5px;margin-top:6px"><span style="color:var(--danger);font-weight:700;text-decoration:line-through">'+escapeHtml(s.originalTeacher)+'</span><span class="subst-arrow">→</span><span style="color:var(--success);font-weight:700">'+escapeHtml(s.substituteTeacher)+'</span></div>';
       if(s.reason)h+='<div class="subst-reason">'+escapeHtml(s.reason)+'</div>';
       h+='</div>';
     }
@@ -1467,7 +1630,6 @@ function renderSubstitutions(){
   return html;
 }
 
-/* === ЭКСКУРСИИ === */
 function renderTrips(){
   const role=session.role;
   const all=data.trips.slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
@@ -1478,7 +1640,7 @@ function renderTrips(){
     html+='<div class="card"><h3>Создать экскурсию</h3><form id="tripForm"><div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="tripTitle" placeholder="Поездка в музей"></div>';
     html+='<div><label>Дата</label><input type="date" id="tripDate" value="'+todayISO()+'"></div>';
-    html+='<div><label>Место</label><input type="text" id="tripPlace" placeholder="Государственный музей"></div>';
+    html+='<div><label>Место</label><input type="text" id="tripPlace"></div>';
     html+='<div><label>Стоимость (₽)</label><input type="number" id="tripPrice" value="0" min="0"></div>';
     html+='<div><label>Макс. мест</label><input type="number" id="tripMax" value="30" min="1"></div>';
     html+='<div><label>Организатор</label><input type="text" id="tripOrganizer" value="'+escapeHtml(session.name)+'"></div>';
@@ -1496,8 +1658,7 @@ function renderTrips(){
 }
 function renderTripCard(t,isFuture){
   const participants=t.participants||[];
-  const myName=session.name;
-  const imIn=participants.indexOf(myName)>=0;
+  const imIn=participants.indexOf(session.name)>=0;
   const canJoin=(session.role==='student'||session.role==='parent')&&isFuture;
   const canDelete=canCreateTrips();
   const isFull=(t.maxStudents&&participants.length>=t.maxStudents);
@@ -1507,7 +1668,7 @@ function renderTripCard(t,isFuture){
   if(t.price)html+='<span class="trip-price">'+t.price+' ₽</span>';
   html+='<span style="font-size:12.5px;color:var(--text-dim)">Участников: '+participants.length+'/'+(t.maxStudents||'∞')+'</span>';
   if(participants.length){
-    html+='<div class="trip-participants"><details data-did="trip-parts-'+t.id+'"><summary style="cursor:pointer;font-weight:600">Список участников ('+participants.length+')</summary><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">';
+    html+='<div class="trip-participants"><details data-did="trip-parts-'+t.id+'"><summary style="cursor:pointer;font-weight:600">Список ('+participants.length+')</summary><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">';
     for(const n of participants)html+='<span class="tag neutral">'+escapeHtml(n)+'</span>';
     html+='</div></details></div>';
   }
@@ -1522,7 +1683,6 @@ function renderTripCard(t,isFuture){
   return html;
 }
 
-/* === СПРАВКИ И ЗАЯВЛЕНИЯ === */
 function renderRequests(){
   const canProcess=canProcessRequests();
   const isUser=session.role==='student'||session.role==='parent';
@@ -1534,13 +1694,12 @@ function renderRequests(){
   const pending=all.filter(function(r){return r.status==='pending';});
   const ready=all.filter(function(r){return r.status==='ready';});
   const rejected=all.filter(function(r){return r.status==='rejected';});
-
   let html='';
   if(isUser){
-    html+='<div class="card"><h3>Заказать справку или заявление</h3><form id="reqForm"><div class="grid-2">';
+    html+='<div class="card"><h3>Заказать справку</h3><form id="reqForm"><div class="grid-2">';
     html+='<div><label>Тип</label><select id="reqType">'+optionsHTML(REQUEST_TYPES.map(function(t){return {id:t.id,name:t.name};}),'','id')+'</select></div>';
-    html+='<div class="full"><label>Назначение / текст</label><textarea id="reqPurpose" rows="2" placeholder="Для чего нужна справка или текст заявления"></textarea></div>';
-    html+='</div><button type="submit" class="btn" style="margin-top:14px">Отправить заявку</button></form></div>';
+    html+='<div class="full"><label>Назначение / текст</label><textarea id="reqPurpose" rows="2"></textarea></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Отправить</button></form></div>';
   }
   const renderGroup=function(title,items){
     if(!items.length)return '';
@@ -1554,9 +1713,7 @@ function renderRequests(){
       h+='<div class="req-card"><div class="req-head"><div><div class="req-title">'+escapeHtml(t.name)+'</div><div class="req-meta">'+escapeHtml(r.studentName)+' · '+escapeHtml(r.class)+' · '+formatDateTime(r.createdAt)+'</div></div>'+statusTag+'</div>';
       if(r.purpose)h+='<div class="req-body">'+escapeHtml(r.purpose)+'</div>';
       if(r.note)h+='<div style="font-size:12.5px;color:var(--accent);margin-top:6px;font-style:italic">Ответ: '+escapeHtml(r.note)+'</div>';
-      if(canProcess&&r.status==='pending'){
-        h+='<div class="req-actions"><button class="btn btn-success btn-sm" data-req-ready="'+r.id+'">Готово</button><button class="btn btn-danger btn-sm" data-req-reject="'+r.id+'">Отклонить</button></div>';
-      }
+      if(canProcess&&r.status==='pending')h+='<div class="req-actions"><button class="btn btn-success btn-sm" data-req-ready="'+r.id+'">Готово</button><button class="btn btn-danger btn-sm" data-req-reject="'+r.id+'">Отклонить</button></div>';
       if(canProcess&&r.status!=='pending')h+='<div class="req-actions"><button class="btn btn-danger btn-sm" data-req-del="'+r.id+'">Удалить</button></div>';
       h+='</div>';
     }
@@ -1580,8 +1737,7 @@ function renderAttendance(){
     if(uiState.filterStudent&&a.studentName!==uiState.filterStudent)return false;
     if(uiState.filterDate&&a.date!==uiState.filterDate)return false;
     return true;
-  });
-  list.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  }).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   const pending=absAll.filter(function(a){return a.status==='pending';}).length;
   let html='';
   if(canEdit){
@@ -1591,10 +1747,10 @@ function renderAttendance(){
     html+='<div><label>Ученик</label><select id="attStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
     html+='<div><label>Предмет</label><select id="attSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
     html+='<div><label>Причина</label><select id="attReason">'+optionsHTML(REASONS,'','id')+'</select></div>';
-    html+='</div><label>Комментарий</label><input type="text" id="attNote" placeholder="Справка №...">';
+    html+='</div><label>Комментарий</label><input type="text" id="attNote">';
     html+='<button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
   }else{
-    html+='<div class="card"><h3>Журнал посещаемости</h3><div class="edit-info">Просмотр журнала всех классов.</div></div>';
+    html+='<div class="card"><h3>Журнал посещаемости</h3><div class="edit-info">Просмотр журнала.</div></div>';
   }
   if(canEdit&&pending)html+='<div class="warning-banner" style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(217,119,6,.04));border-left-color:var(--warn)"><div class="warn-icon">◔</div><div class="warn-text" style="color:#92400e"><b>На рассмотрении: '+pending+'</b></div></div>';
   html+='<div class="card"><h3>Журнал ('+list.length+')</h3>';
@@ -1625,23 +1781,20 @@ function renderAttendance(){
 function renderHomework(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
-  const hw=getSessionHomework();
-  hw.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  const hw=getSessionHomework().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   const availableSubjects=getSessionAvailableSubjects();
   let html='<div class="card"><h3>Задать ДЗ</h3><form id="hwForm"><div class="grid-2">';
   html+='<div><label>Дата</label><input type="date" id="hwDate" value="'+todayISO()+'"></div>';
   html+='<div><label>Предмет</label><select id="hwSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
   html+='<div><label>Сдать до</label><input type="date" id="hwDeadline"></div></div>';
-  html+='<label>Текст задания</label><textarea id="hwText" rows="3" placeholder="Что задано..."></textarea>';
+  html+='<label>Текст задания</label><textarea id="hwText" rows="3"></textarea>';
   html+='<button type="submit" class="btn" style="margin-top:14px">Задать</button></form></div>';
   html+='<div class="card"><h3>Заданные работы ('+hw.length+')</h3>';
   if(hw.length){
     for(const h of hw){
       const total=students.length;const done=(h.done||[]).length;
       const debtors=students.filter(function(s){return !(h.done||[]).includes(s.name);});
-      html+='<div class="hw-card"><div class="hw-card-header"><div><div class="hw-card-title">'+escapeHtml(h.subject)+'</div>';
-      html+='<div class="hw-card-meta">'+formatDate(h.date)+(h.deadline?' · до '+formatDate(h.deadline):'')+'</div></div>';
-      html+='<button class="btn btn-danger btn-sm" data-del-hw="'+h.id+'">✕</button></div>';
+      html+='<div class="hw-card"><div class="hw-card-header"><div><div class="hw-card-title">'+escapeHtml(h.subject)+'</div><div class="hw-card-meta">'+formatDate(h.date)+(h.deadline?' · до '+formatDate(h.deadline):'')+'</div></div><button class="btn btn-danger btn-sm" data-del-hw="'+h.id+'">✕</button></div>';
       html+='<div class="hw-card-text">'+escapeHtml(h.text)+'</div>';
       html+='<div style="font-size:12.5px;margin-top:8px"><span style="color:var(--success);font-weight:800">Сдали: '+done+'/'+total+'</span>';
       if(debtors.length)html+=' <span style="color:var(--danger);font-weight:800">· не сдали: '+debtors.length+'</span>';
@@ -1650,8 +1803,7 @@ function renderHomework(){
       html+='<div class="hw-students-list" id="hw-manage-'+h.id+'" style="display:none">';
       for(const s of students){
         const isDone=(h.done||[]).includes(s.name);
-        html+='<div class="hw-student-row'+(isDone?' done':'')+'"><span>'+escapeHtml(s.name)+'</span>';
-        html+='<button class="hw-toggle-btn '+(isDone?'is-done':'is-not')+'" data-hw-toggle="'+h.id+'|'+escapeHtml(s.name)+'">'+(isDone?'Сдал':'Не сдал')+'</button></div>';
+        html+='<div class="hw-student-row'+(isDone?' done':'')+'"><span>'+escapeHtml(s.name)+'</span><button class="hw-toggle-btn '+(isDone?'is-done':'is-not')+'" data-hw-toggle="'+h.id+'|'+escapeHtml(s.name)+'">'+(isDone?'Сдал':'Не сдал')+'</button></div>';
       }
       html+='<div class="hw-actions-row"><button class="btn btn-secondary btn-sm" data-hw-all-done="'+h.id+'">Все сдали</button><button class="btn btn-secondary btn-sm" data-hw-all-clear="'+h.id+'">Сбросить</button></div></div></div>';
     }
@@ -1663,10 +1815,10 @@ function renderHomework(){
 function renderSchedule(){
   const cls=session.class;ensureSchedule(cls);
   const bells=data.bellSchedule;
-  let html='<div class="card"><h3>Расписание звонков</h3><div class="bells-grid">';
+  let html='<div class="card"><h3>Звонки</h3><div class="bells-grid">';
   for(const b of bells)html+='<div class="bell-item"><span class="bell-num">'+b.num+'</span><span class="bell-time">'+b.start+' – '+b.end+'</span></div>';
   html+='</div>';
-  if(canEditSchedule())html+='<button class="btn btn-secondary btn-sm" id="editBellsBtn" style="margin-top:14px">Редактировать звонки</button>';
+  if(canEditSchedule())html+='<button class="btn btn-secondary btn-sm" id="editBellsBtn" style="margin-top:14px">Редактировать</button>';
   html+='</div>';
   html+='<div class="card"><h3>Расписание — '+escapeHtml(cls)+'</h3>';
   const subsToday=data.substitutions.filter(function(s){return s.class===cls;});
@@ -1682,7 +1834,7 @@ function renderSchedule(){
     html+='</div>';
   }
   html+='</div>';
-  if(canEditSchedule())html+='<button class="btn" id="editScheduleBtn" style="margin-top:16px">Редактировать расписание</button>';
+  if(canEditSchedule())html+='<button class="btn" id="editScheduleBtn" style="margin-top:16px">Редактировать</button>';
   html+='</div>';
   return html;
 }
@@ -1694,21 +1846,21 @@ function renderClubs(){
   if(role==='student'||role==='parent')myClubs=getMyClubsForStudent(session.name);
   else if(role==='teacher')myClubs=getClubsForTeacher(session.name);
   let html='';
-  if(role!=='admin'&&myClubs.length){html+='<div class="card"><h3>Мои кружки ('+myClubs.length+')</h3><div class="clubs-grid">';for(const club of myClubs)html+=renderClubCard(club);html+='</div></div>';}
+  if(role!=='admin'&&myClubs.length){html+='<div class="card"><h3>Мои кружки</h3><div class="clubs-grid">';for(const club of myClubs)html+=renderClubCard(club);html+='</div></div>';}
   if(role==='student'||role==='parent'){
-    html+='<div class="card"><h3>Каталог кружков</h3>';
+    html+='<div class="card"><h3>Каталог</h3>';
     if(allClubs.length){html+='<div class="clubs-grid">';for(const club of allClubs){if(myClubs.some(function(c){return c.id===club.id;}))continue;html+=renderClubCard(club);}html+='</div>';}
-    else html+='<div class="empty">Кружков пока нет</div>';
+    else html+='<div class="empty">Кружков нет</div>';
     html+='</div>';
   }
   if(role==='teacher'){
-    if(myClubs.length){html+='<div class="card"><h3>Мои кружки — посещаемость</h3>';for(const club of myClubs){html+='<div class="club-card" style="margin-bottom:12px"><div class="club-title">'+escapeHtml(club.name)+'</div><div class="club-meta">'+escapeHtml(club.day)+' · '+escapeHtml(club.time)+' · '+escapeHtml(club.room||'—')+'</div><div class="club-meta">Записано: '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div><div class="date-input-row" style="margin-top:10px"><label style="margin:0;flex:0 0 auto">Дата:</label><input type="date" id="clubAttDate-'+club.id+'" value="'+todayISO()+'" style="flex:1;max-width:200px"><button class="btn btn-sm" data-club-attendance="'+club.id+'">Отметить</button><button class="btn btn-secondary btn-sm" data-club-attendance-view="'+club.id+'">История</button></div></div>';}html+='</div>';}
+    if(myClubs.length){html+='<div class="card"><h3>Посещаемость</h3>';for(const club of myClubs){html+='<div class="club-card" style="margin-bottom:12px"><div class="club-title">'+escapeHtml(club.name)+'</div><div class="club-meta">'+escapeHtml(club.day)+' · '+escapeHtml(club.time)+'</div><div class="club-meta">Записано: '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div><div class="date-input-row" style="margin-top:10px"><label style="margin:0;flex:0 0 auto">Дата:</label><input type="date" id="clubAttDate-'+club.id+'" value="'+todayISO()+'" style="flex:1;max-width:200px"><button class="btn btn-sm" data-club-attendance="'+club.id+'">Отметить</button><button class="btn btn-secondary btn-sm" data-club-attendance-view="'+club.id+'">История</button></div></div>';}html+='</div>';}
     else html+='<div class="card"><div class="empty">У вас пока нет своих кружков.</div></div>';
   }
   if(role==='admin'||session.isManager){
     html+='<div class="card"><h3>Создать кружок</h3><form id="clubForm"><div class="grid-2">';
-    html+='<div><label>Название</label><input type="text" id="clubName" placeholder="Шахматный клуб"></div>';
-    html+='<div><label>Руководитель</label><input type="text" id="clubTeacher" placeholder="Иванов И.И."></div>';
+    html+='<div><label>Название</label><input type="text" id="clubName"></div>';
+    html+='<div><label>Руководитель</label><input type="text" id="clubTeacher"></div>';
     html+='<div><label>День</label><select id="clubDay">'+optionsHTML(DAYS_OF_WEEK,'Пн')+'</select></div>';
     html+='<div><label>Время</label><input type="text" id="clubTime" value="15:00"></div>';
     html+='<div><label>Кабинет</label><input type="text" id="clubRoom"></div>';
@@ -1716,7 +1868,7 @@ function renderClubs(){
     html+='<div class="full"><label>Описание</label><textarea id="clubDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
     html+='<div class="card"><h3>Все кружки ('+allClubs.length+')</h3>';
-    if(allClubs.length){html+='<div class="clubs-grid">';for(const club of allClubs){html+='<div class="club-card"><div class="club-title">'+escapeHtml(club.name)+'</div><div class="club-meta"><b>Рук.:</b> '+escapeHtml(club.teacherName||'—')+'<br><b>Время:</b> '+escapeHtml(club.day)+' '+escapeHtml(club.time)+' · <b>Каб.:</b> '+escapeHtml(club.room||'—')+'<br><b>Записано:</b> '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div><div class="club-actions"><button class="btn btn-danger btn-sm" data-club-del="'+club.id+'">Удалить</button></div></div>';}html+='</div>';}
+    if(allClubs.length){html+='<div class="clubs-grid">';for(const club of allClubs){html+='<div class="club-card"><div class="club-title">'+escapeHtml(club.name)+'</div><div class="club-meta"><b>Рук.:</b> '+escapeHtml(club.teacherName||'—')+'<br><b>Время:</b> '+escapeHtml(club.day)+' '+escapeHtml(club.time)+'<br><b>Записано:</b> '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div><div class="club-actions"><button class="btn btn-danger btn-sm" data-club-del="'+club.id+'">Удалить</button></div></div>';}html+='</div>';}
     else html+='<div class="empty">Кружков нет</div>';
     html+='</div>';
   }
@@ -1745,10 +1897,10 @@ function renderEvents(){
   let html='';
   if(role==='admin'||session.isManager){
     html+='<div class="card"><h3>Создать мероприятие</h3><form id="eventForm"><div class="grid-2">';
-    html+='<div><label>Название</label><input type="text" id="evTitle" placeholder="Олимпиада"></div>';
+    html+='<div><label>Название</label><input type="text" id="evTitle"></div>';
     html+='<div><label>Тип</label><select id="evType">'+optionsHTML(EVENT_TYPES,'','id')+'</select></div>';
     html+='<div><label>Дата</label><input type="date" id="evDate" value="'+todayISO()+'"></div>';
-    html+='<div><label>Место</label><input type="text" id="evPlace" placeholder="Актовый зал"></div>';
+    html+='<div><label>Место</label><input type="text" id="evPlace"></div>';
     html+='<div class="full"><label>Описание</label><textarea id="evDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
@@ -1766,14 +1918,13 @@ function renderEventCard(ev,isFuture){
   const t=eventTypeById(ev.type);
   const participants=ev.participants||[];
   const canRegister=session.role==='student'||session.role==='parent'||session.role==='teacher';
-  const myName=session.name;
-  const imIn=participants.indexOf(myName)>=0;
+  const imIn=participants.indexOf(session.name)>=0;
   let html='<div class="event-card"><span class="event-type '+t.cls+'">'+t.name+'</span>';
   html+='<div class="event-title">'+escapeHtml(ev.title)+'</div>';
   html+='<div class="event-meta">Дата: '+formatDate(ev.date)+(ev.place?' · Место: '+escapeHtml(ev.place):'')+'</div>';
   if(ev.description)html+='<div style="font-size:13px;color:var(--text-mid);margin-bottom:10px">'+escapeHtml(ev.description)+'</div>';
   html+='<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px">Участников: '+participants.length+'</div>';
-  if(canRegister&&isFuture){if(imIn)html+='<button class="btn btn-secondary btn-sm" data-event-leave="'+ev.id+'">Отменить участие</button>';else html+='<button class="btn btn-success btn-sm" data-event-join="'+ev.id+'">Участвовать</button>';}
+  if(canRegister&&isFuture){if(imIn)html+='<button class="btn btn-secondary btn-sm" data-event-leave="'+ev.id+'">Отменить</button>';else html+='<button class="btn btn-success btn-sm" data-event-join="'+ev.id+'">Участвовать</button>';}
   if(session.role==='admin'||session.isManager)html+=' <button class="btn btn-danger btn-sm" data-event-del="'+ev.id+'">Удалить</button>';
   html+='</div>';
   return html;
@@ -1794,37 +1945,30 @@ function renderCafeteriaAdmin(){
     html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">';
     html+='<button class="btn btn-success" id="yearMenuBtn" style="flex:1;min-width:200px;padding:14px">Создать на весь учебный год</button>';
     html+='<button class="btn" id="editYearMenuBtn" style="flex:1;min-width:200px;padding:14px">Перезаписать меню на год</button>';
-    html+='<button class="btn btn-secondary" id="manageMenuBtn" style="flex:1;min-width:200px;padding:14px">Просмотр/правка меню</button>';
     html+='</div>';
     html+='<h4 style="margin:16px 0 10px;font-size:14px">Добавить одно блюдо</h4>';
     html+='<form id="menuForm"><div class="grid-2">';
     html+='<div><label>Дата</label><input type="date" id="menuDate" value="'+today+'"></div>';
     html+='<div><label>Приём</label><select id="menuMeal"><option value="breakfast">Завтрак</option><option value="lunch">Обед</option></select></div>';
-    html+='<div><label>Блюдо</label><input type="text" id="menuDish" placeholder="Каша"></div>';
+    html+='<div><label>Блюдо</label><input type="text" id="menuDish"></div>';
     html+='<div><label>Цена (₽)</label><input type="number" id="menuPrice" value="80" min="0"></div>';
-    html+='<div class="full"><label>Аллергены</label><input type="text" id="menuAllergens" placeholder="молоко"></div>';
+    html+='<div class="full"><label>Аллергены</label><input type="text" id="menuAllergens"></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
   }else{
     html+='<div class="card"><div class="edit-info">Меню изменяют только зав. столовой и администратор.</div></div>';
   }
-  // Manage menu section
   html+='<div class="card"><h3>Все блюда в меню</h3>';
   const futureMenu=data.menu.filter(function(m){return m.date>=today;}).sort(function(a,b){return a.date.localeCompare(b.date)||a.meal.localeCompare(b.meal);});
   if(futureMenu.length){
     html+='<div style="max-height:500px;overflow-y:auto;margin-bottom:8px">';
     for(const m of futureMenu.slice(0,300)){
-      html+='<div class="menu-edit-row">';
-      html+='<span style="font-weight:700;font-size:12px">'+formatDate(m.date)+'</span>';
-      html+='<span><b>'+(m.meal==='breakfast'?'З':'О')+'</b> '+escapeHtml(m.dish)+' · '+m.price+'₽</span>';
-      html+='<button class="btn btn-secondary btn-xs" data-menu-edit="'+m.id+'">✎</button>';
-      html+='<button class="btn btn-danger btn-xs" data-menu-del="'+m.id+'">✕</button>';
-      html+='</div>';
+      html+='<div class="menu-edit-row"><span style="font-weight:700;font-size:12px">'+formatDate(m.date)+'</span><span><b>'+(m.meal==='breakfast'?'З':'О')+'</b> '+escapeHtml(m.dish)+' · '+m.price+'₽</span>';
+      html+='<button class="btn btn-secondary btn-xs" data-menu-edit="'+m.id+'">✎</button><button class="btn btn-danger btn-xs" data-menu-del="'+m.id+'">✕</button></div>';
     }
     if(futureMenu.length>300)html+='<div style="text-align:center;font-size:12px;color:var(--text-dim);padding:8px">...и ещё '+(futureMenu.length-300)+'</div>';
     html+='</div>';
   }else html+='<div class="empty">Меню пока не создано</div>';
   html+='</div>';
-  // Orders
   const ordersForDate=data.mealOrders.filter(function(o){return o.date===selectedDate;});
   html+='<div class="card"><h3>Заказы на '+formatDate(selectedDate)+'</h3><div class="menu-date-tabs">';
   for(const d of dates){const a=d===selectedDate?' active':'';html+='<button class="menu-date-tab'+a+'" data-cafeteria-date="'+d+'">'+formatDate(d)+'</button>';}
@@ -1833,7 +1977,7 @@ function renderCafeteriaAdmin(){
     const bf=ordersForDate.filter(function(o){return o.breakfast;}).length;
     const ln=ordersForDate.filter(function(o){return o.lunch;}).length;
     html+='<div class="stats" style="margin-bottom:14px"><div class="stat"><div class="num">'+bf+'</div><div class="lbl">Завтраков</div></div><div class="stat"><div class="num">'+ln+'</div><div class="lbl">Обедов</div></div></div>';
-    html+='<details data-did="orders-'+selectedDate+'"><summary style="cursor:pointer;font-size:13.5px;color:var(--text-mid);font-weight:600;padding:6px 0">Список заказов</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Завтрак</th><th>Обед</th></tr></thead><tbody>';
+    html+='<details data-did="orders-'+selectedDate+'"><summary style="cursor:pointer;font-size:13.5px;color:var(--text-mid);font-weight:600;padding:6px 0">Список</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Завтрак</th><th>Обед</th></tr></thead><tbody>';
     for(const o of ordersForDate)html+='<tr><td data-label="Ученик">'+escapeHtml(o.studentName)+'</td><td data-label="Класс">'+escapeHtml(o.class)+'</td><td data-label="Завтрак">'+(o.breakfast?'✅':'—')+'</td><td data-label="Обед">'+(o.lunch?'✅':'—')+'</td></tr>';
     html+='</tbody></table></div></details>';
   }else html+='<div class="empty">Заказов нет</div>';
@@ -1846,7 +1990,7 @@ function renderCafeteriaUser(){
   const dates=[];for(let i=0;i<7;i++)dates.push(addDays(today,i));
   const menuForDate=data.menu.filter(function(m){return m.date===selectedDate;});
   const myOrder=data.mealOrders.find(function(o){return o.date===selectedDate&&o.studentName===session.name;});
-  let html='<div class="card"><h3>Меню на неделю</h3>';
+  let html='<div class="card"><h3>Меню</h3>';
   html+='<button class="btn btn-success" id="yearOrderBtn" style="margin-bottom:16px;width:100%;padding:14px">Заказать питание на весь учебный год</button>';
   html+='<div class="menu-date-tabs">';
   for(const d of dates){const a=d===selectedDate?' active':'';html+='<button class="menu-date-tab'+a+'" data-cafeteria-date="'+d+'">'+formatDate(d)+'</button>';}
@@ -1862,7 +2006,7 @@ function renderCafeteriaUser(){
 function renderAnnouncements(){
   const cls=session.class;
   const list=data.announcements.filter(function(a){return a.class===cls;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>Новое объявление классу</h3><form id="annForm"><textarea id="annText" rows="2" placeholder="Объявление..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
+  let html='<div class="card"><h3>Объявление классу</h3><form id="annForm"><textarea id="annText" rows="2" placeholder="Текст..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
   html+='<div class="card"><h3>История ('+list.length+')</h3>';
   if(list.length){for(const a of list)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div><button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-ann="'+a.id+'">Удалить</button></div>';}
   else html+='<div class="empty">Объявлений нет</div>';
@@ -1873,7 +2017,7 @@ function renderTeacherAnnouncements(){
   const canPost=canPostTeacherAnn();
   const list=data.teacherAnnouncements.slice().sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   let html='';
-  if(canPost)html+='<div class="card"><h3>Объявление учителям</h3><form id="taForm"><textarea id="taText" rows="2" placeholder="Объявление для всех учителей..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Опубликовать</button></form></div>';
+  if(canPost)html+='<div class="card"><h3>Объявление учителям</h3><form id="taForm"><textarea id="taText" rows="2" placeholder="Текст..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Опубликовать</button></form></div>';
   html+='<div class="card"><h3>Объявления учителям ('+list.length+')</h3>';
   if(list.length){for(const a of list){const pos=positionById(a.fromPosition||'teacher');html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+(pos.emoji||'')+' '+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div>'+(canPost?'<button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-ta="'+a.id+'">Удалить</button>':'')+'</div>';}}
   else html+='<div class="empty">Объявлений нет</div>';
@@ -1886,7 +2030,7 @@ function renderQuestions(){
   const closed=list.filter(function(q){return q.answered;});
   let html='<div class="card"><h3>Вопросы ('+list.length+')</h3><div style="margin-bottom:14px;font-size:13px"><b>Без ответа: '+open.length+'</b></div>';
   if(open.length){for(const q of open)html+='<div class="msg-item unread"><div class="msg-head"><span class="msg-from">'+escapeHtml(q.from)+'</span><span class="msg-time">'+formatDateTime(q.time)+'</span></div><div class="msg-text">'+escapeHtml(q.text)+'</div><div style="margin-top:10px;display:flex;gap:8px"><input type="text" id="ans-'+q.id+'" placeholder="Ответ..." style="flex:1"><button class="btn btn-sm" data-ans-q="'+q.id+'">Ответить</button></div></div>';}
-  else html+='<div class="empty">Все вопросы отвечены</div>';
+  else html+='<div class="empty">Все отвечены</div>';
   if(closed.length){html+='<div style="margin-top:16px"><b style="font-size:13px;color:var(--text-dim)">Отвеченные ('+closed.length+')</b></div>';for(const q of closed)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(q.from)+'</span><span class="msg-time">'+formatDateTime(q.time)+'</span></div><div class="msg-text">'+escapeHtml(q.text)+'</div><div class="msg-reply"><b>Ответ:</b> '+escapeHtml(q.answer)+'</div></div>';}
   html+='</div>';
   return html;
@@ -1910,7 +2054,7 @@ function renderNotes(){
   if(todos.length){todos.sort(function(a,b){return (a.done?1:0)-(b.done?1:0);});for(const t of todos)html+='<div class="todo-item'+(t.done?' done':'')+'"><button class="todo-check'+(t.done?' checked':'')+'" data-toggle-todo="'+t.id+'">✓</button><span class="todo-text">'+escapeHtml(t.text)+'</span><button class="todo-del" data-del-todo="'+t.id+'">✕</button></div>';}
   else html+='<div class="empty">Пусто</div>';
   html+='</div>';
-  html+='<div class="card"><h3>Личные заметки</h3><form id="noteForm"><textarea id="noteText" rows="2" placeholder="Заметка..." style="margin-bottom:10px"></textarea><select id="noteStudent" style="margin-bottom:10px"><option value="">— общая —</option>'+optionsHTML(getStudentsOfClass(session.class).map(function(s){return s.name;}),'')+'</select><button class="btn" type="submit">Сохранить</button></form>';
+  html+='<div class="card"><h3>Заметки</h3><form id="noteForm"><textarea id="noteText" rows="2" placeholder="Заметка..." style="margin-bottom:10px"></textarea><select id="noteStudent" style="margin-bottom:10px"><option value="">— общая —</option>'+optionsHTML(getStudentsOfClass(session.class).map(function(s){return s.name;}),'')+'</select><button class="btn" type="submit">Сохранить</button></form>';
   if(notes.length){html+='<div style="margin-top:14px">';for(const n of notes)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+(n.studentName?escapeHtml(n.studentName):'Общая')+'</span><span class="msg-time">'+formatDateTime(n.time)+'</span></div><div class="msg-text">'+escapeHtml(n.text)+'</div><button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-note="'+n.id+'">Удалить</button></div>';html+='</div>';}
   html+='</div></div>';
   return html;
@@ -1923,18 +2067,18 @@ function renderDuties(){
   html+='<div class="card"><h3>Дежурство по классу</h3>';
   if(session.isHomeroom||session.isManager)html+='<form id="dutyForm"><div class="grid-2"><div><label>Дата</label><input type="date" id="dutyDate" value="'+todayISO()+'"></div><div><label>Ученик</label><select id="dutyStudent">'+optionsHTML(getStudentsOfClass(cls).map(function(s){return s.name;}),'')+'</select></div></div><button type="submit" class="btn" style="margin-top:12px">Назначить</button></form>';
   if(classDuties.length){for(const d of classDuties){const isToday=d.date===todayISO();html+='<div class="duty-item'+(isToday?' duty-today':'')+'"><span>'+formatDate(d.date)+'</span><span><b>'+escapeHtml(d.studentName)+'</b>'+(isToday?' <span class="tag good">сегодня</span>':'')+'</span>'+(session.isHomeroom||session.isManager?'<button class="btn btn-danger btn-sm" data-del-duty="'+d.id+'">✕</button>':'')+'</div>';}}
-  else html+='<div class="empty">Дежурств по классу нет</div>';
+  else html+='<div class="empty">Дежурств нет</div>';
   html+='</div>';
   html+='<div class="card"><h3>Дежурство по школе (6–11)</h3>';
   if(session.isManager){
-    html+='<details data-did="posts-manage" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;font-size:13.5px;padding:8px 0;color:var(--text-mid)">Управление постами ('+data.schoolPosts.length+')</summary><div class="posts-list" style="margin-top:12px">';
+    html+='<details data-did="posts-manage" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;font-size:13.5px;padding:8px 0;color:var(--text-mid)">Посты ('+data.schoolPosts.length+')</summary><div class="posts-list" style="margin-top:12px">';
     for(const p of data.schoolPosts)html+='<span class="post-chip">'+escapeHtml(p.name)+'<button data-del-post="'+p.id+'">✕</button></span>';
     html+='</div><form id="addPostForm" style="display:flex;gap:8px;margin-top:10px"><input type="text" id="newPostName" placeholder="Новый пост" style="flex:1"><button class="btn btn-secondary btn-sm" type="submit">Добавить</button></form></details>';
     html+='<details data-did="create-week" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;font-size:13.5px;padding:8px 0;color:var(--text-mid)">Создать неделю</summary><form id="createWeekForm" style="margin-top:12px"><div class="grid-2"><div><label>Класс</label><select id="weekClass">'+optionsHTML(DUTY_CLASSES,'')+'</select></div><div><label>Начало (Пн)</label><input type="date" id="weekStart" value="'+nextMonday()+'"></div></div><button type="submit" class="btn" style="margin-top:12px">Создать</button></form></details>';
   }
   const active=getActiveSchoolWeek();
   if(active)html+=renderSchoolWeekCard(active,true);
-  else html+='<div class="empty">Сейчас нет активной недели</div>';
+  else html+='<div class="empty">Нет активной недели</div>';
   const others=data.schoolDutyWeeks.filter(function(w){return !active||w.id!==active.id;}).sort(function(a,b){return b.startDate.localeCompare(a.startDate);});
   if(others.length){html+='<details data-did="weeks-all" style="margin-top:16px"><summary style="cursor:pointer;font-weight:700;font-size:13.5px;color:var(--text-mid);padding:8px 0">Все недели ('+others.length+')</summary>';for(const w of others.slice(0,40))html+=renderSchoolWeekCard(w,false);html+='</details>';}
   html+='</div>';
@@ -1953,7 +2097,7 @@ function renderSchoolWeekCard(week,isActive){
   const progressPct=total?Math.round(doneCount/total*100):0;
   let html='<div class="week-card'+(isActive?' active':'')+(week.transferred?' transferred':'')+(isActive?'':' week-old')+'">';
   html+='<div class="week-header"><div><div class="week-title">'+escapeHtml(week.class)+' класс'+(isActive?' <span class="tag good" style="font-size:10px">СЕЙЧАС</span>':'')+'</div><div class="week-dates">'+formatDate(week.startDate)+' — '+formatDate(week.endDate)+'</div></div>'+statusBadge+'</div>';
-  html+='<div class="week-progress"><span>'+doneCount+' из '+total+' постов</span><div class="week-progress-bar"><div class="week-progress-fill'+(allDone?' done':'')+'" style="width:'+progressPct+'%"></div></div></div>';
+  html+='<div class="week-progress"><span>'+doneCount+' из '+total+'</span><div class="week-progress-bar"><div class="week-progress-fill'+(allDone?' done':'')+'" style="width:'+progressPct+'%"></div></div></div>';
   for(const post of week.posts){
     html+='<div class="post-row'+(post.done?' done':'')+'"><div class="post-name">'+escapeHtml(post.postName)+'</div>';
     if(canEdit&&!week.transferred){const students=getStudentsOfClass(week.class);html+='<div class="post-student"><select data-post-assign="'+week.id+'|'+post.postId+'"><option value="">— не назначен —</option>';for(const s of students)html+='<option value="'+escapeHtml(s.name)+'"'+(s.name===post.studentName?' selected':'')+'>'+escapeHtml(s.name)+'</option>';html+='</select></div>';}
@@ -1977,11 +2121,10 @@ function renderReports(){
   html+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
   html+='<button class="btn" id="expAbsences">CSV: Пропуски</button>';
   if(!session.isManager)html+='<button class="btn" id="expHw">CSV: ДЗ</button>';
-  html+='<button class="btn" id="expLates">CSV: Опоздания</button>';
-  html+='</div></div>';
+  html+='<button class="btn" id="expLates">CSV: Опоздания</button></div></div>';
   if(session.isManager)html+='<div class="card"><h3>Сводка по школе</h3><button class="btn" id="expSchoolSummary">CSV: Все классы</button></div>';
   html+='<div class="card"><h3>Динамика посещаемости</h3><div class="chart-wrap"><canvas id="attChart"></canvas></div></div>';
-  html+='<div class="card"><h3>Опоздания по неделям</h3><div class="chart-wrap"><canvas id="lateChart"></canvas></div></div>';
+  html+='<div class="card"><h3>Опоздания</h3><div class="chart-wrap"><canvas id="lateChart"></canvas></div></div>';
   return html;
 }
 function drawReportsCharts(){
@@ -2014,7 +2157,7 @@ function renderSettings(){
   return html;
 }
 
-/* ============ STUDENT ============ */
+/* === STUDENT === */
 function renderStudentView(){
   const dispatch={home:renderStudentHome,homework:renderStudentHomework,absences:renderStudentAbsences,lates:renderStudentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,announcements:renderStudentAnnouncements,requests:renderRequests,questions:renderStudentQuestions};
   return (dispatch[currentView]||renderStudentHome)();
@@ -2027,7 +2170,6 @@ function renderStudentHome(){
   const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
   const lates=filterByPeriod(data.lates.filter(function(l){return l.class===cls&&l.studentName===name;}),cls);
   const schedule=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
-  const myClubs=getMyClubsForStudent(name);
   const myTrips=data.trips.filter(function(t){return (t.participants||[]).indexOf(name)>=0&&t.date>=todayISO();});
   let html='<div class="stats">';
   html+='<div class="stat"><div class="num'+(pending.length>0?' warn':' ok')+'">'+pending.length+'</div><div class="lbl">Долгов ДЗ</div></div>';
@@ -2053,7 +2195,7 @@ function renderStudentHomework(){
 function renderStudentAbsences(){
   const cls=session.class;const name=session.name;
   const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-  let html='<div class="card"><h3>Мои пропуски ('+abs.length+')</h3><button class="btn" id="addMyAbsBtn" style="margin-bottom:14px">Сообщить о пропуске</button>';
+  let html='<div class="card"><h3>Мои пропуски ('+abs.length+')</h3><button class="btn" id="addMyAbsBtn" style="margin-bottom:14px">Сообщить</button>';
   if(abs.length){html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Предмет</th><th>Причина</th><th>Статус</th></tr></thead><tbody>';for(const a of abs){const r=reasonById(a.reason);const st=a.status||'approved';const stIcon=st==='pending'?'◔':st==='rejected'?'✕':'✓';html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td><td data-label="Предмет">'+escapeHtml(a.subject)+'</td><td data-label="Причина"><span class="tag '+r.type+'">'+escapeHtml(r.name)+'</span></td><td data-label="Статус">'+stIcon+'</td></tr>';}html+='</tbody></table></div>';}
   else html+='<div class="empty">Пропусков нет</div>';
   html+='</div>';
@@ -2064,7 +2206,7 @@ function renderStudentLates(){
   const lates=filterByPeriod(data.lates.filter(function(l){return l.class===cls&&l.studentName===name;}),cls).sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(b.time||'').localeCompare(a.time||'');});
   let html='<div class="card"><h3>Мои опоздания ('+lates.length+')</h3>';
   if(lates.length){html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Время</th><th>Предмет</th><th>Примечание</th></tr></thead><tbody>';for(const l of lates)html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td><td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td><td data-label="Предмет">'+escapeHtml(l.subject)+'</td><td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td></tr>';html+='</tbody></table></div>';}
-  else html+='<div class="empty">Опозданий нет — отлично!</div>';
+  else html+='<div class="empty">Опозданий нет</div>';
   html+='</div>';
   return html;
 }
@@ -2080,7 +2222,7 @@ function renderStudentAnnouncements(){
 function renderStudentQuestions(){
   const cls=session.class;const name=session.name;
   const qs=data.questions.filter(function(q){return q.from===name&&q.class===cls;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>Задать вопрос</h3><form id="qForm"><textarea id="qText" rows="2" placeholder="Ваш вопрос..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
+  let html='<div class="card"><h3>Задать вопрос</h3><form id="qForm"><textarea id="qText" rows="2" placeholder="Вопрос..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
   html+='<div class="card"><h3>Мои вопросы ('+qs.length+')</h3>';
   if(qs.length){for(const q of qs)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+(q.answered?'Отвечено':'Ждёт')+'</span><span class="msg-time">'+formatDateTime(q.time)+'</span></div><div class="msg-text">'+escapeHtml(q.text)+'</div>'+(q.answer?'<div class="msg-reply"><b>Ответ:</b> '+escapeHtml(q.answer)+'</div>':'')+'</div>';}
   else html+='<div class="empty">Вопросов нет</div>';
@@ -2088,7 +2230,7 @@ function renderStudentQuestions(){
   return html;
 }
 
-/* ============ PARENT ============ */
+/* === PARENT === */
 function renderParentView(){
   const dispatch={home:renderParentHome,absences:renderParentAbsences,lates:renderParentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,requests:renderRequests,messages:renderParentMessages,notes:renderParentNotes};
   return (dispatch[currentView]||renderParentHome)();
@@ -2111,7 +2253,7 @@ function renderParentHome(){
 function renderParentAbsences(){
   const cls=session.class;const name=session.name;
   const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-  let html='<div class="card"><h3>Пропуски ('+abs.length+')</h3><button class="btn" id="addParentNoteBtn" style="margin-bottom:14px">Отправить записку</button>';
+  let html='<div class="card"><h3>Пропуски ('+abs.length+')</h3><button class="btn" id="addParentNoteBtn" style="margin-bottom:14px">Записка</button>';
   if(abs.length){html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Предмет</th><th>Причина</th><th>Статус</th></tr></thead><tbody>';for(const a of abs){const r=reasonById(a.reason);const st=a.status||'approved';const stIcon=st==='pending'?'◔':st==='rejected'?'✕':'✓';html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td><td data-label="Предмет">'+escapeHtml(a.subject)+'</td><td data-label="Причина"><span class="tag '+r.type+'">'+escapeHtml(r.name)+'</span></td><td data-label="Статус">'+stIcon+'</td></tr>';}html+='</tbody></table></div>';}
   else html+='<div class="empty">Пропусков нет</div>';
   html+='</div>';
@@ -2120,7 +2262,7 @@ function renderParentAbsences(){
 function renderParentLates(){
   const cls=session.class;const name=session.name;
   const lates=filterByPeriod(data.lates.filter(function(l){return l.class===cls&&l.studentName===name;}),cls).sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>Опоздания ребёнка ('+lates.length+')</h3>';
+  let html='<div class="card"><h3>Опоздания ('+lates.length+')</h3>';
   if(lates.length){html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Время</th><th>Предмет</th><th>Примечание</th></tr></thead><tbody>';for(const l of lates)html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td><td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td><td data-label="Предмет">'+escapeHtml(l.subject)+'</td><td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td></tr>';html+='</tbody></table></div>';}
   else html+='<div class="empty">Опозданий нет</div>';
   html+='</div>';
@@ -2139,7 +2281,7 @@ function renderParentMessages(){
 function renderParentNotes(){
   const name=session.name;
   const list=data.parentNotes.filter(function(n){return n.studentName===name;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>Записка учителю</h3><form id="noteParentForm"><div class="grid-2"><div><label>Дата</label><input type="date" id="pnDate" value="'+todayISO()+'"></div><div><label>Причина</label><select id="pnReason">'+optionsHTML(REASONS,'','id')+'</select></div></div><label>Текст</label><textarea id="pnText" rows="2" placeholder="Сообщение..."></textarea><button type="submit" class="btn" style="margin-top:12px">Отправить</button></form></div>';
+  let html='<div class="card"><h3>Записка</h3><form id="noteParentForm"><div class="grid-2"><div><label>Дата</label><input type="date" id="pnDate" value="'+todayISO()+'"></div><div><label>Причина</label><select id="pnReason">'+optionsHTML(REASONS,'','id')+'</select></div></div><label>Текст</label><textarea id="pnText" rows="2"></textarea><button type="submit" class="btn" style="margin-top:12px">Отправить</button></form></div>';
   html+='<div class="card"><h3>Отправленные ('+list.length+')</h3>';
   if(list.length){for(const n of list)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+formatDate(n.date)+'</span><span class="msg-time">'+formatDateTime(n.time)+'</span></div><div class="msg-text">'+escapeHtml(n.text)+'</div>'+(n.status==='approved'?'<div class="msg-reply">Принято</div>':'<span class="tag warn" style="margin-top:8px">На рассмотрении</span>')+'</div>';}
   else html+='<div class="empty">Записок нет</div>';
@@ -2147,13 +2289,13 @@ function renderParentNotes(){
   return html;
 }
 
-/* ============ ADMIN ============ */
+/* === ADMIN === */
 function renderAdminView(){
   const dispatch={users:renderAdminUsers,allclubs:renderClubs,allevents:renderEvents,menuadmin:renderCafeteria,belladmin:renderAdminBells,backups:renderAdminBackups,log:renderAdminLog};
   return (dispatch[currentView]||renderAdminUsers)();
 }
 function renderAdminBells(){
-  let html='<div class="card"><h3>Расписание звонков</h3><form id="bellsForm">';
+  let html='<div class="card"><h3>Звонки</h3><form id="bellsForm">';
   for(let i=0;i<data.bellSchedule.length;i++){const b=data.bellSchedule[i];html+='<div style="display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;align-items:center;margin-bottom:10px"><div class="bell-num">'+b.num+'</div><input type="time" data-bell-num="'+b.num+'" data-bell-field="start" value="'+b.start+'" style="padding:9px"><input type="time" data-bell-num="'+b.num+'" data-bell-field="end" value="'+b.end+'" style="padding:9px"></div>';}
   html+='<button type="submit" class="btn" style="margin-top:12px">Сохранить</button></form></div>';
   return html;
@@ -2162,10 +2304,10 @@ function renderAdminUsers(){
   const teachers=data.teachers.slice().sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
   const canEdit=session&&(session.role==='admin'||session.isDirector);
   let html='<div class="card"><h3>Добавить пользователя</h3><form id="addTeacherForm"><div class="grid-2">';
-  html+='<div><label>ФИО</label><input type="text" id="ntName" placeholder="Иванова Ирина"></div>';
+  html+='<div><label>ФИО</label><input type="text" id="ntName"></div>';
   html+='<div><label>Должность</label><select id="ntPosition">'+optionsHTML(POSITIONS,'teacher','id')+'</select></div>';
   html+='<div><label>Класс. рук.</label><select id="ntHrClass"><option value="">— нет —</option>'+optionsHTML(CLASSES,'')+'</select></div>';
-  html+='<div><label>PIN (пусто=1234)</label><input type="text" id="ntPin" maxlength="8"></div></div>';
+  html+='<div><label>PIN (1234)</label><input type="text" id="ntPin" maxlength="8"></div></div>';
   html+='<details data-did="add-t-subjects" style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0">Предметы</summary><div class="checkbox-group">';
   for(const s of ALL_SUBJECTS)html+='<label><input type="checkbox" class="nt-subject" value="'+escapeHtml(s)+'"><span>'+escapeHtml(s)+'</span></label>';
   html+='</div></details>';
@@ -2174,7 +2316,7 @@ function renderAdminUsers(){
   html+='</div></details>';
   html+='<button type="submit" class="btn" style="margin-top:16px">Добавить</button></form></div>';
   html+='<div class="card"><h3>Пользователи ('+teachers.length+')</h3>';
-  if(teachers.length){html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Должность</th><th>Роль</th><th>Действия</th></tr></thead><tbody>';for(const t of teachers){const pos=positionById(t.position);let role='';if(t.class)role+='<span class="tag good">Классрук '+escapeHtml(t.class)+'</span> ';if(t.subjects&&t.subjects.length)role+='<span class="tag" style="margin-top:4px;display:inline-block">'+t.subjects.length+' предм.</span>';if(!role)role='<span style="color:var(--text-dim)">—</span>';const posCls=t.position==='cafeteria'?' cafe':'';html+='<tr><td data-label="ФИО"><b>'+escapeHtml(t.name)+'</b></td><td data-label="Должность"><span class="tag position'+posCls+'">'+(pos.emoji||'')+' '+escapeHtml(pos.name)+'</span></td><td data-label="Роль">'+role+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">';if(canEdit){html+='<button class="btn btn-secondary btn-sm" data-tedit="'+escapeHtml(t.name)+'" title="Редактировать">✎</button><button class="btn btn-secondary btn-sm" data-treset="'+escapeHtml(t.name)+'">PIN</button><button class="btn btn-danger btn-sm" data-tdel="'+escapeHtml(t.name)+'">✕</button>';}else html+='<span style="color:var(--text-dim);font-size:11.5px">только просмотр</span>';html+='</div></td></tr>';}html+='</tbody></table></div>';}
+  if(teachers.length){html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Должность</th><th>Роль</th><th>Действия</th></tr></thead><tbody>';for(const t of teachers){const pos=positionById(t.position);let role='';if(t.class)role+='<span class="tag good">Классрук '+escapeHtml(t.class)+'</span> ';if(t.subjects&&t.subjects.length)role+='<span class="tag" style="margin-top:4px;display:inline-block">'+t.subjects.length+' предм.</span>';if(!role)role='<span style="color:var(--text-dim)">—</span>';const posCls=t.position==='cafeteria'?' cafe':'';html+='<tr><td data-label="ФИО"><b>'+escapeHtml(t.name)+'</b></td><td data-label="Должность"><span class="tag position'+posCls+'">'+(pos.emoji||'')+' '+escapeHtml(pos.name)+'</span></td><td data-label="Роль">'+role+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">';if(canEdit){html+='<button class="btn btn-secondary btn-sm" data-tedit="'+escapeHtml(t.name)+'">✎</button><button class="btn btn-secondary btn-sm" data-treset="'+escapeHtml(t.name)+'">PIN</button><button class="btn btn-danger btn-sm" data-tdel="'+escapeHtml(t.name)+'">✕</button>';}else html+='<span style="color:var(--text-dim);font-size:11.5px">просмотр</span>';html+='</div></td></tr>';}html+='</tbody></table></div>';}
   else html+='<div class="empty">Нет пользователей</div>';
   html+='</div>';
   return html;
@@ -2182,14 +2324,14 @@ function renderAdminUsers(){
 function renderAdminBackups(){return '<div class="card"><h3>Резервные копии</h3><p style="color:var(--text-dim);margin-bottom:14px;font-size:13px">Хранятся '+BACKUP_KEEP_DAYS+' дней.</p><div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap"><button class="btn" id="manualBackupBtn">Создать</button><button class="btn btn-secondary" id="refreshBackupsBtn">Обновить</button></div><div id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';}
 function renderAdminLog(){
   const log=data.log.slice().sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>История действий</h3>';
+  let html='<div class="card"><h3>История</h3>';
   if(log.length){html+='<div class="table-wrap"><table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Детали</th></tr></thead><tbody>';for(const l of log.slice(0,100))html+='<tr><td data-label="Время">'+formatDateTime(l.time)+'</td><td data-label="Кто">'+escapeHtml(l.user)+'</td><td data-label="Действие"><span class="tag neutral">'+escapeHtml(l.action)+'</span></td><td data-label="Детали">'+escapeHtml(l.details||'')+'</td></tr>';html+='</tbody></table></div>';}
   else html+='<div class="empty">Пусто</div>';
   html+='</div>';
   return html;
 }
 
-/* ============ МОДАЛКА ПРОФИЛЬ ============ */
+/* === МОДАЛКА ПРОФИЛЬ === */
 function openStudentProfile(name){
   const cls=session.class;
   const st=data.students.find(function(s){return s.class===cls&&s.name===name;});
@@ -2218,11 +2360,10 @@ function openStudentProfile(name){
   o.addEventListener('click',function(e){if(e.target===o)close();});
 }
 
-/* ============ МОДАЛКИ ЗАЯВОК ============ */
 function openAddAbsenceModal(){
   const cls=session.class;
   const o=document.createElement('div');o.className='modal-overlay';o.id='addAbsModal';
-  let html='<div class="modal" style="max-width:460px"><div class="modal-header"><h3>Сообщить о пропуске</h3><button class="modal-close" id="aaClose">×</button></div><div class="modal-body">';
+  let html='<div class="modal" style="max-width:460px"><div class="modal-header"><h3>Пропуск</h3><button class="modal-close" id="aaClose">×</button></div><div class="modal-body">';
   html+='<label>Дата</label><input type="date" id="aaDate" value="'+todayISO()+'">';
   html+='<label>Предмет</label><select id="aaSubject">'+optionsHTML(getLessonsFor(cls,todayISO()),'')+'</select>';
   html+='<label>Причина</label><select id="aaReason">'+optionsHTML(REASONS.filter(function(r){return r.type!=='bad';}),'','id')+'</select>';
@@ -2241,17 +2382,15 @@ function openAddAbsenceModal(){
     if(!date||!subject||!reason)return toast('Заполните',true);
     if(!isValidAbsenceDate(date))return toast('Неверная дата',true);
     data.absences.push({id:uid(),date:date,class:cls,studentName:session.name,subject:subject,reason:reason,note:note,addedBy:session.name,addedByRole:'student',status:'pending'});
-    const recipients=[];
     const hr=data.teachers.find(function(t){return t.class===cls;});
-    if(hr)recipients.push(hr.name);
-    for(const r of recipients)pushNotification('teacher',r,'Новый пропуск',session.name+' · '+formatDate(date),'absence');
+    if(hr)pushNotification('teacher',hr.name,'Новый пропуск',session.name+' · '+formatDate(date),'absence');
     saveData();toast('Отправлено');close();renderApp();
   });
 }
 function openAddParentNote(){
   const cls=session.class;const name=session.name;
   const o=document.createElement('div');o.className='modal-overlay';o.id='pnModal';
-  let html='<div class="modal" style="max-width:460px"><div class="modal-header"><h3>Записка учителю</h3><button class="modal-close" id="pnClose">×</button></div><div class="modal-body">';
+  let html='<div class="modal" style="max-width:460px"><div class="modal-header"><h3>Записка</h3><button class="modal-close" id="pnClose">×</button></div><div class="modal-body">';
   html+='<label>Дата</label><input type="date" id="pnDate2" value="'+todayISO()+'">';
   html+='<label>Причина</label><select id="pnReason2">'+optionsHTML(REASONS,'','id')+'</select>';
   html+='<label>Текст</label><textarea id="pnText2" rows="2"></textarea>';
@@ -2276,13 +2415,13 @@ function openAddParentNote(){
 function openMealYearOrderModal(){
   const endDate=getSchoolYearEnd();
   const startDate=addDays(todayISO(),1);
-  if(startDate>endDate)return toast('Учебный год уже закончился',true);
+  if(startDate>endDate)return toast('Год закончился',true);
   let count=0;let cur=startDate;
   while(cur<=endDate){const dow=new Date(cur+'T00:00:00').getDay();if(dow!==0&&dow!==6)count++;cur=addDays(cur,1);}
   document.getElementById('mealYearOverlay')?.remove();
   const o=document.createElement('div');o.className='modal-overlay';o.id='mealYearOverlay';
-  let html='<div class="modal" style="max-width:500px"><div class="modal-header"><h3>Заказ питания на весь год</h3><button class="modal-close" id="myClose">×</button></div><div class="modal-body">';
-  html+='<div class="edit-info">Будет создано заказов на <b>'+count+'</b> учебных дней (пн–пт), с '+formatDate(startDate)+' по '+formatDate(endDate)+'.</div>';
+  let html='<div class="modal" style="max-width:500px"><div class="modal-header"><h3>Питание на год</h3><button class="modal-close" id="myClose">×</button></div><div class="modal-body">';
+  html+='<div class="edit-info">Заказов на <b>'+count+'</b> учебных дней, с '+formatDate(startDate)+' по '+formatDate(endDate)+'.</div>';
   html+='<label>Что заказать</label><div class="checkbox-group"><label><input type="checkbox" id="myBreakfast" checked><span>Завтраки</span></label><label><input type="checkbox" id="myLunch" checked><span>Обеды</span></label></div></div><div class="modal-footer"><button class="btn btn-secondary" id="myCancel">Отмена</button><button class="btn btn-success" id="mySave">Заказать</button></div></div>';
   o.innerHTML=html;
   document.body.appendChild(o);
@@ -2293,18 +2432,18 @@ function openMealYearOrderModal(){
   document.getElementById('mySave').addEventListener('click',function(){
     const breakfast=document.getElementById('myBreakfast').checked;
     const lunch=document.getElementById('myLunch').checked;
-    if(!breakfast&&!lunch)return toast('Выберите приём пищи',true);
+    if(!breakfast&&!lunch)return toast('Выберите',true);
     let added=0;let cur=startDate;
     while(cur<=endDate){const dow=new Date(cur+'T00:00:00').getDay();if(dow!==0&&dow!==6){let order=data.mealOrders.find(function(o2){return o2.date===cur&&o2.studentName===session.name;});if(!order){order={id:uid(),date:cur,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);added++;}if(breakfast)order.breakfast=true;if(lunch)order.lunch=true;}cur=addDays(cur,1);}
-    saveData();toast('Заказано на '+added+' дней');close();renderApp();
+    saveData();toast('Заказано на '+added);close();renderApp();
   });
 }
-function clearMyMealOrders(){if(!confirm('Отменить ВСЕ ваши заказы?'))return;const before=data.mealOrders.length;data.mealOrders=data.mealOrders.filter(function(o){return o.studentName!==session.name;});saveData();toast('Отменено '+(before-data.mealOrders.length));renderApp();}
+function clearMyMealOrders(){if(!confirm('Отменить все заказы?'))return;const before=data.mealOrders.length;data.mealOrders=data.mealOrders.filter(function(o){return o.studentName!==session.name;});saveData();toast('Отменено '+(before-data.mealOrders.length));renderApp();}
 function openScheduleEditor(){
   const cls=session.class;ensureSchedule(cls);
   const subj=getSubjects(cls);
   const o=document.createElement('div');o.className='modal-overlay';o.id='schedEditorOverlay';
-  let html='<div class="modal" style="max-width:640px"><div class="modal-header"><h3>Расписание — '+escapeHtml(cls)+'</h3><button class="modal-close" id="seClose">×</button></div><div class="modal-body">';
+  let html='<div class="modal" style="max-width:640px"><div class="modal-header"><h3>Расписание '+escapeHtml(cls)+'</h3><button class="modal-close" id="seClose">×</button></div><div class="modal-body">';
   for(const d of DAYS_OF_WEEK){const lessons=data.schedules[cls][d]||[];html+='<div style="background:var(--bg-subtle);padding:12px 14px;border-radius:12px;margin-bottom:10px"><div style="font-weight:800;font-size:13px;margin-bottom:8px">'+d+'</div>';for(let i=0;i<lessons.length;i++)html+='<div style="display:flex;gap:6px;margin-bottom:5px"><select data-sched-day="'+d+'" data-sched-idx="'+i+'" style="flex:1;padding:7px 28px 7px 10px;font-size:12.5px;border-radius:8px">'+optionsHTML(subj,lessons[i])+'</select><button class="btn btn-danger btn-sm" data-sched-del="'+d+'|'+i+'">×</button></div>';html+='<button class="btn btn-secondary btn-sm" data-sched-add="'+d+'" style="margin-top:6px;width:100%">+ урок</button></div>';}
   html+='</div><div class="modal-footer"><button class="btn" id="seClose2">Готово</button></div></div>';
   o.innerHTML=html;
@@ -2319,7 +2458,7 @@ function openScheduleEditor(){
 }
 function openBellsEditor(){
   const o=document.createElement('div');o.className='modal-overlay';o.id='bellsEditorOverlay';
-  let html='<div class="modal" style="max-width:520px"><div class="modal-header"><h3>Редактор звонков</h3><button class="modal-close" id="beClose">×</button></div><div class="modal-body">';
+  let html='<div class="modal" style="max-width:520px"><div class="modal-header"><h3>Звонки</h3><button class="modal-close" id="beClose">×</button></div><div class="modal-body">';
   for(let i=0;i<data.bellSchedule.length;i++){const b=data.bellSchedule[i];html+='<div style="display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;align-items:center;margin-bottom:10px"><div class="bell-num">'+b.num+'</div><input type="time" data-bell-num="'+b.num+'" data-bell-field="start" value="'+b.start+'"><input type="time" data-bell-num="'+b.num+'" data-bell-field="end" value="'+b.end+'"></div>';}
   html+='</div><div class="modal-footer"><button class="btn" id="beSave">Сохранить</button></div></div>';
   o.innerHTML=html;
@@ -2353,9 +2492,9 @@ function openClubHistory(clubId){
   const club=getClubById(clubId);if(!club)return;
   const records=data.clubAttendance.filter(function(a){return a.clubId===clubId;}).sort(function(a,b){return b.date.localeCompare(a.date);});
   const o=document.createElement('div');o.className='modal-overlay';o.id='clubHistoryOverlay';
-  let html='<div class="modal" style="max-width:600px"><div class="modal-header"><h3>'+escapeHtml(club.name)+' — история</h3><button class="modal-close" id="chClose">×</button></div><div class="modal-body">';
+  let html='<div class="modal" style="max-width:600px"><div class="modal-header"><h3>'+escapeHtml(club.name)+'</h3><button class="modal-close" id="chClose">×</button></div><div class="modal-body">';
   if(!records.length)html+='<div class="empty">Нет записей</div>';
-  else{html+='<div style="margin-bottom:14px"><b>Всего занятий:</b> '+records.length+'</div><div class="table-wrap"><table><thead><tr><th>Дата</th><th>Присутствовало</th></tr></thead><tbody>';for(const r of records)html+='<tr><td data-label="Дата">'+formatDate(r.date)+'</td><td data-label="Присутствовало">'+((r.present||[]).length)+'</td></tr>';html+='</tbody></table></div>';}
+  else{html+='<div style="margin-bottom:14px"><b>Занятий:</b> '+records.length+'</div><div class="table-wrap"><table><thead><tr><th>Дата</th><th>Присутствовало</th></tr></thead><tbody>';for(const r of records)html+='<tr><td data-label="Дата">'+formatDate(r.date)+'</td><td data-label="Присутствовало">'+((r.present||[]).length)+'</td></tr>';html+='</tbody></table></div>';}
   html+='</div><div class="modal-footer"><button class="btn btn-secondary" id="chClose2">Закрыть</button></div></div>';
   o.innerHTML=html;
   document.body.appendChild(o);
@@ -2365,7 +2504,7 @@ function openClubHistory(clubId){
   o.addEventListener('click',function(e){if(e.target===o)close();});
 }
 
-/* ============ BIND EVENTS ============ */
+/* === BIND EVENTS === */
 function bindAllEvents(){
   document.querySelectorAll('details[data-did]').forEach(function(d){
     d.addEventListener('toggle',function(){if(d.open)_openDetails[d.dataset.did]=true;else delete _openDetails[d.dataset.did];});
@@ -2373,7 +2512,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-attention-block]').forEach(function(el){el.addEventListener('click',function(){currentView=el.dataset.attentionBlock;renderApp();window.scrollTo({top:0,behavior:'smooth'});});});
   document.querySelectorAll('[data-open-student]').forEach(function(el){el.addEventListener('click',function(e){if(e.target.closest('button'))return;openStudentProfile(el.dataset.openStudent);});});
 
-  // === Attendance ===
   document.getElementById('attForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('attDate').value,sn=document.getElementById('attStudent').value,subj=document.getElementById('attSubject').value,r=document.getElementById('attReason').value,note=document.getElementById('attNote').value.trim();
@@ -2391,7 +2529,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-reject]').forEach(function(b){b.addEventListener('click',function(){const a=data.absences.find(function(x){return x.id===b.dataset.reject;});if(!a||!confirm('Отклонить?'))return;a.status='rejected';saveData();toast('Отклонено',true);renderApp();});});
   document.querySelectorAll('[data-del-abs]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.absences=data.absences.filter(function(a){return a.id!==b.dataset.delAbs;});saveData();toast('Удалено');renderApp();});});
 
-  // === Lates ===
   document.getElementById('lateForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('ltDate').value,sn=document.getElementById('ltStudent').value,subj=document.getElementById('ltSubject').value,time=document.getElementById('ltTime').value,note=document.getElementById('ltNote').value.trim();
@@ -2402,7 +2539,6 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-late]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.lates=data.lates.filter(function(l){return l.id!==b.dataset.delLate;});saveData();toast('Удалено');renderApp();});});
 
-  // === Requests ===
   document.getElementById('reqForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const type=document.getElementById('reqType').value;
@@ -2410,14 +2546,13 @@ function bindAllEvents(){
     if(!type)return toast('Выберите тип',true);
     data.requests.push({id:uid(),type:type,studentName:session.name,class:session.class,purpose:purpose,status:'pending',createdBy:session.role,createdAt:new Date().toISOString(),note:''});
     const dir=data.teachers.find(function(t){return t.position==='director';});
-    if(dir)pushNotification('teacher',dir.name,'Новая заявка на справку',session.name+' · '+requestTypeById(type).name,'request');
+    if(dir)pushNotification('teacher',dir.name,'Новая заявка',session.name+' · '+requestTypeById(type).name,'request');
     saveData();toast('Отправлено');renderApp();
   });
-  document.querySelectorAll('[data-req-ready]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReady;});if(!r)return;const note=prompt('Комментарий (необязательно):','')||'';r.status='ready';r.readyAt=new Date().toISOString();r.note=note;saveData();toast('Отмечено готовым');pushNotification('parent',r.studentName,'Справка готова',requestTypeById(r.type).name,'request');renderApp();});});
-  document.querySelectorAll('[data-req-reject]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReject;});if(!r||!confirm('Отклонить?'))return;const note=prompt('Причина отклонения:','')||'';r.status='rejected';r.note=note;saveData();toast('Отклонено',true);renderApp();});});
+  document.querySelectorAll('[data-req-ready]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReady;});if(!r)return;const note=prompt('Комментарий:','')||'';r.status='ready';r.readyAt=new Date().toISOString();r.note=note;saveData();toast('Готово');pushNotification('parent',r.studentName,'Справка готова',requestTypeById(r.type).name,'request');renderApp();});});
+  document.querySelectorAll('[data-req-reject]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReject;});if(!r||!confirm('Отклонить?'))return;const note=prompt('Причина:','')||'';r.status='rejected';r.note=note;saveData();toast('Отклонено',true);renderApp();});});
   document.querySelectorAll('[data-req-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.requests=data.requests.filter(function(r){return r.id!==b.dataset.reqDel;});saveData();toast('Удалено');renderApp();});});
 
-  // === Trips ===
   document.getElementById('tripForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('tripTitle').value.trim();
@@ -2431,11 +2566,10 @@ function bindAllEvents(){
     data.trips.push({id:uid(),title:title,date:date,place:place,price:price,maxStudents:max,organizer:organizer,description:desc,participants:[],createdAt:new Date().toISOString(),createdBy:session.name});
     saveData();toast('Создано');renderApp();
   });
-  document.querySelectorAll('[data-trip-join]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripJoin);if(!t)return;if(!t.participants)t.participants=[];if(t.participants.indexOf(session.name)>=0)return;if(t.maxStudents&&t.participants.length>=t.maxStudents)return toast('Мест нет',true);if(!confirm('Подтверждаете участие в экскурсии «'+t.title+'»?'))return;t.participants.push(session.name);saveData();toast('Записаны (согласие получено)');renderApp();});});
-  document.querySelectorAll('[data-trip-leave]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripLeave);if(!t)return;if(!confirm('Отменить участие?'))return;t.participants=(t.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
+  document.querySelectorAll('[data-trip-join]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripJoin);if(!t)return;if(!t.participants)t.participants=[];if(t.participants.indexOf(session.name)>=0)return;if(t.maxStudents&&t.participants.length>=t.maxStudents)return toast('Мест нет',true);if(!confirm('Подтверждаете участие в «'+t.title+'»?'))return;t.participants.push(session.name);saveData();toast('Записаны');renderApp();});});
+  document.querySelectorAll('[data-trip-leave]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripLeave);if(!t)return;if(!confirm('Отменить?'))return;t.participants=(t.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-trip-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.trips=data.trips.filter(function(t){return t.id!==b.dataset.tripDel;});saveData();toast('Удалено');renderApp();});});
 
-  // === Substitutions ===
   document.getElementById('subClass')?.addEventListener('change',function(e){document.getElementById('subSubject').innerHTML=optionsHTML(getSubjects(e.target.value),'');});
   document.getElementById('substForm')?.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2447,13 +2581,12 @@ function bindAllEvents(){
     const reason=document.getElementById('subReason').value.trim();
     if(!date||!cls||!subject||!orig||!sub)return toast('Заполните',true);
     data.substitutions.push({id:uid(),date:date,class:cls,subject:subject,originalTeacher:orig,substituteTeacher:sub,reason:reason,createdAt:new Date().toISOString(),createdBy:session.name});
-    getStudentsOfClass(cls).forEach(function(s){pushNotification('student',s.name,'Замена урока',formatDate(date)+' · '+subject+' — '+sub,'subst');});
+    getStudentsOfClass(cls).forEach(function(s){pushNotification('student',s.name,'Замена',formatDate(date)+' · '+subject+' — '+sub,'subst');});
     logAction('add','Замена: '+cls+' '+subject);
     saveData();toast('Создано');renderApp();
   });
   document.querySelectorAll('[data-del-subst]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.substitutions=data.substitutions.filter(function(s){return s.id!==b.dataset.delSubst;});saveData();toast('Удалено');renderApp();});});
 
-  // === Homework ===
   document.getElementById('hwForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('hwDate').value,subj=document.getElementById('hwSubject').value,text=document.getElementById('hwText').value.trim(),deadline=document.getElementById('hwDeadline').value;
@@ -2464,18 +2597,16 @@ function bindAllEvents(){
     saveData();toast('Задано');renderApp();
   });
   document.querySelectorAll('[data-del-hw]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.homework=data.homework.filter(function(h){return h.id!==b.dataset.delHw;});saveData();toast('Удалено');renderApp();});});
-  document.querySelectorAll('[data-hw-manage]').forEach(function(b){b.addEventListener('click',function(){const id=b.dataset.hwManage;const panel=document.getElementById('hw-manage-'+id);if(!panel)return;const isHidden=panel.style.display==='none'||!panel.style.display;panel.style.display=isHidden?'block':'none';b.textContent=isHidden?'Скрыть управление':'Управление статусом';});});
+  document.querySelectorAll('[data-hw-manage]').forEach(function(b){b.addEventListener('click',function(){const id=b.dataset.hwManage;const panel=document.getElementById('hw-manage-'+id);if(!panel)return;const isHidden=panel.style.display==='none'||!panel.style.display;panel.style.display=isHidden?'block':'none';b.textContent=isHidden?'Скрыть':'Управление статусом';});});
   document.querySelectorAll('[data-hw-toggle]').forEach(function(b){b.addEventListener('click',function(){const p=b.dataset.hwToggle.split('|');const h=data.homework.find(function(x){return x.id===p[0];});if(!h)return;if(!h.done)h.done=[];const idx=h.done.indexOf(p[1]);if(idx>=0){h.done.splice(idx,1);toast('Снята: '+p[1]);}else{h.done.push(p[1]);toast('Отмечен: '+p[1]);}saveData();renderApp();});});
-  document.querySelectorAll('[data-hw-all-done]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.hwAllDone;});if(!h||!confirm('Отметить всех сдавшими?'))return;h.done=getStudentsOfClass(session.class).map(function(s){return s.name;});saveData();toast('Все отмечены');renderApp();});});
+  document.querySelectorAll('[data-hw-all-done]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.hwAllDone;});if(!h||!confirm('Все сдали?'))return;h.done=getStudentsOfClass(session.class).map(function(s){return s.name;});saveData();toast('Все отмечены');renderApp();});});
   document.querySelectorAll('[data-hw-all-clear]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.hwAllClear;});if(!h||!confirm('Сбросить?'))return;h.done=[];saveData();toast('Сброшено');renderApp();});});
   document.querySelectorAll('[data-toggle-done]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.toggleDone;});if(!h)return;if(!h.done)h.done=[];const idx=h.done.indexOf(session.name);if(idx>=0)h.done.splice(idx,1);else h.done.push(session.name);saveData();toast('Сохранено');renderApp();});});
 
-  // === Schedule/Bells ===
   document.getElementById('editScheduleBtn')?.addEventListener('click',openScheduleEditor);
   document.getElementById('editBellsBtn')?.addEventListener('click',openBellsEditor);
   document.getElementById('bellsForm')?.addEventListener('submit',function(e){e.preventDefault();document.querySelectorAll('[data-bell-num]').forEach(function(inp){const n=parseInt(inp.dataset.bellNum,10);const f=inp.dataset.bellField;const b=data.bellSchedule.find(function(x){return x.num===n;});if(b)b[f]=inp.value;});saveData();toast('Сохранено');renderApp();});
 
-  // === Clubs ===
   document.getElementById('clubForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const name=document.getElementById('clubName').value.trim();
@@ -2489,7 +2620,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-club-attendance]').forEach(function(b){b.addEventListener('click',function(){openClubAttendance(b.dataset.clubAttendance);});});
   document.querySelectorAll('[data-club-attendance-view]').forEach(function(b){b.addEventListener('click',function(){openClubHistory(b.dataset.clubAttendanceView);});});
 
-  // === Events ===
   document.getElementById('eventForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('evTitle').value.trim();
@@ -2502,7 +2632,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-event-leave]').forEach(function(b){b.addEventListener('click',function(){const ev=getEventById(b.dataset.eventLeave);if(!ev)return;ev.participants=(ev.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-event-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.events=data.events.filter(function(e){return e.id!==b.dataset.eventDel;});saveData();toast('Удалено');renderApp();});});
 
-  // === Cafeteria ===
   document.getElementById('menuForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('menuDate').value,dish=document.getElementById('menuDish').value.trim();
@@ -2519,59 +2648,49 @@ function bindAllEvents(){
   document.getElementById('yearOrderBtn')?.addEventListener('click',openMealYearOrderModal);
   document.getElementById('clearAllOrdersBtn')?.addEventListener('click',clearMyMealOrders);
 
-  // === Announcements ===
   document.getElementById('annForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('annText').value.trim();if(!text)return;data.announcements.push({id:uid(),class:session.class,text:text,time:new Date().toISOString(),from:session.name});getStudentsOfClass(session.class).forEach(function(s){pushNotification('student',s.name,'Объявление',text,'message');});saveData();toast('Отправлено');renderApp();});
   document.querySelectorAll('[data-del-ann]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.announcements=data.announcements.filter(function(a){return a.id!==b.dataset.delAnn;});saveData();renderApp();});});
   document.getElementById('taForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('taText').value.trim();if(!text)return;data.teacherAnnouncements.push({id:uid(),text:text,time:new Date().toISOString(),from:session.name,fromPosition:session.position||'teacher'});for(const t of data.teachers){if(t.name!==session.name)pushNotification('teacher',t.name,'Объявление учителям',text,'info');}saveData();toast('Опубликовано');renderApp();});
   document.querySelectorAll('[data-del-ta]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.teacherAnnouncements=data.teacherAnnouncements.filter(function(a){return a.id!==b.dataset.delTa;});saveData();renderApp();});});
 
-  // === Questions ===
   document.querySelectorAll('[data-ans-q]').forEach(function(b){b.addEventListener('click',function(){const id=b.dataset.ansQ;const el=document.getElementById('ans-'+id);const ans=el?el.value.trim():'';if(!ans)return toast('Введите ответ',true);const q=data.questions.find(function(x){return x.id===id;});if(!q)return;q.answered=true;q.answer=ans;saveData();toast('Отвечено');renderApp();});});
   document.getElementById('qForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('qText').value.trim();if(!text)return;let recipient=null;const hr=data.teachers.find(function(t){return t.class===session.class;});if(hr)recipient=hr.name;if(!recipient)return toast('Нет учителя',true);data.questions.push({id:uid(),class:session.class,from:session.name,to:recipient,text:text,time:new Date().toISOString(),answered:false});pushNotification('teacher',recipient,'Вопрос',text,'question');saveData();toast('Отправлено');renderApp();});
 
-  // === Students ===
   document.getElementById('addStudentForm')?.addEventListener('submit',async function(e){e.preventDefault();const name=(document.getElementById('newStudentName').value||'').trim();if(!name)return;if(data.students.some(function(s){return s.class===session.class&&s.name.toLowerCase()===name.toLowerCase();}))return toast('Уже есть',true);data.students.push({id:uid(),class:session.class,name:name,pin:await setPinHash('1234'),attempts:0,blockedUntil:null});saveData();toast('Добавлен');renderApp();});
   document.getElementById('newStudentName')?.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
   document.querySelectorAll('[data-del-student]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();const st=data.students.find(function(s){return s.id===b.dataset.delStudent;});if(!st||!confirm('Удалить?'))return;data.students=data.students.filter(function(s){return s.id!==st.id;});data.absences=data.absences.filter(function(a){return !(a.class===st.class&&a.studentName===st.name);});saveData();toast('Удалён');renderApp();});});
 
-  // === Notes ===
   document.getElementById('todoForm')?.addEventListener('submit',function(e){e.preventDefault();const t=document.getElementById('todoText').value.trim();if(!t)return;data.todos.push({id:uid(),teacherName:session.name,text:t,done:false,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-toggle-todo]').forEach(function(b){b.addEventListener('click',function(){const t=data.todos.find(function(x){return x.id===b.dataset.toggleTodo;});if(t){t.done=!t.done;saveData();renderApp();}});});
   document.querySelectorAll('[data-del-todo]').forEach(function(b){b.addEventListener('click',function(){data.todos=data.todos.filter(function(t){return t.id!==b.dataset.delTodo;});saveData();renderApp();});});
   document.getElementById('noteForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('noteText').value.trim();const sn=document.getElementById('noteStudent').value;if(!text)return;data.notes.push({id:uid(),teacherName:session.name,studentName:sn,text:text,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-del-note]').forEach(function(b){b.addEventListener('click',function(){data.notes=data.notes.filter(function(n){return n.id!==b.dataset.delNote;});saveData();renderApp();});});
 
-  // === Class duties ===
   document.getElementById('dutyForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('dutyDate').value,sn=document.getElementById('dutyStudent').value;if(!date||!sn)return;data.duties.push({id:uid(),class:session.class,date:date,studentName:sn});saveData();toast('Назначено');renderApp();});
   document.querySelectorAll('[data-del-duty]').forEach(function(b){b.addEventListener('click',function(){data.duties=data.duties.filter(function(d){return d.id!==b.dataset.delDuty;});saveData();renderApp();});});
 
-  // === School duties ===
-  document.getElementById('addPostForm')?.addEventListener('submit',function(e){e.preventDefault();const n=document.getElementById('newPostName').value.trim();if(!n)return;data.schoolPosts.push({id:uid(),name:n});saveData();toast('Пост добавлен');renderApp();});
+  document.getElementById('addPostForm')?.addEventListener('submit',function(e){e.preventDefault();const n=document.getElementById('newPostName').value.trim();if(!n)return;data.schoolPosts.push({id:uid(),name:n});saveData();toast('Добавлено');renderApp();});
   document.querySelectorAll('[data-del-post]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolPosts=data.schoolPosts.filter(function(p){return p.id!==b.dataset.delPost;});saveData();renderApp();});});
   document.getElementById('createWeekForm')?.addEventListener('submit',function(e){e.preventDefault();const cls=document.getElementById('weekClass').value,start=document.getElementById('weekStart').value;if(!cls||!start)return toast('Заполните',true);if(!DUTY_CLASSES.includes(cls))return toast('Только 6-11',true);if(data.schoolDutyWeeks.some(function(w){return w.startDate===start&&!w.transferred;}))return toast('Уже есть',true);createSchoolDutyWeek(cls,start);toast('Создано');renderApp();});
   document.querySelectorAll('[data-post-toggle]').forEach(function(b){b.addEventListener('click',function(){const p=b.dataset.postToggle.split('|');const week=data.schoolDutyWeeks.find(function(w){return w.id===p[0];});if(!week)return;const post=week.posts.find(function(x){return x.postId===p[1];});if(!post)return;post.done=!post.done;post.doneAt=post.done?new Date().toISOString():null;saveData();renderApp();});});
   document.querySelectorAll('[data-post-assign]').forEach(function(s){s.addEventListener('change',function(){const p=s.dataset.postAssign.split('|');const week=data.schoolDutyWeeks.find(function(w){return w.id===p[0];});if(!week)return;const post=week.posts.find(function(x){return x.postId===p[1];});if(!post)return;post.studentName=s.value;saveData();renderApp();});});
-  document.querySelectorAll('[data-post-all-done]').forEach(function(b){b.addEventListener('click',function(){const week=data.schoolDutyWeeks.find(function(w){return w.id===b.dataset.postAllDone;});if(!week||!confirm('Сдать все посты?'))return;week.posts.forEach(function(p){if(!p.done){p.done=true;p.doneAt=new Date().toISOString();}});saveData();toast('Все сданы');renderApp();});});
+  document.querySelectorAll('[data-post-all-done]').forEach(function(b){b.addEventListener('click',function(){const week=data.schoolDutyWeeks.find(function(w){return w.id===b.dataset.postAllDone;});if(!week||!confirm('Сдать все?'))return;week.posts.forEach(function(p){if(!p.done){p.done=true;p.doneAt=new Date().toISOString();}});saveData();toast('Все сданы');renderApp();});});
   document.querySelectorAll('[data-transfer-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Передать?'))return;transferSchoolDuty(b.dataset.transferWeek);});});
   document.querySelectorAll('[data-del-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolDutyWeeks=data.schoolDutyWeeks.filter(function(w){return w.id!==b.dataset.delWeek;});saveData();toast('Удалено');renderApp();});});
 
-  // === Export ===
   document.getElementById('expAbsences')?.addEventListener('click',function(){exportCSV('absences');});
   document.getElementById('expHw')?.addEventListener('click',function(){exportCSV('homework');});
   document.getElementById('expLates')?.addEventListener('click',function(){exportCSV('lates');});
   document.getElementById('expSchoolSummary')?.addEventListener('click',function(){exportCSV('school');});
 
-  // === Settings ===
   document.getElementById('changePinBtn')?.addEventListener('click',function(){const t=findTeacher(session.name);if(!t)return;openChangePinModal({onSave:async function(old,newP){if(!await verifyPin(old,t.pin))return {ok:false,error:'Неверный PIN'};t.pin=await setPinHash(newP);t.attempts=0;t.blockedUntil=null;saveData();return {ok:true};}});});
   document.getElementById('notifyPermBtn')?.addEventListener('click',function(){if(!('Notification' in window))return toast('Не поддерживается',true);if(Notification.permission==='default')Notification.requestPermission();});
 
-  // === Parent/student forms ===
   document.getElementById('addMyAbsBtn')?.addEventListener('click',openAddAbsenceModal);
   document.getElementById('addParentNoteBtn')?.addEventListener('click',openAddParentNote);
   document.getElementById('parentMsgForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('pmText').value.trim();if(!text)return;const teacher=data.teachers.find(function(t){return t.class===session.class;});data.contacts.push({id:uid(),class:session.class,studentName:session.name,from:session.name,fromRole:'parent',to:teacher?teacher.name:'—',text:text,time:new Date().toISOString(),read:false});if(teacher)pushNotification('teacher',teacher.name,'Сообщение от '+session.name,text,'message');saveData();toast('Отправлено');renderApp();});
-  document.getElementById('noteParentForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('pnDate').value,reason=document.getElementById('pnReason').value,text=document.getElementById('pnText').value.trim();if(!date||!reason||!text)return toast('Заполните',true);data.parentNotes.push({id:uid(),date:date,class:session.class,studentName:session.name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});const teacher=data.teachers.find(function(t){return t.class===session.class;});if(teacher)pushNotification('teacher',teacher.name,'Записка от родителя',session.name+' · '+formatDate(date),'absence');saveData();toast('Отправлено');renderApp();});
+  document.getElementById('noteParentForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('pnDate').value,reason=document.getElementById('pnReason').value,text=document.getElementById('pnText').value.trim();if(!date||!reason||!text)return toast('Заполните',true);data.parentNotes.push({id:uid(),date:date,class:session.class,studentName:session.name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});const teacher=data.teachers.find(function(t){return t.class===session.class;});if(teacher)pushNotification('teacher',teacher.name,'Записка',session.name+' · '+formatDate(date),'absence');saveData();toast('Отправлено');renderApp();});
 
-  // === Admin ===
   document.getElementById('addTeacherForm')?.addEventListener('submit',async function(e){
     e.preventDefault();
     const name=document.getElementById('ntName').value.trim();
@@ -2581,7 +2700,7 @@ function bindAllEvents(){
     const hrClass=document.getElementById('ntHrClass').value||null;
     const subjects=Array.from(document.querySelectorAll('.nt-subject:checked')).map(function(i){return i.value;});
     const classes=Array.from(document.querySelectorAll('.nt-class:checked')).map(function(i){return i.value;});
-    if(position==='teacher'&&!hrClass&&(!subjects.length||!classes.length))return toast('Учителю нужен класс или предметы+классы',true);
+    if(position==='teacher'&&!hrClass&&(!subjects.length||!classes.length))return toast('Нужен класс или предметы+классы',true);
     const pinRaw=document.getElementById('ntPin').value.trim();
     const pin=pinRaw||'1234';
     if(!/^\d{4,8}$/.test(pin))return toast('PIN 4-8 цифр',true);
@@ -2596,7 +2715,6 @@ function bindAllEvents(){
   if(currentView==='backups')loadBackupList();
 }
 
-/* ============ CSV ============ */
 function exportCSV(type){
   const cls=session.class;
   const rows=[];let name='data';
@@ -2642,9 +2760,11 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     const ids=['changePinOverlay','resetPasswordOverlay','profileOverlay','addAbsModal','pnModal','notifPanel','schedEditorOverlay','bellsEditorOverlay','clubAttOverlay','clubHistoryOverlay','editTeacherOverlay','mealYearOverlay','yearMenuOverlay','menuItemOverlay'];
     for(const id of ids){const el=document.getElementById(id);if(el)el.remove();}
+    closeSideMenu();
   }
 });
 
+/* ============ START ============ */
 (async function startApp(){
   if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');
   session=loadSession();
@@ -2652,8 +2772,15 @@ document.addEventListener('keydown',function(e){
   renderApp();
   setTimeout(async function(){
     const t0=Date.now();
-    await new Promise(function(resolve){function check(){if(window.firebaseDB!==undefined)return resolve();if(Date.now()-t0>3000)return resolve();setTimeout(check,50);}check();});
-   firebaseReady=true;
+    await new Promise(function(resolve){
+      function check(){
+        if(window.firebaseDB!==undefined)return resolve();
+        if(Date.now()-t0>3000)return resolve();
+        setTimeout(check,50);
+      }
+      check();
+    });
+    firebaseReady=true;
     subscribeToFirebase();
     updateStatusBadge();
     setTimeout(function(){runAutoBackup(false);},5000);
