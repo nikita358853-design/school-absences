@@ -63,7 +63,7 @@
   input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:var(--ring);}
   select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
-  input[type="password"]#tPin,input[type="password"]#adminPwd,input[type="password"]#sPin{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
+  input[type="password"]#tPin,input[type="password"]#adminPwd,input[type="password"]#sPin,input[type="password"]#resetMaster{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 4px 12px rgba(79,70,229,.25);transition:transform .12s,box-shadow .15s;white-space:nowrap;}
   .btn:hover{background:linear-gradient(135deg,var(--primary-hover),var(--primary));box-shadow:0 6px 18px rgba(79,70,229,.35);transform:translateY(-1px);}
@@ -75,6 +75,10 @@
   .btn-danger{background:linear-gradient(135deg,var(--danger),var(--danger-2));}
   .btn-danger:hover{background:linear-gradient(135deg,#b91c1c,var(--danger));}
   .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px;}
+
+  .forgot-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:12px;background:#f8fafc;border:1.5px dashed var(--border-strong);border-radius:10px;color:var(--text-mid);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s ease;}
+  .forgot-link:hover{background:#eef2ff;border-color:var(--primary);color:var(--primary);border-style:solid;}
+  .forgot-link .forgot-icon{font-size:16px;}
 
   .topbar{background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#1e40af 130%);color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:0 4px 20px rgba(15,23,42,.15);position:sticky;top:0;z-index:100;}
   .topbar h2{margin:0;font-size:16px;font-weight:600;color:#f8fafc;}
@@ -195,6 +199,12 @@
   .modal-close:hover{color:var(--danger);background:#fee2e2;}
   .modal-body{padding:20px 24px;}
   .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:#f8fafc;}
+
+  .reset-info{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#3730a3;line-height:1.6;margin-bottom:16px;}
+  .reset-result{padding:12px 14px;border-radius:10px;font-size:13px;margin-top:14px;display:none;}
+  .reset-result.show{display:block;}
+  .reset-result.success{background:#dcfce7;border:1px solid #86efac;color:#166534;}
+  .reset-result.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
 
   .drop-zone{border:2px dashed var(--border-strong);border-radius:var(--radius);padding:36px 20px;text-align:center;color:var(--text-dim);font-size:13.5px;cursor:pointer;background:#f8fafc;}
   .drop-zone:hover,.drop-zone.drag-over{border-color:var(--primary);background:#eef2ff;color:var(--primary);}
@@ -933,6 +943,96 @@ function isAdminPassword(pwd) { return simpleHash(pwd) === ADMIN_PASSWORD_HASH; 
 function findTeacher(name) { if (!data.teachers) data.teachers = []; return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase()); }
 
 /* ========================================================
+   ВОССТАНОВЛЕНИЕ ДОСТУПА (модалка)
+   ======================================================== */
+function openResetPasswordModal() {
+  const existing = document.getElementById('resetPasswordOverlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'resetPasswordOverlay';
+  overlay.innerHTML =
+    '<div class="modal" style="max-width:480px;" onclick="event.stopPropagation()">' +
+      '<div class="modal-header"><h3>🔑 Восстановление доступа</h3>' +
+        '<button class="modal-close" id="resetCloseBtn">×</button></div>' +
+      '<div class="modal-body">' +
+        '<div class="reset-info">' +
+          'Сбросить PIN-код может только администратор школы с помощью мастер-пароля. ' +
+          'После сброса PIN становится <b>1234</b>. Ученику или учителю нужно сменить его при следующем входе.' +
+        '</div>' +
+        '<label for="resetRole">Тип аккаунта</label>' +
+        '<select id="resetRole">' +
+          '<option value="auto">Определить автоматически</option>' +
+          '<option value="teacher">Учитель</option>' +
+          '<option value="student">Ученик</option>' +
+        '</select>' +
+        '<label for="resetName">ФИО (полностью, как при входе)</label>' +
+        '<input type="text" id="resetName" placeholder="Иванова Ирина Ивановна" autocomplete="off">' +
+        '<label for="resetMaster">Мастер-пароль администратора</label>' +
+        '<input type="password" id="resetMaster" placeholder="••••••••" autocomplete="off">' +
+        '<div class="reset-result" id="resetResult"></div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn btn-secondary" id="resetCancelBtn">Отмена</button>' +
+        '<button class="btn" id="resetConfirmBtn">Сбросить PIN на 1234</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+  document.getElementById('resetCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('resetCancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.getElementById('resetName').focus();
+
+  // Enter = сброс
+  ['resetName', 'resetMaster'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('resetConfirmBtn').click();
+    });
+  });
+
+  document.getElementById('resetConfirmBtn').addEventListener('click', () => {
+    const role = document.getElementById('resetRole').value;
+    const name = (document.getElementById('resetName').value || '').trim();
+    const master = (document.getElementById('resetMaster').value || '').trim();
+    const resultEl = document.getElementById('resetResult');
+
+    function showResult(type, text) {
+      resultEl.className = 'reset-result show ' + type;
+      resultEl.textContent = text;
+    }
+
+    if (!name) return showResult('error', 'Введите ФИО');
+    if (!master) return showResult('error', 'Введите мастер-пароль');
+    if (master !== 'school21') return showResult('error', 'Неверный мастер-пароль');
+
+    let targetType = null;
+    let targetObj = null;
+
+    if (role === 'teacher' || role === 'auto') {
+      const t = findTeacher(name);
+      if (t) { targetType = 'teacher'; targetObj = t; }
+    }
+    if (!targetObj && (role === 'student' || role === 'auto')) {
+      const s = data.students.find(st => st.name.toLowerCase() === name.toLowerCase());
+      if (s) { targetType = 'student'; targetObj = s; }
+    }
+
+    if (!targetObj) return showResult('error', 'Пользователь с таким ФИО не найден');
+
+    targetObj.pin = simpleHash('1234');
+    saveData();
+    logAction('upd', 'Сброшен PIN через восстановление доступа: ' + targetObj.name + ' (' + targetType + ')');
+
+    const roleLabel = targetType === 'teacher' ? 'учителя' : 'ученика/родителя';
+    showResult('success', '✅ PIN ' + roleLabel + ' «' + targetObj.name + '» сброшен на 1234');
+    document.getElementById('resetName').value = '';
+    document.getElementById('resetMaster').value = '';
+  });
+}
+
+/* ========================================================
    ГЛАВНЫЙ РЕНДЕР
    ======================================================== */
 function renderApp() {
@@ -963,7 +1063,7 @@ function renderLogin() {
     formHTML = '<label for="sClass">Класс</label><select id="sClass">' + optionsHTML(CLASSES, loginState.studentClass) + '</select>' +
       '<label for="sName">ФИО ' + (loginState.role === 'parent' ? 'ребёнка' : 'ученика') + '</label><select id="sName"' + (studentNames.length ? '' : ' disabled') + '>' + namesHTML + '</select>' +
       '<label for="sPin">PIN-код</label>' +
-      '<input type="password" id="sPin" placeholder="по умолчанию 1234" inputmode="numeric" maxlength="8" required autocomplete="off">';
+      '<input type="password" id="sPin" placeholder="••••" inputmode="numeric" maxlength="8" required autocomplete="off">';
   }
 
   app.innerHTML = '<div class="login-wrap"><div class="login-card"><h1>Учёт пропусков</h1>' +
@@ -976,7 +1076,7 @@ function renderLogin() {
     '</div>' +
     '<form id="loginForm">' + formHTML +
     '<button type="submit" class="btn btn-full">Войти</button>' +
-    '<div style="text-align:center;margin-top:16px;"><a href="#" id="forgotPin" style="color:var(--primary);font-size:13px;text-decoration:none;font-weight:500;">Забыли PIN?</a></div>' +
+    '<button type="button" id="forgotPinBtn" class="forgot-link"><span class="forgot-icon">🔑</span>Забыли PIN-код? Восстановить доступ</button>' +
     '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-dim);" id="syncStatus"></div>' +
     '</form></div></div>';
 
@@ -989,6 +1089,8 @@ function renderLogin() {
   if (tName) tName.addEventListener('input', () => loginState.teacherName = tName.value);
   if (sClass) sClass.addEventListener('change', () => { loginState.studentClass = sClass.value; renderLogin(); });
   if (sName) sName.addEventListener('change', () => loginState.studentName = sName.value);
+
+  document.getElementById('forgotPinBtn').addEventListener('click', openResetPasswordModal);
 
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1013,7 +1115,7 @@ function renderLogin() {
       if (!st.pin) { st.pin = simpleHash('1234'); saveData(); }
       if (simpleHash(pinValue) !== st.pin) {
         document.getElementById('sPin').value = '';
-        return toast('Неверный PIN-код. Попробуйте 1234', true);
+        return toast('Неверный PIN-код', true);
       }
       session = { role: loginState.role, name: loginState.studentName, class: sClass.value };
     }
@@ -1024,20 +1126,6 @@ function renderLogin() {
     uiState = { filterReason:'', filterStudent:'', filterDate:'', newStudentName:'', adminSelectedClass: CLASSES[0], scheduleEditClass: CLASSES[0], searchQuery:'', sortBy:'date', sortDir:'desc', logFilter:'' };
     renderApp();
     runAutoBackup(false);
-  });
-
-  const forgot = document.getElementById('forgotPin');
-  if (forgot) forgot.addEventListener('click', (e) => {
-    e.preventDefault();
-    const master = prompt('Мастер-пароль (по умолчанию: school21)');
-    if (master !== 'school21') return toast('Неверный', true);
-    const targetName = prompt('Чьё ФИО сбросить?');
-    if (!targetName) return;
-    const t = findTeacher(targetName);
-    const s = data.students.find(st => st.name.toLowerCase() === targetName.toLowerCase());
-    if (t) { t.pin = simpleHash('1234'); saveData(); toast('PIN сброшен'); }
-    else if (s) { s.pin = simpleHash('1234'); saveData(); toast('PIN сброшен'); }
-    else toast('Не найден', true);
   });
 }
 
@@ -2029,6 +2117,8 @@ window.addEventListener('appinstalled', () => {
       if (m2) m2.remove();
       const m3 = document.getElementById('studentProfileOverlay');
       if (m3) m3.remove();
+      const m4 = document.getElementById('resetPasswordOverlay');
+      if (m4) m4.remove();
     }
   });
 
