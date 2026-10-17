@@ -63,7 +63,7 @@
   input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:var(--ring);}
   select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
-  input[type="password"]#tPin,input[type="password"]#adminPwd,input[type="password"]#sPin,input[type="password"]#resetMaster{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
+  input[type="password"]#tPin,input[type="password"]#adminPwd,input[type="password"]#sPin,input[type="password"]#resetMaster,input[type="password"]#cpOld,input[type="password"]#cpNew,input[type="password"]#cpConfirm{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 4px 12px rgba(79,70,229,.25);transition:transform .12s,box-shadow .15s;white-space:nowrap;}
   .btn:hover{background:linear-gradient(135deg,var(--primary-hover),var(--primary));box-shadow:0 6px 18px rgba(79,70,229,.35);transform:translateY(-1px);}
@@ -444,7 +444,7 @@ function buildSeedData() {
   const names = ['Иванов Иван','Петрова Мария','Сидоров Пётр','Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'];
   const students = [];
   for (const c of CLASSES) for (const n of names) students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234'), teacherNote: '' });
-  return { students, absences: [], teachers: [], parents: [], periods: {}, currentPeriod: {}, schedules: {}, log: [], notifications: [] };
+  return { students, absences: [], teachers: [], parents: [], periods: {}, currentPeriod: {}, schedules: {}, log: [], notifications: [], adminPasswordHash: null };
 }
 function loadLocalData() {
   try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
@@ -459,6 +459,7 @@ if (!data.currentPeriod) data.currentPeriod = {};
 if (!data.schedules) data.schedules = {};
 if (!data.log) data.log = [];
 if (!data.notifications) data.notifications = [];
+if (data.adminPasswordHash === undefined) data.adminPasswordHash = null;
 
 let firebaseReady = false, firebaseConnected = false, session = null;
 let saveTimer = null, saveLogTimer = null, saveNotifTimer = null;
@@ -474,7 +475,8 @@ function saveData() {
         students: data.students || [], absences: data.absences || [],
         teachers: data.teachers || [], parents: data.parents || [],
         periods: data.periods || {}, currentPeriod: data.currentPeriod || {},
-        schedules: data.schedules || {}
+        schedules: data.schedules || {},
+        adminPasswordHash: data.adminPasswordHash || null
       });
       firebaseConnected = true; updateStatusBadge();
     } catch (e) { firebaseConnected = false; updateStatusBadge(); }
@@ -550,7 +552,8 @@ function subscribeToFirebase() {
       const seeded = buildSeedData();
       set(ref(db, FB_PATH + '/main'), {
         students: seeded.students, absences: seeded.absences, teachers: seeded.teachers,
-        parents: seeded.parents, periods: seeded.periods, currentPeriod: seeded.currentPeriod, schedules: seeded.schedules
+        parents: seeded.parents, periods: seeded.periods, currentPeriod: seeded.currentPeriod, schedules: seeded.schedules,
+        adminPasswordHash: null
       });
       return;
     }
@@ -561,6 +564,7 @@ function subscribeToFirebase() {
     data.periods = incoming.periods || {};
     data.currentPeriod = incoming.currentPeriod || {};
     data.schedules = incoming.schedules || {};
+    data.adminPasswordHash = incoming.adminPasswordHash || null;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     firebaseConnected = true;
     updateStatusBadge();
@@ -593,7 +597,7 @@ async function runAutoBackup(force) {
     await set(ref(db, BACKUP_PATH + '/' + today), {
       time: new Date().toISOString(),
       studentsCount: data.students.length, absencesCount: data.absences.length, teachersCount: data.teachers.length,
-      data: { students: data.students, absences: data.absences, teachers: data.teachers, parents: data.parents, periods: data.periods, currentPeriod: data.currentPeriod, schedules: data.schedules }
+      data: { students: data.students, absences: data.absences, teachers: data.teachers, parents: data.parents, periods: data.periods, currentPeriod: data.currentPeriod, schedules: data.schedules, adminPasswordHash: data.adminPasswordHash }
     });
     localStorage.setItem('last_backup_date', today);
   } catch (e) {}
@@ -619,6 +623,7 @@ async function restoreBackup(date) {
     data.teachers = d.teachers || []; data.parents = d.parents || [];
     data.periods = d.periods || {}; data.currentPeriod = d.currentPeriod || {};
     data.schedules = d.schedules || {};
+    data.adminPasswordHash = d.adminPasswordHash || null;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     saveData();
     return true;
@@ -939,8 +944,86 @@ function loadSession() {
 }
 let loginState = { role: 'teacher', teacherName: '', teacherClass: CLASSES[0], studentClass: CLASSES[0], studentName: '' };
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
-function isAdminPassword(pwd) { return simpleHash(pwd) === ADMIN_PASSWORD_HASH; }
+function isAdminPassword(pwd) {
+  const hash = data.adminPasswordHash || ADMIN_PASSWORD_HASH;
+  return simpleHash(pwd) === hash;
+}
 function findTeacher(name) { if (!data.teachers) data.teachers = []; return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase()); }
+
+/* ========================================================
+   МОДАЛКА СМЕНЫ PIN / ПАРОЛЯ
+   ======================================================== */
+function openChangePinModal(opts) {
+  opts = opts || {};
+  const existing = document.getElementById('changePinOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'changePinOverlay';
+  overlay.innerHTML =
+    '<div class="modal" style="max-width:480px;" onclick="event.stopPropagation()">' +
+      '<div class="modal-header"><h3>' + escapeHtml(opts.title || 'Смена PIN-кода') + '</h3>' +
+        '<button class="modal-close" id="cpCloseBtn">×</button></div>' +
+      '<div class="modal-body">' +
+        (opts.subtitle ? '<div class="reset-info">' + opts.subtitle + '</div>' : '') +
+        '<label for="cpOld">' + escapeHtml(opts.oldLabel || 'Текущий PIN') + '</label>' +
+        '<input type="password" id="cpOld" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="off">' +
+        '<label for="cpNew">' + escapeHtml(opts.newLabel || 'Новый PIN') + '</label>' +
+        '<input type="password" id="cpNew" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="off">' +
+        '<label for="cpConfirm">' + escapeHtml(opts.confirmLabel || 'Повторите новый PIN') + '</label>' +
+        '<input type="password" id="cpConfirm" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="off">' +
+        '<div class="reset-result" id="cpResult"></div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn btn-secondary" id="cpCancelBtn">Отмена</button>' +
+        '<button class="btn" id="cpSaveBtn">Сохранить</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+  document.getElementById('cpCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('cpCancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.getElementById('cpOld').focus();
+
+  ['cpOld', 'cpNew', 'cpConfirm'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('cpSaveBtn').click();
+    });
+  });
+
+  document.getElementById('cpSaveBtn').addEventListener('click', () => {
+    const oldVal = document.getElementById('cpOld').value.trim();
+    const newVal = document.getElementById('cpNew').value.trim();
+    const confVal = document.getElementById('cpConfirm').value.trim();
+    const resultEl = document.getElementById('cpResult');
+
+    function showError(text) {
+      resultEl.className = 'reset-result show error';
+      resultEl.textContent = text;
+    }
+
+    if (!oldVal) return showError('Введите текущий ' + (opts.oldLabel || 'PIN').toLowerCase());
+    if (!newVal) return showError('Введите новый ' + (opts.newLabel || 'PIN').toLowerCase());
+    if (newVal !== confVal) return showError('Новый и повтор не совпадают');
+    if (!/^\d{4,8}$/.test(newVal)) return showError('Только цифры, 4–8 знаков');
+
+    let res;
+    try { res = opts.onSave ? opts.onSave(oldVal, newVal) : { ok: true }; }
+    catch (err) { return showError('Ошибка сохранения'); }
+
+    if (res && !res.ok) return showError(res.error || 'Ошибка');
+
+    resultEl.className = 'reset-result show success';
+    resultEl.textContent = '✅ Изменения сохранены';
+    setTimeout(() => {
+      closeModal();
+      toast('Успешно сохранено');
+    }, 900);
+  });
+}
 
 /* ========================================================
    ВОССТАНОВЛЕНИЕ ДОСТУПА (модалка)
@@ -985,7 +1068,6 @@ function openResetPasswordModal() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   document.getElementById('resetName').focus();
 
-  // Enter = сброс
   ['resetName', 'resetMaster'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('resetConfirmBtn').click();
@@ -1251,17 +1333,27 @@ function bindTeacherEvents() {
     printJournal(session.class, period.name);
   });
   document.getElementById('notifyPermBtn')?.addEventListener('click', requestNotificationPermission);
+
+  // Смена PIN — открывает отдельное окно
   document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
     const teacher = findTeacher(session.name);
-    if (!teacher) return toast('Ошибка', true);
-    const oldPin = prompt('Текущий PIN:');
-    if (oldPin === null || simpleHash(oldPin) !== teacher.pin) return toast('Неверный PIN', true);
-    const newPin = prompt('Новый PIN (4+ цифры):');
-    if (!newPin || !/^\d{4,}$/.test(newPin)) return toast('Минимум 4 цифры', true);
-    if (prompt('Повторите:') !== newPin) return toast('Не совпадает', true);
-    teacher.pin = simpleHash(newPin); saveData();
-    logAction('upd', 'Учитель сменил PIN'); toast('PIN изменён');
+    if (!teacher) return toast('Ошибка: учитель не найден', true);
+    openChangePinModal({
+      title: 'Смена PIN-кода',
+      subtitle: 'PIN-код используется для входа в систему',
+      oldLabel: 'Текущий PIN',
+      newLabel: 'Новый PIN',
+      confirmLabel: 'Повторите новый PIN',
+      onSave: (oldVal, newVal) => {
+        if (simpleHash(oldVal) !== teacher.pin) return { ok: false, error: 'Неверный текущий PIN' };
+        teacher.pin = simpleHash(newVal);
+        logAction('upd', 'Учитель сменил PIN');
+        saveData();
+        return { ok: true };
+      }
+    });
   });
+
   document.getElementById('absenceForm').addEventListener('submit', e => {
     e.preventDefault();
     const date = document.getElementById('aDate').value;
@@ -1381,16 +1473,27 @@ function renderStudent() {
         '<div class="table-wrap">' + renderAbsencesTable(myAbsences, false, false, problemNames) + '</div></div></div>';
 
   bindLogout();
+
+  // Смена PIN — открывает отдельное окно
   document.getElementById('changePinBtn')?.addEventListener('click', () => {
     const st = data.students.find(s => s.class === session.class && s.name === session.name);
-    if (!st) return toast('Ошибка', true);
-    const oldPin = prompt('Текущий PIN:');
-    if (oldPin === null || simpleHash(oldPin) !== st.pin) return toast('Неверный', true);
-    const newPin = prompt('Новый PIN (4+):');
-    if (!newPin || !/^\d{4,}$/.test(newPin)) return toast('Минимум 4 цифры', true);
-    if (prompt('Повторите:') !== newPin) return toast('Не совпадает', true);
-    st.pin = simpleHash(newPin); saveData(); toast('PIN изменён');
+    if (!st) return toast('Ошибка: ученик не найден', true);
+    openChangePinModal({
+      title: 'Смена PIN-кода',
+      subtitle: 'PIN-код используется для входа в систему',
+      oldLabel: 'Текущий PIN',
+      newLabel: 'Новый PIN',
+      confirmLabel: 'Повторите новый PIN',
+      onSave: (oldVal, newVal) => {
+        if (simpleHash(oldVal) !== st.pin) return { ok: false, error: 'Неверный текущий PIN' };
+        st.pin = simpleHash(newVal);
+        logAction('upd', 'Ученик ' + st.name + ' сменил PIN');
+        saveData();
+        return { ok: true };
+      }
+    });
   });
+
   document.getElementById('studentAbsenceForm').addEventListener('submit', e => {
     e.preventDefault();
     const date = document.getElementById('saDate').value;
@@ -1424,7 +1527,7 @@ function renderParent() {
 
   const app = document.getElementById('app');
   app.innerHTML =
-    topbarHTML('Кабинет родителя', '') +
+    topbarHTML('Кабинет родителя', '<button class="btn btn-secondary btn-sm" id="changeParentPinBtn">Сменить PIN ребёнка</button>') +
     '<div class="container">' +
       (total >= ABSENCE_WARNING_THRESHOLD ? '<div class="warning-banner"><div class="warn-icon">⚠️</div><div class="warn-text"><b>У ' + escapeHtml(childName) + ' ' + total + ' пропусков.</b></div></div>' : '') +
       '<div class="stats">' +
@@ -1440,6 +1543,27 @@ function renderParent() {
         '<div class="print-signature" id="printSignature"></div></div></div>';
 
   bindLogout();
+
+  // Смена PIN ребёнка — открывает отдельное окно
+  document.getElementById('changeParentPinBtn')?.addEventListener('click', () => {
+    const st = data.students.find(s => s.class === session.class && s.name === session.name);
+    if (!st) return toast('Ошибка: ученик не найден', true);
+    openChangePinModal({
+      title: 'Смена PIN-кода ребёнка',
+      subtitle: 'PIN-код ребёнка используется для входа в систему. Текущий PIN нужно знать.',
+      oldLabel: 'Текущий PIN ребёнка',
+      newLabel: 'Новый PIN ребёнка',
+      confirmLabel: 'Повторите новый PIN',
+      onSave: (oldVal, newVal) => {
+        if (simpleHash(oldVal) !== st.pin) return { ok: false, error: 'Неверный текущий PIN' };
+        st.pin = simpleHash(newVal);
+        logAction('upd', 'Родитель ' + st.name + ' сменил PIN ребёнка');
+        saveData();
+        return { ok: true };
+      }
+    });
+  });
+
   document.getElementById('periodSelect')?.addEventListener('change', e => { data.currentPeriod[session.class] = parseInt(e.target.value, 10); saveData(); renderParent(); });
   document.getElementById('parentPrintBtn')?.addEventListener('click', () => { const period = getCurrentPeriod(cls); printJournal(cls, period.name, { studentName: childName }); });
   document.querySelectorAll('[data-parent-comment]').forEach(btn => {
@@ -1881,7 +2005,7 @@ function renderAdmin() {
 
   const app = document.getElementById('app');
   app.innerHTML =
-    topbarHTML('Панель администратора', '') +
+    topbarHTML('Панель администратора', '<button class="btn btn-secondary btn-sm" id="changeAdminPwdBtn">Сменить пароль</button>') +
     '<div class="container">' +
       '<div class="card"><div class="journal-header"><h3>📥 Импорт из CSV</h3>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
@@ -1909,6 +2033,25 @@ function renderAdmin() {
 
   bindProfileLinks();
   bindLogout();
+
+  // Смена пароля админа — открывает отдельное окно
+  document.getElementById('changeAdminPwdBtn')?.addEventListener('click', () => {
+    openChangePinModal({
+      title: 'Смена пароля администратора',
+      subtitle: 'Пароль администратора используется для входа в панель управления. Только цифры, 4–8 знаков.',
+      oldLabel: 'Текущий пароль',
+      newLabel: 'Новый пароль',
+      confirmLabel: 'Повторите новый пароль',
+      onSave: (oldVal, newVal) => {
+        if (!isAdminPassword(oldVal)) return { ok: false, error: 'Неверный текущий пароль' };
+        data.adminPasswordHash = simpleHash(newVal);
+        logAction('upd', 'Администратор сменил пароль');
+        saveData();
+        return { ok: true };
+      }
+    });
+  });
+
   document.getElementById('adminImportBtn')?.addEventListener('click', () => openImportModal(CLASSES[0]));
   document.getElementById('adminImportTeachersBtn')?.addEventListener('click', () => openImportTeachersModal(CLASSES[0]));
   document.getElementById('addTeacherForm').addEventListener('submit', e => {
@@ -2111,14 +2254,8 @@ window.addEventListener('appinstalled', () => {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const m1 = document.getElementById('importModalOverlay');
-      if (m1) m1.remove();
-      const m2 = document.getElementById('importTeachersModalOverlay');
-      if (m2) m2.remove();
-      const m3 = document.getElementById('studentProfileOverlay');
-      if (m3) m3.remove();
-      const m4 = document.getElementById('resetPasswordOverlay');
-      if (m4) m4.remove();
+      const ids = ['importModalOverlay', 'importTeachersModalOverlay', 'studentProfileOverlay', 'resetPasswordOverlay', 'changePinOverlay'];
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
     }
   });
 
