@@ -1456,7 +1456,7 @@ function exportCSV(type){
   if(type==='homework'){name='ДЗ';rows=[['Дата','Предмет','Текст','Сдать до','Сдали']];
     data.homework.filter(h=>h.class===cls).forEach(h=>rows.push([h.date,h.subject,h.text,h.deadline||'','"'+(h.done||[]).join(', ')+'"']));
   if(type==='remarks'){name='замечания';rows=[['Дата','ФИО','Тип','Текст']];
-    data.remarks.filter(r=>r.class===cls).forEach(r=>rows.push([r.date,r.studentName,remarkTypeById(r.type).name,r.text||''])));}
+    data.remarks.filter(r=>r.class===cls).forEach(r=>rows.push([r.date,r.studentName,remarkTypeById(r.type).name,r.text||'']));}
   const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+cls+'_'+todayISO()+'.csv';a.click();
