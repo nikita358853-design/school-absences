@@ -893,6 +893,59 @@
     .print-signature{display:block!important;margin-top:30px;font-size:11px;}
     .print-signature .line{display:inline-block;border-bottom:1px solid #000;width:200px;margin-right:8px;}
   }
+
+  /* ========== УВЕДОМЛЕНИЯ v2 ========== */
+  .notif-panel{width:400px;}
+  .notif-tabs{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);}
+  .notif-tab{flex:1;padding:7px 10px;border-radius:8px;border:none;background:transparent;
+    font-family:inherit;font-size:12px;font-weight:600;color:var(--text-mid);cursor:pointer;
+    transition:background .15s;}
+  .notif-tab:hover{background:var(--bg-subtle);}
+  .notif-tab.active{background:var(--primary-soft);color:var(--primary);}
+
+  .notif-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:10px;
+    margin-bottom:6px;cursor:pointer;border-left:3px solid transparent;transition:background .15s,border-color .15s;}
+  .notif-item.unread{background:var(--primary-soft);border-left-color:var(--primary);}
+  body.dark .notif-item.unread{background:var(--bg-subtle);}
+  .notif-item:hover{background:var(--bg-subtle);}
+  .notif-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;
+    justify-content:center;font-size:18px;flex-shrink:0;font-weight:700;}
+  .notif-icon.absence  {background:rgba(99,102,241,.14);color:#4f46e5;}
+  .notif-icon.approval {background:rgba(16,185,129,.14);color:#059669;}
+  .notif-icon.rejection{background:rgba(239,68,68,.14); color:#dc2626;}
+  .notif-icon.comment  {background:rgba(6,182,212,.14); color:#0891b2;}
+  .notif-icon.info     {background:rgba(245,158,11,.14);color:#d97706;}
+
+  .notif-body{flex:1;min-width:0;}
+  .notif-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .notif-head .n-title{font-weight:600;font-size:13px;letter-spacing:-.005em;flex:1;min-width:0;}
+  .notif-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .15s;}
+  .notif-item:hover .notif-actions{opacity:1;}
+  .notif-btn{background:transparent;border:none;cursor:pointer;font-size:13px;color:var(--muted);
+    padding:3px 7px;border-radius:6px;line-height:1;transition:background .15s,color .15s;}
+  .notif-btn:hover{background:var(--bg-card);color:var(--text);}
+  .notif-item .n-text{font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.4;}
+  .notif-item .n-time{font-size:11px;color:var(--muted);margin-top:6px;}
+
+  .notif-date-group{padding:10px 14px 4px;font-size:10.5px;text-transform:uppercase;
+    font-weight:700;color:var(--muted);letter-spacing:.06em;}
+  .notif-empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:13px;}
+  .notif-footer{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;
+    position:sticky;bottom:0;background:var(--bg-elevated);border-radius:0 0 var(--radius) var(--radius);}
+  .notif-footer .btn{flex:1;}
+
+  .bell-btn.pulse-once{animation:bellPulseOnce .65s cubic-bezier(.2,.9,.3,1.2);}
+  @keyframes bellPulseOnce{
+    0%,100%{transform:scale(1) rotate(0);}
+    20%{transform:scale(1.22) rotate(-12deg);}
+    45%{transform:scale(1.15) rotate(10deg);}
+    70%{transform:scale(1.08) rotate(-5deg);}
+  }
+  @media(max-width:768px){
+    .notif-panel{width:calc(100vw - 20px);right:-8px;max-height:70vh;}
+    .notif-actions{opacity:1;}
+    .notif-item{padding:11px 12px;}
+  }
 </style>
 </head>
 <body>
@@ -942,19 +995,182 @@ if(!data.log)data.log=[];
 if(!data.notifications)data.notifications=[];
 if(data.adminPasswordHash===undefined)data.adminPasswordHash=null;
 let firebaseReady=false,firebaseConnected=false,session=null;
+let _seenNotifIds=new Set();
+let _sessionStartTime=Date.now();
+let _notifFilter='all';
 let saveTimer=null,saveLogTimer=null,saveNotifTimer=null;
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/main'),{students:data.students||[],absences:data.absences||[],teachers:data.teachers||[],parents:data.parents||[],periods:data.periods||{},currentPeriod:data.currentPeriod||{},schedules:data.schedules||{},adminPasswordHash:data.adminPasswordHash||null});firebaseConnected=true;updateStatusBadge();}catch(e){firebaseConnected=false;updateStatusBadge();}},600);}
 function saveLog(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveLogTimer);saveLogTimer=setTimeout(async()=>{try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/log'),data.log||[]);}catch(e){}},2000);}
 function saveNotifications(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveNotifTimer);saveNotifTimer=setTimeout(async()=>{try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/notifications'),data.notifications||[]);}catch(e){}},1000);}
 function logAction(action,details){if(!data.log)data.log=[];data.log.push({time:new Date().toISOString(),user:session?session.name:'—',role:session?session.role:'—',action,details:details||''});if(data.log.length>300)data.log=data.log.slice(-300);saveLog();}
-function requestNotificationPermission(){if(!('Notification'in window))return toast('Не поддерживается',true);if(Notification.permission==='default')Notification.requestPermission().then(p=>toast(p==='granted'?'Уведомления включены':'Отклонено',p!=='granted'));else if(Notification.permission==='granted')toast('Уже включены');else toast('Заблокированы',true);}
-function showNativeNotification(title,body){if(!('Notification'in window)||Notification.permission!=='granted')return;try{new Notification(title,{body});}catch(e){}}
-function pushNotification(toRole,toUser,message,detail){if(!data.notifications)data.notifications=[];data.notifications.push({id:uid(),toRole,toUser,message,detail:detail||'',from:session?session.name:'—',time:new Date().toISOString(),read:false});if(data.notifications.length>60)data.notifications=data.notifications.slice(-60);saveNotifications();if(session&&session.role===toRole&&session.name===toUser)showNativeNotification('Учёт пропусков',message);}
-function getMyNotifications(){if(!session||!data.notifications)return[];return data.notifications.filter(n=>n.toRole===session.role&&n.toUser===session.name).sort((a,b)=>(b.time||'').localeCompare(a.time||''));}
-function unreadCount(){return getMyNotifications().filter(n=>!n.read).length;}
-function markAllRead(){if(!data.notifications)return;let changed=false;data.notifications.forEach(n=>{if(n.toRole===session.role&&n.toUser===session.name&&!n.read){n.read=true;changed=true;}});if(changed)saveNotifications();}
+
+/* ========== УВЕДОМЛЕНИЯ v2 ========== */
+const NOTIF_TYPES={
+  absence:  {icon:'📝',title:'Новый пропуск'},
+  approval: {icon:'✅',title:'Пропуск подтверждён'},
+  rejection:{icon:'❌',title:'Пропуск отклонён'},
+  comment:  {icon:'💬',title:'Новый комментарий'},
+  info:     {icon:'ℹ️',title:'Уведомление'}
+};
+function notifType(t){return NOTIF_TYPES[t]||NOTIF_TYPES.info;}
+
+function playNotifSound(){
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return;
+    const ctx=new Ctx();
+    const now=ctx.currentTime;
+    [[880,0],[1175,0.12]].forEach(([freq,delay])=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0,now+delay);
+      gain.gain.linearRampToValueAtTime(0.10,now+delay+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+delay+0.26);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now+delay);
+      osc.stop(now+delay+0.28);
+    });
+    setTimeout(()=>ctx.close(),600);
+  }catch(e){}
+}
+
+async function requestNotificationPermission(showToastOnResult){
+  if(!('Notification' in window)){if(showToastOnResult)toast('Браузер не поддерживает уведомления',true);return;}
+  if(Notification.permission==='granted'){if(showToastOnResult)toast('Уведомления уже включены');return;}
+  if(Notification.permission==='denied'){if(showToastOnResult)toast('Заблокированы в настройках браузера',true);return;}
+  try{
+    const p=await Notification.requestPermission();
+    if(showToastOnResult)toast(p==='granted'?'Уведомления включены':'Отклонено',p!=='granted');
+    if(p==='granted')renderApp();
+  }catch(e){}
+}
+
+function showNativeNotification(title,body){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  try{new Notification(title,{body,tag:'school-absence',silent:false});}catch(e){}
+}
+
+function pushNotification(toRole,toUser,message,detail,type){
+  if(!data.notifications)data.notifications=[];
+  const notif={
+    id:uid(),
+    toRole,toUser,message,
+    detail:detail||'',
+    type:type||'info',
+    from:session?session.name:'—',
+    fromRole:session?session.role:'—',
+    time:new Date().toISOString(),
+    read:false
+  };
+  data.notifications.push(notif);
+  if(data.notifications.length>200)data.notifications=data.notifications.slice(-200);
+  saveNotifications();
+  if(session&&session.role===toRole&&session.name===toUser&&!_seenNotifIds.has(notif.id)){
+    _seenNotifIds.add(notif.id);
+    showNativeNotification('Учёт пропусков · '+notifType(type).title,message);
+  }
+}
+
+function getMyNotifications(){
+  if(!session||!data.notifications)return[];
+  return data.notifications
+    .filter(n=>n.toRole===session.role&&n.toUser===session.name)
+    .sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+}
+
+function unreadCount(){
+  return getMyNotifications().filter(n=>!n.read).length;
+}
+
+function markRead(id){
+  if(!data.notifications)return;
+  let changed=false;
+  data.notifications.forEach(n=>{if(n.id===id&&!n.read){n.read=true;changed=true;}});
+  if(changed)saveNotifications();
+}
+
+function markAllRead(){
+  if(!data.notifications)return;
+  let changed=false;
+  data.notifications.forEach(n=>{
+    if(n.toRole===session.role&&n.toUser===session.name&&!n.read){n.read=true;changed=true;}
+  });
+  if(changed)saveNotifications();
+}
+
+function deleteNotification(id){
+  if(!data.notifications)return;
+  data.notifications=data.notifications.filter(n=>n.id!==id);
+  saveNotifications();
+}
+
+function clearAllNotifications(){
+  if(!data.notifications)return;
+  data.notifications=data.notifications.filter(n=>
+    !(n.toRole===session.role&&n.toUser===session.name));
+  saveNotifications();
+}
+
+function processIncomingNotifications(){
+  if(!session)return false;
+  const mine=getMyNotifications();
+  let hasNew=false;
+  mine.forEach(n=>{
+    if(!_seenNotifIds.has(n.id)){
+      _seenNotifIds.add(n.id);
+      const isFresh=n.time&&new Date(n.time).getTime()>_sessionStartTime;
+      const isFromOther=n.from!==session.name||n.fromRole!==session.role;
+      if(isFresh&&isFromOther){
+        hasNew=true;
+        showNativeNotification('Учёт пропусков · '+notifType(n.type).title,
+          n.message+(n.detail?' — '+n.detail:''));
+      }
+    }
+  });
+  if(hasNew){
+    playNotifSound();
+    const bell=document.getElementById('bellBtn');
+    if(bell){
+      bell.classList.add('pulse-once');
+      setTimeout(()=>bell.classList.remove('pulse-once'),700);
+    }
+    renderApp();
+    return true;
+  }
+  return false;
+}
+
 async function initFirebaseSync(){if(!window.firebaseDB){firebaseReady=true;return false;}firebaseReady=true;return true;}
-function subscribeToFirebase(){if(!window.firebaseDB)return;const{db,ref,onValue,set}=window.firebaseDB;onValue(ref(db,FB_PATH+'/main'),(snap)=>{const incoming=snap.val();if(!incoming){const seeded=buildSeedData();set(ref(db,FB_PATH+'/main'),{students:seeded.students,absences:seeded.absences,teachers:seeded.teachers,parents:seeded.parents,periods:seeded.periods,currentPeriod:seeded.currentPeriod,schedules:seeded.schedules,adminPasswordHash:null});return;}data.students=incoming.students||[];data.absences=incoming.absences||[];data.teachers=incoming.teachers||[];data.parents=incoming.parents||[];data.periods=incoming.periods||{};data.currentPeriod=incoming.currentPeriod||{};data.schedules=incoming.schedules||{};data.adminPasswordHash=incoming.adminPasswordHash||null;localStorage.setItem(STORAGE_KEY,JSON.stringify(data));firebaseConnected=true;updateStatusBadge();if(session)renderApp();},(err)=>{console.warn('Subscribe error:',err);firebaseConnected=false;updateStatusBadge();});onValue(ref(db,FB_PATH+'/log'),snap=>{data.log=snap.val()||[];});onValue(ref(db,FB_PATH+'/notifications'),snap=>{data.notifications=snap.val()||[];if(session)renderApp();});}
+function subscribeToFirebase(){
+  if(!window.firebaseDB)return;
+  const{db,ref,onValue,set}=window.firebaseDB;
+  onValue(ref(db,FB_PATH+'/main'),(snap)=>{
+    const incoming=snap.val();
+    if(!incoming){
+      const seeded=buildSeedData();
+      set(ref(db,FB_PATH+'/main'),{students:seeded.students,absences:seeded.absences,teachers:seeded.teachers,parents:seeded.parents,periods:seeded.periods,currentPeriod:seeded.currentPeriod,schedules:seeded.schedules,adminPasswordHash:null});
+      return;
+    }
+    data.students=incoming.students||[];
+    data.absences=incoming.absences||[];
+    data.teachers=incoming.teachers||[];
+    data.parents=incoming.parents||[];
+    data.periods=incoming.periods||{};
+    data.currentPeriod=incoming.currentPeriod||{};
+    data.schedules=incoming.schedules||{};
+    data.adminPasswordHash=incoming.adminPasswordHash||null;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    firebaseConnected=true;updateStatusBadge();
+    if(session)renderApp();
+  },(err)=>{console.warn('Subscribe error:',err);firebaseConnected=false;updateStatusBadge();});
+  onValue(ref(db,FB_PATH+'/log'),snap=>{data.log=snap.val()||[];});
+  onValue(ref(db,FB_PATH+'/notifications'),snap=>{
+    data.notifications=snap.val()||[];
+    if(session)processIncomingNotifications();
+  });
+}
 function updateStatusBadge(){const badge=document.getElementById('syncStatus');if(!badge)return;if(!firebaseReady)badge.innerHTML='<span class="status-dot offline"></span>Локально';else if(firebaseConnected)badge.innerHTML='<span class="status-dot online"></span>Синхронизировано';else badge.innerHTML='<span class="status-dot offline"></span>Офлайн';}
 async function runAutoBackup(force){if(!window.firebaseDB)return;const today=todayISO();if(!force&&localStorage.getItem('last_backup_date')===today)return;try{const{db,ref,set,get,remove}=window.firebaseDB;const snap=await get(ref(db,BACKUP_PATH));const existing=snap.val()||{};const keys=Object.keys(existing).sort();while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}}await set(ref(db,BACKUP_PATH+'/'+today),{time:new Date().toISOString(),studentsCount:data.students.length,absencesCount:data.absences.length,teachersCount:data.teachers.length,data:{students:data.students,absences:data.absences,teachers:data.teachers,parents:data.parents,periods:data.periods,currentPeriod:data.currentPeriod,schedules:data.schedules,adminPasswordHash:data.adminPasswordHash}});localStorage.setItem('last_backup_date',today);}catch(e){}}
 async function listBackups(){if(!window.firebaseDB)return[];try{const{db,ref,get}=window.firebaseDB;const snap=await get(ref(db,BACKUP_PATH));const val=snap.val()||{};return Object.entries(val).map(([date,info])=>({date,time:info.time,students:info.studentsCount||0,absences:info.absencesCount||0,teachers:info.teachersCount||0})).sort((a,b)=>b.date.localeCompare(a.date));}catch(e){return[];}}
@@ -1071,8 +1287,115 @@ function renderAbsencesTable(rows,withActions,withParentComment,problemNames){
   return '<table><thead><tr><th class="sortable" data-sort="date">Дата<span class="sort-arrow '+(uiState.sortBy==='date'?'active':'')+'">'+arrowDate+'</span></th><th class="sortable" data-sort="name">ФИО<span class="sort-arrow '+(uiState.sortBy==='name'?'active':'')+'">'+arrowName+'</span></th><th>Класс</th><th class="sortable" data-sort="subject">Предмет</th><th class="sortable" data-sort="reason">Причина<span class="sort-arrow '+(uiState.sortBy==='reason'?'active':'')+'">'+arrowReason+'</span></th><th>Примечание</th>'+parentCol+(withActions?'<th></th>':'')+'</tr></thead><tbody>'+body+'</tbody></table>';
 }
 function bindSortHandlers(){document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{const key=th.dataset.sort;if(uiState.sortBy===key)uiState.sortDir=uiState.sortDir==='asc'?'desc':'asc';else{uiState.sortBy=key;uiState.sortDir='desc';}renderApp();}));}
-function bellHTML(){const count=unreadCount();if(count===0)return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn">🔔</button></div>';return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn">🔔<span class="bell-count">'+count+'</span></button></div>';}
-function bindBell(){const btn=document.getElementById('bellBtn');if(!btn)return;btn.addEventListener('click',(e)=>{e.stopPropagation();const existing=document.getElementById('notifPanel');if(existing){existing.remove();return;}const notifs=getMyNotifications();const panel=document.createElement('div');panel.className='notif-panel';panel.id='notifPanel';if(!notifs.length)panel.innerHTML='<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">Уведомлений нет</div>';else panel.innerHTML=notifs.slice(0,20).map(n=>'<div class="notif-item'+(n.read?'':' unread')+'"><div class="n-title">'+escapeHtml(n.message)+'</div>'+(n.detail?'<div class="n-text">'+escapeHtml(n.detail)+'</div>':'')+'<div class="n-time">'+escapeHtml(formatDateTime(n.time))+'</div></div>').join('');document.body.appendChild(panel);markAllRead();setTimeout(()=>{document.addEventListener('click',function close(){const p=document.getElementById('notifPanel');if(p)p.remove();document.removeEventListener('click',close);});},10);});}
+function bellHTML(){
+  const count=unreadCount();
+  return '<div class="bell-wrap"><button class="bell-btn" id="bellBtn" title="Уведомления">🔔'
+    +(count>0?'<span class="bell-count">'+(count>99?'99+':count)+'</span>':'')
+    +'</button></div>';
+}
+function bindBell(){
+  const btn=document.getElementById('bellBtn');
+  if(!btn)return;
+  btn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(document.getElementById('notifPanel')){document.getElementById('notifPanel').remove();return;}
+    openNotifPanel();
+  });
+}
+function openNotifPanel(){
+  const allNotifs=getMyNotifications();
+  const unread=allNotifs.filter(n=>!n.read).length;
+  const shown=_notifFilter==='unread'?allNotifs.filter(n=>!n.read):allNotifs;
+  const panel=document.createElement('div');
+  panel.className='notif-panel';
+  panel.id='notifPanel';
+  let bodyHTML='';
+  if(!shown.length){
+    bodyHTML='<div class="notif-empty">'+(_notifFilter==='unread'?'Непрочитанных нет':'Уведомлений пока нет')+'</div>';
+  }else{
+    const groups={today:[],yesterday:[],older:[]};
+    const now=new Date();
+    const todayStr=now.toISOString().slice(0,10);
+    const yStr=new Date(now.getTime()-86400000).toISOString().slice(0,10);
+    shown.forEach(n=>{
+      const d=(n.time||'').slice(0,10);
+      if(d===todayStr)groups.today.push(n);
+      else if(d===yStr)groups.yesterday.push(n);
+      else groups.older.push(n);
+    });
+    const renderGroup=(label,items)=>{
+      if(!items.length)return '';
+      return '<div class="notif-date-group">'+label+'</div>'+items.map(n=>{
+        const t=notifType(n.type);
+        return '<div class="notif-item'+(n.read?'':' unread')+'"'
+          +' data-notif-id="'+n.id+'" data-notif-type="'+(n.type||'info')+'">'
+          +'<div class="notif-icon '+(n.type||'info')+'">'+t.icon+'</div>'
+          +'<div class="notif-body">'
+            +'<div class="notif-head">'
+              +'<div class="n-title">'+escapeHtml(n.message)+'</div>'
+              +'<div class="notif-actions">'
+                +(n.read?'':'<button class="notif-btn" data-mark-read="'+n.id+'" title="Прочитано">✓</button>')
+                +'<button class="notif-btn" data-del-notif="'+n.id+'" title="Удалить">✕</button>'
+              +'</div>'
+            +'</div>'
+            +(n.detail?'<div class="n-text">'+escapeHtml(n.detail)+'</div>':'')
+            +'<div class="n-time">'+escapeHtml(formatDateTime(n.time))+' · '+escapeHtml(n.from||'—')+'</div>'
+          +'</div></div>';
+      }).join('');
+    };
+    bodyHTML=renderGroup('Сегодня',groups.today)+renderGroup('Вчера',groups.yesterday)+renderGroup('Ранее',groups.older);
+  }
+  panel.innerHTML=
+    '<div class="notif-tabs">'
+      +'<button class="notif-tab'+(_notifFilter==='all'?' active':'')+'" data-notif-filter="all">Все ('+allNotifs.length+')</button>'
+      +'<button class="notif-tab'+(_notifFilter==='unread'?' active':'')+'" data-notif-filter="unread">Непрочитанные ('+unread+')</button>'
+    +'</div>'
+    +bodyHTML
+    +(allNotifs.length
+      ?'<div class="notif-footer">'
+        +(unread>0?'<button class="btn btn-secondary btn-sm" id="markAllReadBtn">Прочитать все</button>':'')
+        +'<button class="btn btn-secondary btn-sm" id="clearAllNotifsBtn">Очистить</button>'
+      +'</div>'
+      :'');
+  document.body.appendChild(panel);
+  panel.querySelectorAll('[data-notif-filter]').forEach(tab=>{
+    tab.addEventListener('click',()=>{_notifFilter=tab.dataset.notifFilter;panel.remove();openNotifPanel();});
+  });
+  panel.querySelectorAll('[data-mark-read]').forEach(b=>{
+    b.addEventListener('click',(e)=>{e.stopPropagation();markRead(b.dataset.markRead);panel.remove();openNotifPanel();renderApp();});
+  });
+  panel.querySelectorAll('[data-del-notif]').forEach(b=>{
+    b.addEventListener('click',(e)=>{e.stopPropagation();deleteNotification(b.dataset.delNotif);panel.remove();openNotifPanel();renderApp();});
+  });
+  panel.querySelectorAll('[data-notif-id]').forEach(item=>{
+    item.addEventListener('click',(e)=>{
+      if(e.target.closest('[data-mark-read],[data-del-notif]'))return;
+      markRead(item.dataset.notifId);
+      panel.remove();
+      const type=item.dataset.notifType;
+      let target='journalBlock';
+      if(type==='approval'||type==='rejection')target='myAbsencesBlock';
+      if(session&&session.role==='admin')target='historyBlock';
+      if(document.getElementById(target))scrollToBlock(target);
+      renderApp();
+    });
+  });
+  document.getElementById('markAllReadBtn')?.addEventListener('click',(e)=>{e.stopPropagation();markAllRead();panel.remove();renderApp();});
+  document.getElementById('clearAllNotifsBtn')?.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(!confirm('Удалить все уведомления?'))return;
+    clearAllNotifications();panel.remove();renderApp();
+  });
+  setTimeout(()=>{
+    const close=(ev)=>{
+      if(!panel.contains(ev.target)&&ev.target!==btn&&!btn.contains(ev.target)){
+        panel.remove();
+        document.removeEventListener('click',close);
+      }
+    };
+    document.addEventListener('click',close);
+  },10);
+}
 function bindThemeToggle(){document.getElementById('themeToggle')?.addEventListener('click',()=>{document.body.classList.toggle('dark');const isDark=document.body.classList.contains('dark');localStorage.setItem('theme',isDark?'dark':'light');document.getElementById('themeToggle').textContent=isDark?'☀️':'🌙';if(typeof Chart!=='undefined'&&session){renderApp();}});}
 function scrollToBlock(id){const el=document.getElementById(id);if(el){const y=el.getBoundingClientRect().top+window.pageYOffset-20;window.scrollTo({top:y,behavior:'smooth'});}else{window.scrollTo({top:0,behavior:'smooth'});}}
 function renderMobileNav(){const nav=document.getElementById('mobileNav');if(!nav)return;if(!session){nav.innerHTML='';nav.style.display='none';return;}nav.style.display='';let items=[];if(session.role==='teacher')items=[{icon:'📊',label:'Главная',id:'statsBlock'},{icon:'➕',label:'Добавить',id:'addBlock'},{icon:'👥',label:'Ученики',id:'studentsBlock'},{icon:'📓',label:'Журнал',id:'journalBlock'},{icon:'📅',label:'Календарь',id:'calendarBlock'}];else if(session.role==='student')items=[{icon:'📊',label:'Мои',id:'statsBlock'},{icon:'➕',label:'Добавить',id:'addBlock'},{icon:'📋',label:'Пропуски',id:'myAbsencesBlock'}];else if(session.role==='parent')items=[{icon:'📊',label:'Главная',id:'statsBlock'},{icon:'📋',label:'Пропуски',id:'myAbsencesBlock'}];else if(session.role==='admin')items=[{icon:'👩‍🏫',label:'Учителя',id:'teachersBlock'},{icon:'🏫',label:'Классы',id:'adminClassesBlock'},{icon:'📅',label:'Расписание',id:'adminScheduleBlock'},{icon:'💾',label:'Бэкапы',id:'backupBlock'},{icon:'📜',label:'История',id:'historyBlock'}];nav.innerHTML=items.map((item,i)=>'<button class="mobile-nav-item" data-nav-idx="'+i+'"><span class="icon">'+item.icon+'</span><span>'+escapeHtml(item.label)+'</span></button>').join('');nav.querySelectorAll('[data-nav-idx]').forEach(btn=>{btn.addEventListener('click',()=>{const idx=parseInt(btn.dataset.navIdx,10);if(items[idx])scrollToBlock(items[idx].id);nav.querySelectorAll('.mobile-nav-item').forEach(b=>b.classList.remove('active'));btn.classList.add('active');});});}
@@ -1296,6 +1619,8 @@ function renderLogin(){
     ensurePeriods(session.class);
     if(session.class)ensureSchedule(session.class);
     saveSession();
+    _sessionStartTime=Date.now();
+    _seenNotifIds.clear();
     logAction('login',session.role+' вошёл');
     uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',adminSelectedClass:CLASSES[0],scheduleEditClass:CLASSES[0],searchQuery:'',sortBy:'date',sortDir:'desc',logFilter:''};
     renderApp();
@@ -1341,13 +1666,24 @@ function bindTeacherEvents(){
   bindLogout();
   document.getElementById('periodSelect')?.addEventListener('change',e=>{data.currentPeriod[session.class]=parseInt(e.target.value,10);saveData();renderTeacher();});
   document.getElementById('printBtn')?.addEventListener('click',()=>{const period=getCurrentPeriod(session.class);printJournal(session.class,period.name);});
-  document.getElementById('notifyPermBtn')?.addEventListener('click',requestNotificationPermission);
+  document.getElementById('notifyPermBtn')?.addEventListener('click',()=>requestNotificationPermission(true));
   document.getElementById('changeTeacherPinBtn')?.addEventListener('click',()=>{
     const teacher=findTeacher(session.name);
     if(!teacher)return toast('Ошибка',true);
     openChangePinModal({title:'Смена PIN-кода',subtitle:'PIN используется для входа',onSave:async(oldVal,newVal)=>{if(!await verifyPin(oldVal,teacher.pin))return{ok:false,error:'Неверный текущий PIN'};teacher.pin=await setPinHash(newVal);teacher.attempts=0;teacher.blockedUntil=null;logAction('upd','Учитель сменил PIN');saveData();return{ok:true};}});
   });
-  document.getElementById('absenceForm').addEventListener('submit',e=>{e.preventDefault();const date=document.getElementById('aDate').value,studentName=document.getElementById('aStudent').value,subject=document.getElementById('aSubject').value,reason=document.getElementById('aReason').value,note=document.getElementById('aNote').value.trim();if(!date||!studentName||!subject||!reason)return toast('Заполните поля',true);if(!isValidAbsenceDate(date))return toast('Некорректная дата',true);data.absences.push({id:uid(),date,class:session.class,studentName,subject,reason,note,addedBy:session.name,addedByRole:'teacher',status:'approved'});logAction('add','Пропуск: '+studentName);saveData();toast('Запись добавлена');renderTeacher();});
+  document.getElementById('absenceForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const date=document.getElementById('aDate').value,studentName=document.getElementById('aStudent').value,subject=document.getElementById('aSubject').value,reason=document.getElementById('aReason').value,note=document.getElementById('aNote').value.trim();
+    if(!date||!studentName||!subject||!reason)return toast('Заполните поля',true);
+    if(!isValidAbsenceDate(date))return toast('Некорректная дата',true);
+    data.absences.push({id:uid(),date,class:session.class,studentName,subject,reason,note,addedBy:session.name,addedByRole:'teacher',status:'approved'});
+    const rn=reasonById(reason).name;
+    pushNotification('student',studentName,'Учитель внёс пропуск',formatDate(date)+' — '+rn,'absence');
+    pushNotification('parent',studentName,'Учитель внёс пропуск ребёнку',formatDate(date)+' — '+rn,'absence');
+    logAction('add','Пропуск: '+studentName);
+    saveData();toast('Запись добавлена');renderTeacher();
+  });
   document.getElementById('aDate')?.addEventListener('change',e=>{document.getElementById('aSubject').innerHTML=optionsHTML(getLessonsFor(session.class,e.target.value),'');});
   document.getElementById('searchInput')?.addEventListener('input',e=>{uiState.searchQuery=e.target.value;clearTimeout(window._searchTimer);window._searchTimer=setTimeout(()=>{const input=document.getElementById('searchInput');const pos=input?input.selectionStart:0;renderTeacher();const ni=document.getElementById('searchInput');if(ni){ni.focus();ni.setSelectionRange(pos,pos);}},300);});
   document.getElementById('fStudent').addEventListener('change',e=>{uiState.filterStudent=e.target.value;renderTeacher();});
@@ -1355,8 +1691,29 @@ function bindTeacherEvents(){
   document.getElementById('fDate').addEventListener('change',e=>{uiState.filterDate=e.target.value;renderTeacher();});
   document.getElementById('clearFilters').addEventListener('click',()=>{uiState.filterReason='';uiState.filterStudent='';uiState.filterDate='';uiState.searchQuery='';renderTeacher();});
   document.querySelectorAll('[data-reset-pin]').forEach(btn=>btn.addEventListener('click',async()=>{const st=data.students.find(s=>s.id===btn.dataset.resetPin);if(!st||!confirm('Сбросить PIN "'+st.name+'"?'))return;st.pin=await setPinHash('1234');st.attempts=0;st.blockedUntil=null;saveData();logAction('upd','Сброшен PIN '+st.name);toast('PIN сброшен');}));
-  document.querySelectorAll('[data-approve-abs]').forEach(btn=>btn.addEventListener('click',()=>{const abs=data.absences.find(a=>a.id===btn.dataset.approveAbs);if(!abs)return;abs.status='approved';logAction('upd','Подтверждён: '+abs.studentName);saveData();toast('Подтверждено');renderTeacher();}));
-  document.querySelectorAll('[data-reject-abs]').forEach(btn=>btn.addEventListener('click',()=>{const abs=data.absences.find(a=>a.id===btn.dataset.rejectAbs);if(!abs||!confirm('Отклонить?'))return;abs.status='rejected';logAction('upd','Отклонён: '+abs.studentName);saveData();toast('Отклонено',true);renderTeacher();}));
+  document.querySelectorAll('[data-approve-abs]').forEach(btn=>btn.addEventListener('click',()=>{
+    const abs=data.absences.find(a=>a.id===btn.dataset.approveAbs);
+    if(!abs)return;
+    abs.status='approved';
+    logAction('upd','Подтверждён: '+abs.studentName);
+    saveData();
+    toast('Подтверждено');
+    const rn=reasonById(abs.reason).name;
+    pushNotification('student',abs.studentName,'Пропуск подтверждён',formatDate(abs.date)+' — '+rn,'approval');
+    pushNotification('parent',abs.studentName,'Пропуск ребёнка подтверждён',formatDate(abs.date)+' — '+rn,'approval');
+    renderTeacher();
+  }));
+  document.querySelectorAll('[data-reject-abs]').forEach(btn=>btn.addEventListener('click',()=>{
+    const abs=data.absences.find(a=>a.id===btn.dataset.rejectAbs);
+    if(!abs||!confirm('Отклонить?'))return;
+    abs.status='rejected';
+    logAction('upd','Отклонён: '+abs.studentName);
+    saveData();
+    toast('Отклонено',true);
+    pushNotification('student',abs.studentName,'Пропуск отклонён',formatDate(abs.date)+' — '+reasonById(abs.reason).name,'rejection');
+    pushNotification('parent',abs.studentName,'Пропуск ребёнка отклонён',formatDate(abs.date)+' — '+reasonById(abs.reason).name,'rejection');
+    renderTeacher();
+  }));
   document.querySelectorAll('[data-open-abs]').forEach(btn=>btn.addEventListener('click',()=>openAbsenceCertificate(btn.dataset.openAbs)));
   document.querySelectorAll('[data-del-abs]').forEach(btn=>btn.addEventListener('click',()=>{const abs=data.absences.find(a=>a.id===btn.dataset.delAbs);if(!abs||!confirm('Удалить запись?'))return;data.absences=data.absences.filter(a=>a.id!==btn.dataset.delAbs);logAction('del','Удалён пропуск '+abs.studentName);saveData();toast('Удалено');renderTeacher();}));
   document.getElementById('importStudentsBtn')?.addEventListener('click',()=>openImportModal(session.class));
@@ -1397,12 +1754,17 @@ function renderStudent(){
     data.absences.push({id:uid(),date,class:cls,studentName:session.name,subject,reason,note,addedBy:session.name,addedByRole:'student',status:'pending'});
     logAction('add','Ученик добавил пропуск');
     const teacher=(data.teachers||[]).find(t=>t.class===cls);
-    if(teacher)pushNotification('teacher',teacher.name,session.name+' добавил пропуск',formatDate(date)+' — '+reasonById(reason).name);
+    const reasonName=reasonById(reason).name;
+    if(teacher){
+      pushNotification('teacher',teacher.name,'Новый пропуск от ученика',session.name+' · '+formatDate(date)+' — '+reasonName,'absence');
+    }
+    pushNotification('parent',session.name,'Ребёнок добавил пропуск',formatDate(date)+' — '+reasonName,'absence');
     saveData();toast('Запись отправлена учителю');renderStudent();
   });
   document.getElementById('saDate')?.addEventListener('change',e=>{document.getElementById('saSubject').innerHTML=optionsHTML(getLessonsFor(cls,e.target.value),'');});
   document.getElementById('periodSelect')?.addEventListener('change',e=>{data.currentPeriod[session.class]=parseInt(e.target.value,10);saveData();renderStudent();});
   bindSortHandlers();
+  bindBell();
 }
 function renderParent(){
   const cls=session.class;
@@ -1425,8 +1787,22 @@ function renderParent(){
   });
   document.getElementById('periodSelect')?.addEventListener('change',e=>{data.currentPeriod[session.class]=parseInt(e.target.value,10);saveData();renderParent();});
   document.getElementById('parentPrintBtn')?.addEventListener('click',()=>{const period=getCurrentPeriod(cls);printJournal(cls,period.name,{studentName:childName});});
-  document.querySelectorAll('[data-parent-comment]').forEach(btn=>btn.addEventListener('click',()=>{const abs=data.absences.find(a=>a.id===btn.dataset.parentComment);if(!abs)return;const current=abs.parentComment||'';const comment=prompt('Комментарий к пропуску:',current);if(comment===null)return;if(comment.trim())abs.parentComment=comment.trim();else delete abs.parentComment;logAction('upd','Родитель прокомментировал');saveData();toast('Сохранено');renderParent();}));
+  document.querySelectorAll('[data-parent-comment]').forEach(btn=>btn.addEventListener('click',()=>{
+    const abs=data.absences.find(a=>a.id===btn.dataset.parentComment);
+    if(!abs)return;
+    const current=abs.parentComment||'';
+    const comment=prompt('Комментарий к пропуску:',current);
+    if(comment===null)return;
+    if(comment.trim())abs.parentComment=comment.trim();else delete abs.parentComment;
+    logAction('upd','Родитель прокомментировал');
+    const teacher=(data.teachers||[]).find(t=>t.class===cls);
+    if(teacher&&comment.trim()){
+      pushNotification('teacher',teacher.name,'Комментарий родителя',childName+': '+comment.trim(),'comment');
+    }
+    saveData();toast('Сохранено');renderParent();
+  }));
   bindSortHandlers();
+  bindBell();
 }
 function renderAllClassesSummary(){
   const rows=CLASSES.map(cls=>{ensurePeriods(cls);const absences=filterByPeriod(data.absences.filter(a=>a.class===cls),cls);const good=absences.filter(a=>reasonById(a.reason).type==='good').length;const bad=absences.filter(a=>reasonById(a.reason).type==='bad').length;const teacher=(data.teachers||[]).find(t=>t.class===cls);return{cls,total:absences.length,good,bad,students:data.students.filter(s=>s.class===cls).length,teacher:teacher?teacher.name:'—'};});
