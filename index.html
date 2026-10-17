@@ -13,6 +13,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app-check.js";
+
+  const firebaseConfig = { ... };
   import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
   const firebaseConfig = {
     apiKey: "AIzaSyApvOfvU5bgp_olxbuiG_nYvxdnVG_H4Fg",
@@ -25,6 +31,38 @@
   };
   try {
     const app = initializeApp(firebaseConfig);
+    try {
+  const app = initializeApp(firebaseConfig);
+
+  // ============================================================
+  // App Check — проверяет, что запросы идут с настоящего браузера
+  // ============================================================
+  if (typeof self !== 'undefined') {
+    // Debug-токен только для локальной разработки
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+
+    try {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('ТВОЙ_RECAPTCHA_SITE_KEY'),
+        isTokenAutoRefreshEnabled: true
+      });
+      console.log('✓ App Check подключён');
+    } catch (appCheckError) {
+      console.warn('⚠ App Check не инициализирован:', appCheckError);
+      // Не падаем — сайт продолжит работать без App Check
+    }
+  }
+  // ============================================================
+
+  const db = getDatabase(app);
+  window.firebaseDB = { db, ref, set, onValue, get, remove };
+  console.log('✓ Firebase подключена');
+} catch (e) {
+  console.error('Firebase error:', e);
+  window.firebaseDB = null;
+}
     const db = getDatabase(app);
     window.firebaseDB = { db, ref, set, onValue, get, remove };
   } catch (e) { console.error('Firebase error:', e); window.firebaseDB = null; }
