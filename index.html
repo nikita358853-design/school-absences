@@ -116,6 +116,7 @@ body.dark .warning-banner .warn-text{color:#fecaca}
 .attention-item:hover{background:var(--bg-card);box-shadow:var(--shadow-sm)}
 .attention-item.danger{border-left-color:var(--danger)}
 .attention-item.info{border-left-color:var(--primary)}
+.attention-item.success{border-left-color:var(--success)}
 .attention-text{flex:1;font-size:13px}
 .bell-wrap{position:relative;display:inline-block}
 .bell-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:17px;cursor:pointer;padding:7px 12px;border-radius:9px;position:relative}
@@ -274,9 +275,32 @@ body.dark .edit-info{color:var(--primary-light)}
 .posts-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .post-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-full);font-size:12.5px;font-weight:600}
 .post-chip button{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:0;line-height:1}
-.day-group{margin-bottom:14px}
-.day-group.today{background:rgba(79,70,229,.05);padding:10px;border-radius:10px}
-.day-group-header{font-weight:700;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+/* ===== НОВОЕ: недели дежурства ===== */
+.week-card{background:var(--bg-subtle);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--border);transition:all .15s}
+.week-card.active{border-color:var(--primary);border-width:2px;background:linear-gradient(135deg,rgba(79,70,229,.04),rgba(79,70,229,.02))}
+.week-card.transferred{opacity:.7}
+.week-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.week-title{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.week-dates{font-size:12px;color:var(--text-dim);margin-top:2px}
+.week-progress{font-size:12px;color:var(--text-mid);margin-bottom:10px;font-weight:500;display:flex;align-items:center;gap:8px}
+.week-progress-bar{flex:1;height:6px;background:var(--bg-card);border-radius:999px;overflow:hidden;max-width:200px}
+.week-progress-fill{height:100%;background:var(--gradient-primary);border-radius:999px;transition:width .3s}
+.week-progress-fill.done{background:linear-gradient(135deg,#10b981,#059669)}
+.post-row{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;align-items:center;padding:7px 9px;border-radius:8px;margin-bottom:4px;background:var(--bg-card);border:1px solid var(--border)}
+.post-row.done{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.2)}
+.post-name{font-size:12.5px;font-weight:600}
+.post-student select{padding:5px 26px 5px 8px;font-size:12px;border-radius:7px}
+.post-student-text{font-size:12px;color:var(--text-mid)}
+.post-toggle{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:11.5px;padding:5px 11px;border-radius:var(--radius-full);white-space:nowrap;transition:all .15s}
+.post-toggle.is-done{background:var(--success);color:#fff;box-shadow:0 2px 6px rgba(16,185,129,.3)}
+.post-toggle.is-not{background:var(--bg-subtle);color:var(--text-dim);border:1px solid var(--border-strong)}
+.post-toggle.is-not:hover{background:var(--danger-soft);color:#991b1b;border-color:rgba(239,68,68,.3)}
+body.dark .post-toggle.is-not:hover{color:#fca5a5}
+.week-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);flex-wrap:wrap}
+.week-actions .btn{flex:1;min-width:140px;font-size:12px;padding:8px 12px}
+.week-card.week-old .week-title{font-size:13.5px}
+.week-card.week-old .post-row{grid-template-columns:1fr 1fr auto;padding:5px 7px}
+.week-card.week-old .post-name,.week-card.week-old .post-student-text,.week-card.week-old .post-toggle{font-size:11.5px}
 @media(max-width:768px){
   input,select,textarea{font-size:16px !important;padding:12px !important;min-height:44px}
   .btn{min-height:42px;padding:10px 16px !important;font-size:13.5px !important}
@@ -318,6 +342,10 @@ body.dark .edit-info{color:var(--primary-light)}
   .todo-form{flex-direction:column}
   .attendance-grid{grid-template-columns:1fr}
   .school-summary-row{grid-template-columns:60px 1fr 40px 40px 40px;font-size:11.5px}
+  .post-row{grid-template-columns:1fr;gap:6px}
+  .post-row .post-student,.post-row .post-status{justify-self:stretch}
+  .post-row .post-toggle{width:100%}
+  .week-actions .btn{min-width:100%}
 }
 </style>
 </head>
@@ -326,8 +354,8 @@ body.dark .edit-info{color:var(--primary-light)}
 <div id="toast" class="toast"></div>
 
 <script>
-const STORAGE_KEY='school_helper_v6';
-const SESSION_KEY='school_helper_session_v6';
+const STORAGE_KEY='school_helper_v7';
+const SESSION_KEY='school_helper_session_v7';
 const FB_PATH='schoolData';
 const BACKUP_PATH='backups';
 const BACKUP_KEEP_DAYS=30;
@@ -392,13 +420,13 @@ function formatDate(iso){if(!iso)return '';const p=iso.split('-');if(p.length!==
 function formatDateTime(iso){if(!iso)return '';try{const d=new Date(iso);return d.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
 function dayOfWeekName(iso){try{const d=new Date(iso+'T00:00:00');return DAYS_OF_WEEK[(d.getDay()+6)%7];}catch(e){return '';}}
 function getSchoolYearEnd(){const now=new Date();const m=now.getMonth();const y=now.getFullYear();return (m>=5)?(y+1)+'-05-31':y+'-05-31';}
+function nextMonday(){const t=new Date();const dow=t.getDay();const add=dow===1?0:(dow===0?1:8-dow);const d=new Date(t);d.setDate(t.getDate()+add);const p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 function toast(msg,isError){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='toast show'+(isError?' error':'');clearTimeout(el._t);el._t=setTimeout(function(){el.className='toast';},2600);}
 function reasonById(id){for(const r of REASONS)if(r.id===id)return r;return REASONS[REASONS.length-1];}
 function remarkTypeById(id){for(const r of REMARK_TYPES)if(r.id===id)return r;return REMARK_TYPES[REMARK_TYPES.length-1];}
 function eventTypeById(id){for(const t of EVENT_TYPES)if(t.id===id)return t;return EVENT_TYPES[EVENT_TYPES.length-1];}
 function positionById(id){for(const p of POSITIONS)if(p.id===id)return p;return POSITIONS[0];}
 function getSubjects(cls){const g=parseInt(cls,10);if(g<=4)return SUBJECTS_JUNIOR;if(g<=9)return SUBJECTS_MIDDLE;return SUBJECTS_SENIOR;}
-
 function simpleHash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return 'h'+Math.abs(h).toString(36);}
 function generateSalt(){const a=new Uint8Array(16);crypto.getRandomValues(a);return Array.from(a).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
 async function pbkdf2Hash(str,salt){try{const enc=new TextEncoder();const km=await crypto.subtle.importKey('raw',enc.encode(str),{name:'PBKDF2'},false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},km,256);return 'pbkdf2$'+salt+'$'+Array.from(new Uint8Array(bits)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}catch(e){return 'pbkdf2-fallback$'+simpleHash(str+salt);}}
@@ -417,7 +445,7 @@ function emptyDB(){
     duties:[],todos:[],parentNotes:[],log:[],notifications:[],
     clubs:[],clubAttendance:[],bellSchedule:DEFAULT_BELLS.slice(),
     menu:[],mealOrders:[],events:[],
-    schoolPosts:DEFAULT_POSTS.slice(),schoolDuties:[],
+    schoolPosts:DEFAULT_POSTS.slice(),schoolDutyWeeks:[],
     teacherAnnouncements:[],
     adminPasswordHash:null
   };
@@ -430,10 +458,11 @@ function buildSeedData(){
 }
 function loadLocalData(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return Object.assign(emptyDB(),JSON.parse(raw));}catch(e){}return buildSeedData();}
 let data=loadLocalData();
-const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDuties','teacherAnnouncements'];
+const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDutyWeeks','teacherAnnouncements'];
 for(const f of LIST_FIELDS){if(!Array.isArray(data[f]))data[f]=[];}
 if(!data.periods)data.periods={};if(!data.currentPeriod)data.currentPeriod={};if(!data.schedules)data.schedules={};
 if(!Array.isArray(data.bellSchedule)||!data.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();
+if(!Array.isArray(data.schoolPosts)||!data.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();
 if(data.adminPasswordHash===undefined)data.adminPasswordHash=null;
 function migrateTeachers(){if(!Array.isArray(data.teachers))data.teachers=[];for(const t of data.teachers){if(!Array.isArray(t.subjects))t.subjects=[];if(!Array.isArray(t.classes))t.classes=[];if(t.class===undefined)t.class=null;if(!t.position)t.position='teacher';}}
 migrateTeachers();
@@ -457,7 +486,7 @@ function saveData(){
         duties:data.duties,todos:data.todos,parentNotes:data.parentNotes,
         clubs:data.clubs,clubAttendance:data.clubAttendance,bellSchedule:data.bellSchedule,
         menu:data.menu,mealOrders:data.mealOrders,events:data.events,
-        schoolPosts:data.schoolPosts,schoolDuties:data.schoolDuties,
+        schoolPosts:data.schoolPosts,schoolDutyWeeks:data.schoolDutyWeeks,
         teacherAnnouncements:data.teacherAnnouncements,
         adminPasswordHash:data.adminPasswordHash
       });
@@ -481,6 +510,7 @@ function canEditSchedule(){return session&&(session.isManager||(session.role==='
 function canManageUsers(){return session&&(session.role==='admin'||session.isDirector);}
 function canManageMenu(){return session&&(session.role==='admin'||(session.role==='teacher'&&session.position==='cafeteria'));}
 function canPostTeacherAnn(){return session&&(session.role==='admin'||session.isManager);}
+function canEditSchoolWeek(week){if(!session)return false;if(session.role==='admin'||session.isManager)return true;if(session.role==='teacher'&&session.isHomeroom&&session.homeroomClass===week.class)return true;return false;}
 
 function getSessionAbsences(){if(!session||session.role!=='teacher'||!session.class)return[];return filterByPeriod(data.absences.filter(function(a){if(a.class!==session.class)return false;if(session.isManager)return true;if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;return true;}),session.class);}
 function getSessionHomework(){if(!session||session.role!=='teacher'||!session.class)return[];return data.homework.filter(function(h){if(h.class!==session.class)return false;if(session.isManager)return true;if(!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;return true;});}
@@ -490,7 +520,7 @@ function getClubById(id){return data.clubs.find(function(c){return c.id===id;});
 function getEventById(id){return data.events.find(function(e){return e.id===id;});}
 function getMyClubsForStudent(name){return data.clubs.filter(function(c){return (c.enrolled||[]).indexOf(name)>=0;});}
 function getClubsForTeacher(name){return data.clubs.filter(function(c){return c.teacherName===name;});}
-function getPostById(id){return data.schoolPosts.find(function(p){return p.id===id;});}
+function getActiveSchoolWeek(){const today=todayISO();return data.schoolDutyWeeks.find(function(w){return w.startDate<=today&&today<=w.endDate;});}
 
 function getStudentFlags(name,cls){
   const flags=[];
@@ -516,6 +546,51 @@ function getSchoolSummary(){
     gt+=abs.length;gg+=good;gb+=bad;
   }
   return {rows:rows,grandTotal:gt,grandGood:gg,grandBad:gb};
+}
+
+/* ============ ШКОЛЬНОЕ ДЕЖУРСТВО ============ */
+function createSchoolDutyWeek(cls,startDate){
+  const start=new Date(startDate+'T00:00:00');
+  const end=new Date(start);end.setDate(start.getDate()+6);
+  const p=function(n){return String(n).padStart(2,'0');};
+  const endDate=end.getFullYear()+'-'+p(end.getMonth()+1)+'-'+p(end.getDate());
+  const students=getStudentsOfClass(cls);
+  const posts=data.schoolPosts.map(function(post,idx){
+    return {
+      postId:post.id,
+      postName:post.name,
+      studentName:students.length?students[idx%students.length].name:'',
+      done:false,
+      doneAt:null
+    };
+  });
+  const week={
+    id:uid(),class:cls,startDate:startDate,endDate:endDate,
+    posts:posts,transferred:false,createdAt:new Date().toISOString(),createdBy:session?session.name:'—'
+  };
+  data.schoolDutyWeeks.push(week);
+  saveData();
+  return week;
+}
+function transferSchoolDuty(weekId){
+  const week=data.schoolDutyWeeks.find(function(w){return w.id===weekId;});
+  if(!week)return;
+  const allDone=week.posts.every(function(p){return p.done;});
+  if(!allDone)return toast('Сначала сдайте все посты',true);
+  const idx=CLASSES.indexOf(week.class);
+  if(idx<0)return toast('Класс не найден',true);
+  const nextCls=CLASSES[(idx+1)%CLASSES.length];
+  const endD=new Date(week.endDate+'T00:00:00');
+  const newStart=new Date(endD);newStart.setDate(endD.getDate()+1);
+  const p=function(n){return String(n).padStart(2,'0');};
+  const newStartISO=newStart.getFullYear()+'-'+p(newStart.getMonth()+1)+'-'+p(newStart.getDate());
+  const existing=data.schoolDutyWeeks.find(function(w){return w.startDate===newStartISO&&!w.transferred;});
+  if(existing)return toast('Уже есть неделя с '+formatDate(newStartISO)+' ('+existing.class+')',true);
+  week.transferred=true;
+  createSchoolDutyWeek(nextCls,newStartISO);
+  logAction('upd','Дежурство по школе передано: '+nextCls+' с '+formatDate(newStartISO));
+  toast('Передано '+nextCls+' с '+formatDate(newStartISO));
+  renderApp();
 }
 
 /* ============ FIREBASE ============ */
@@ -547,13 +622,13 @@ function updateStatusBadge(){const b=document.getElementById('syncStatus');if(!b
 async function runAutoBackup(force){
   if(!window.firebaseDB)return;
   const today=todayISO();
-  if(!force&&localStorage.getItem('last_backup_v6')===today)return;
+  if(!force&&localStorage.getItem('last_backup_v7')===today)return;
   try{
     const{db,ref,set,get,remove}=window.firebaseDB;
     const snap=await get(ref(db,BACKUP_PATH));const ex=snap.val()||{};const keys=Object.keys(ex).sort();
     while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}}
     await set(ref(db,BACKUP_PATH+'/'+today),{time:new Date().toISOString(),data:JSON.parse(JSON.stringify(data))});
-    localStorage.setItem('last_backup_v6',today);
+    localStorage.setItem('last_backup_v7',today);
   }catch(e){}
 }
 async function listBackups(){
@@ -652,12 +727,7 @@ let loginState={role:'teacher',teacherName:'',studentClass:CLASSES[0],studentNam
 function getNavItems(){
   if(!session)return[];
   if(session.role==='teacher'){
-    if(session.isCafeteria){
-      return [
-        {id:'cafeteria',icon:'🍽',label:'Столовая'},
-        {id:'settings',icon:'⚙️',label:'Настройки'}
-      ];
-    }
+    if(session.isCafeteria)return[{id:'cafeteria',icon:'🍽',label:'Столовая'},{id:'settings',icon:'⚙️',label:'Настройки'}];
     if(session.isManager){
       const nav=[
         {id:'home',icon:'🏠',label:'Сводка'},
@@ -672,7 +742,6 @@ function getNavItems(){
         {id:'students',icon:'👥',label:'Ученики'},
         {id:'notes',icon:'📝',label:'Заметки'},
         {id:'duties',icon:'🎯',label:'Дежурства'},
-        {id:'schoolDuties',icon:'🏫',label:'По школе'},
         {id:'reports',icon:'📊',label:'Отчёты'}
       ];
       if(canManageUsers())nav.push({id:'users',icon:'👤',label:'Пользователи'});
@@ -680,7 +749,7 @@ function getNavItems(){
       return nav;
     }
     if(hasFullAccess()){
-      return [
+      return[
         {id:'home',icon:'🏠',label:'Сводка'},
         {id:'attendance',icon:'📋',label:'Посещаемость'},
         {id:'homework',icon:'📚',label:'ДЗ'},
@@ -694,12 +763,11 @@ function getNavItems(){
         {id:'students',icon:'👥',label:'Ученики'},
         {id:'notes',icon:'📝',label:'Заметки'},
         {id:'duties',icon:'🎯',label:'Дежурства'},
-        {id:'schoolDuties',icon:'🏫',label:'По школе'},
         {id:'reports',icon:'📊',label:'Отчёты'},
         {id:'settings',icon:'⚙️',label:'Настройки'}
       ];
     }
-    return [
+    return[
       {id:'home',icon:'🏠',label:'Сводка'},
       {id:'attendance',icon:'📋',label:'Посещаемость'},
       {id:'homework',icon:'📚',label:'ДЗ'},
@@ -738,6 +806,8 @@ function renderSubnav(){
   if(session.role==='teacher'&&!session.isCafeteria){
     cnt.questions=getSessionQuestions().filter(function(q){return !q.answered;}).length;
     cnt.attendance=getSessionAbsences().filter(function(a){return a.status==='pending';}).length;
+    const aw=getActiveSchoolWeek();
+    if(aw){const notDone=aw.posts.filter(function(p){return !p.done;}).length;if(notDone>0)cnt.duties=notDone;}
   }
   let html='<div class="subnav">';
   for(const n of nav){
@@ -948,10 +1018,7 @@ function renderApp(){
 
 /* ============ TEACHER ============ */
 function renderTeacherView(){
-  if(session.isCafeteria){
-    if(currentView==='settings')return renderSettings();
-    return renderCafeteria();
-  }
+  if(session.isCafeteria){if(currentView==='settings')return renderSettings();return renderCafeteria();}
   if(currentView==='homework'&&session.isManager){currentView='home';return renderTeacherHome();}
   if(currentView==='users'&&!canManageUsers()){currentView='home';return renderTeacherHome();}
   const dispatch={
@@ -959,7 +1026,7 @@ function renderTeacherView(){
     schedule:renderSchedule,clubs:renderClubs,events:renderEvents,
     announcements:renderAnnouncements,questions:renderQuestions,cafeteria:renderCafeteria,
     students:renderStudents,notes:renderNotes,
-    duties:renderDuties,schoolDuties:renderSchoolDuties,
+    duties:renderDuties,
     teacherAnn:renderTeacherAnnouncements,
     reports:renderReports,users:renderAdminUsers,settings:renderSettings
   };
@@ -976,19 +1043,17 @@ function renderTeacherHome(){
   const pendingAbs=absAll.filter(function(a){return a.status==='pending';});
   const openQ=hasFullAccess()?getSessionQuestions().filter(function(q){return !q.answered;}):[];
   const todayDuties=hasFullAccess()?data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();}):[];
-  const todaySchoolDuties=hasFullAccess()?data.schoolDuties.filter(function(d){return d.date===todayISO();}):[];
+  const activeWeek=getActiveSchoolWeek();
   const scheduleToday=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
   const allFlags=students.map(function(s){return {student:s,flags:getStudentFlags(s.name,cls)};}).filter(function(x){return x.flags.length>0;});
   const myClubs=getClubsForTeacher(session.name);
   const upcomingEvents=data.events.filter(function(e){return e.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3);
   const teacherAnnCount=data.teacherAnnouncements.length;
-
   let html='';
   if(session.isDirector)html+='<div class="manager-info">🏛 Вы <b>директор школы</b>. Доступны все классы, отчёты и управление пользователями.</div>';
   else if(session.position==='zavuch')html+='<div class="manager-info">📋 Вы <b>завуч</b>. Доступны все классы, расписание, отчёты по всей школе.</div>';
   else if(!session.isHomeroom)html+='<div class="teacher-role-info">Вы вошли как <b>учитель-предметник</b> в '+escapeHtml(cls)+' классе.</div>';
   else if(session.homeroomClass)html+='<div class="teacher-role-info">Вы <b>классный руководитель</b> '+escapeHtml(cls)+' класса.</div>';
-
   html+='<div class="stats">';
   html+='<div class="stat"><div class="num">'+students.length+'</div><div class="lbl">Учеников</div></div>';
   html+='<div class="stat"><div class="num'+(todayAbs.length>0?' warn':'')+'">'+todayAbs.length+'</div><div class="lbl">Отсутствуют</div></div>';
@@ -996,20 +1061,21 @@ function renderTeacherHome(){
   else html+='<div class="stat"><div class="num">'+pendingAbs.length+'</div><div class="lbl">На рассмотрении</div></div>';
   html+='<div class="stat"><div class="num">'+myClubs.length+'</div><div class="lbl">Мои кружки</div></div>';
   html+='</div>';
-
   const attention=[];
   if(pendingAbs.length)attention.push({type:'danger',text:'Пропусков на рассмотрении: '+pendingAbs.length,block:'attendance'});
   if(!session.isManager&&debtors.length)attention.push({type:'danger',text:'Учеников с долгами по ДЗ: '+debtors.length,block:'homework'});
   if(openQ.length)attention.push({type:'info',text:'Вопросов без ответа: '+openQ.length,block:'questions'});
   if(todayDuties.length)attention.push({type:'info',text:'Дежурят по классу: '+todayDuties.map(function(d){return d.studentName;}).join(', '),block:'duties'});
-  if(todaySchoolDuties.length)attention.push({type:'info',text:'По школе сегодня: '+todaySchoolDuties.length+' постов',block:'schoolDuties'});
+  if(activeWeek){
+    const doneCount=activeWeek.posts.filter(function(p){return p.done;}).length;
+    const total=activeWeek.posts.length;
+    const allDone=doneCount===total;
+    attention.push({type:allDone?'success':'danger',text:'Дежурство по школе: '+activeWeek.class+' — '+doneCount+'/'+total+' постов'+(allDone?' ✓':' ⚠'),block:'duties'});
+  }
   if(teacherAnnCount)attention.push({type:'info',text:'Объявлений учителям: '+teacherAnnCount,block:'teacherAnn'});
-
   if(attention.length){
     html+='<div class="card"><h3>🔔 Требует внимания</h3><div class="attention-list">';
-    for(const a of attention){
-      html+='<div class="attention-item '+(a.type||'info')+'" data-attention-block="'+a.block+'"><div class="attention-text"><b>'+escapeHtml(a.text)+'</b></div><button class="btn btn-secondary btn-sm">Перейти</button></div>';
-    }
+    for(const a of attention){html+='<div class="attention-item '+(a.type||'info')+'" data-attention-block="'+a.block+'"><div class="attention-text"><b>'+escapeHtml(a.text)+'</b></div><button class="btn btn-secondary btn-sm">Перейти</button></div>';}
     html+='</div></div>';
   }
   if(session.isManager){
@@ -1472,12 +1538,15 @@ function renderNotes(){
   return html;
 }
 
-/* ============ ДЕЖУРСТВА ============ */
+/* ============ ОБЪЕДИНЁННЫЕ ДЕЖУРСТВА ============ */
 function renderDuties(){
   const cls=session.class;
-  const list=data.duties.filter(function(d){return d.class===cls;});
-  list.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
-  let html='<div class="card"><h3>🎯 Дежурство по классу</h3>';
+  let html='';
+  
+  /* === По классу === */
+  const classDuties=data.duties.filter(function(d){return d.class===cls;});
+  classDuties.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+  html+='<div class="card"><h3>🎯 Дежурство по классу</h3>';
   html+='<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px">Кто дежурит в классе (полив цветов, порядок и т.д.)</div>';
   if(session.isHomeroom||session.isManager){
     html+='<form id="dutyForm"><div class="grid-2">';
@@ -1485,8 +1554,8 @@ function renderDuties(){
     html+='<div><label>Ученик</label><select id="dutyStudent">'+optionsHTML(getStudentsOfClass(cls).map(function(s){return s.name;}),'')+'</select></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:10px">Назначить</button></form>';
   }
-  if(list.length){
-    for(const d of list){
+  if(classDuties.length){
+    for(const d of classDuties){
       const isToday=d.date===todayISO();
       html+='<div class="duty-item'+(isToday?' duty-today':'')+'">';
       html+='<span>'+formatDate(d.date)+'</span>';
@@ -1494,53 +1563,112 @@ function renderDuties(){
       if(session.isHomeroom||session.isManager)html+='<button class="btn btn-danger btn-sm" data-del-duty="'+d.id+'">✕</button>';
       html+='</div>';
     }
-  }else html+='<div class="empty">Дежурств нет</div>';
+  }else html+='<div class="empty">Дежурств по классу нет</div>';
   html+='</div>';
-  return html;
-}
-function renderSchoolDuties(){
-  const canEdit=session.isManager;
-  const posts=data.schoolPosts;
-  let html='';
-  if(canEdit){
-    html+='<div class="card"><h3>🏫 Посты дежурства по школе</h3>';
-    html+='<div class="posts-list">';
-    for(const p of posts){
+  
+  /* === По школе (неделями) === */
+  html+='<div class="card"><h3>🏫 Дежурство по школе</h3>';
+  html+='<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px">Один класс дежурит всю неделю. Каждый пост отмечается «сдан» отдельно. Когда все посты сданы — школа считается сданной и передаётся следующему классу.</div>';
+  
+  // Посты
+  if(session.isManager){
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:600;font-size:13px">📍 Управление постами ('+data.schoolPosts.length+')</summary>';
+    html+='<div class="posts-list" style="margin-top:10px">';
+    for(const p of data.schoolPosts){
       html+='<span class="post-chip">'+escapeHtml(p.name)+'<button data-del-post="'+p.id+'">✕</button></span>';
     }
     html+='</div>';
-    html+='<form id="addPostForm" style="display:flex;gap:8px"><input type="text" id="newPostName" placeholder="Новый пост" style="flex:1"><button class="btn btn-secondary btn-sm" type="submit">Добавить</button></form>';
-    html+='</div>';
-    if(posts.length){
-      html+='<div class="card"><h3>➕ Назначить дежурство</h3><form id="schoolDutyForm"><div class="grid-2">';
-      html+='<div><label>Дата</label><input type="date" id="sdDate" value="'+todayISO()+'"></div>';
-      html+='<div><label>Пост</label><select id="sdPost">'+optionsHTML(posts.map(function(p){return p.name;}),'')+'</select></div>';
-      html+='<div><label>Класс</label><select id="sdClass">'+optionsHTML(CLASSES,CLASSES[0])+'</select></div>';
-      html+='<div><label>Ученик</label><select id="sdStudent">'+optionsHTML(getStudentsOfClass(CLASSES[0]).map(function(s){return s.name;}),'')+'</select></div>';
-      html+='</div><button type="submit" class="btn" style="margin-top:10px">Назначить</button></form></div>';
-    }
+    html+='<form id="addPostForm" style="display:flex;gap:8px;margin-top:8px"><input type="text" id="newPostName" placeholder="Новый пост" style="flex:1"><button class="btn btn-secondary btn-sm" type="submit">Добавить</button></form>';
+    html+='</details>';
   }
-  const list=data.schoolDuties.slice();
-  list.sort(function(a,b){return (a.date||'').localeCompare(b.date||'')||(a.post||'').localeCompare(b.post||'');});
-  const byDate={};
-  for(const d of list){if(!byDate[d.date])byDate[d.date]=[];byDate[d.date].push(d);}
-  const dates=Object.keys(byDate).sort();
-  html+='<div class="card"><h3>🏫 График дежурств по школе</h3>';
-  if(!dates.length)html+='<div class="empty">Дежурств нет</div>';
-  else{
-    for(const date of dates){
-      const isToday=date===todayISO();
-      html+='<div class="day-group'+(isToday?' today':'')+'">';
-      html+='<div class="day-group-header">📅 '+formatDate(date)+(isToday?' <span class="tag good">сегодня</span>':'')+'</div>';
-      for(const d of byDate[date]){
-        html+='<div class="duty-item">';
-        html+='<span><b>📍 '+escapeHtml(d.post)+'</b></span>';
-        html+='<span>'+escapeHtml(d.studentName)+' <span style="color:var(--text-dim);font-size:11px">('+escapeHtml(d.class)+')</span></span>';
-        if(canEdit)html+='<button class="btn btn-danger btn-sm" data-del-school-duty="'+d.id+'">✕</button>';
-        html+='</div>';
-      }
-      html+='</div>';
+  
+  // Форма создания недели
+  if(session.isManager){
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:600;font-size:13px">➕ Создать неделю дежурства</summary>';
+    html+='<form id="createWeekForm" style="margin-top:10px"><div class="grid-2">';
+    html+='<div><label>Класс</label><select id="weekClass">'+optionsHTML(CLASSES,'')+'</select></div>';
+    html+='<div><label>Начало (понедельник)</label><input type="date" id="weekStart" value="'+nextMonday()+'"></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:10px">Создать неделю</button></form>';
+    html+='</details>';
+  }
+  
+  // Активная неделя
+  const active=getActiveSchoolWeek();
+  if(active){
+    html+=renderSchoolWeekCard(active,true);
+  }else{
+    html+='<div class="empty">Сейчас нет активной недели дежурства по школе</div>';
+  }
+  
+  // Прошедшие / будущие
+  const others=data.schoolDutyWeeks.filter(function(w){return !active||w.id!==active.id;});
+  others.sort(function(a,b){return b.startDate.localeCompare(a.startDate);});
+  if(others.length){
+    html+='<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13px;color:var(--text-mid)">Все недели ('+others.length+')</summary>';
+    for(const w of others.slice(0,30)){
+      html+=renderSchoolWeekCard(w,false);
     }
+    html+='</details>';
+  }
+  
+  html+='</div>';
+  return html;
+}
+function renderSchoolWeekCard(week,isActive){
+  const allDone=week.posts.every(function(p){return p.done;});
+  const doneCount=week.posts.filter(function(p){return p.done;}).length;
+  const total=week.posts.length;
+  const canEdit=canEditSchoolWeek(week);
+  const canTransfer=session.isManager&&allDone&&!week.transferred;
+  let statusBadge='';
+  if(week.transferred)statusBadge='<span class="tag neutral">📤 Передано</span>';
+  else if(allDone)statusBadge='<span class="tag good">🟢 Сдано</span>';
+  else statusBadge='<span class="tag warn">🟡 В процессе</span>';
+  const progressPct=total?Math.round(doneCount/total*100):0;
+  let html='<div class="week-card'+(isActive?' active':'')+(week.transferred?' transferred':'')+(isActive?'':' week-old')+'">';
+  html+='<div class="week-header">';
+  html+='<div><div class="week-title">'+escapeHtml(week.class)+' класс'+(isActive?' <span class="tag good" style="font-size:10px">СЕЙЧАС</span>':'')+'</div>';
+  html+='<div class="week-dates">'+formatDate(week.startDate)+' — '+formatDate(week.endDate)+'</div></div>';
+  html+=statusBadge;
+  html+='</div>';
+  html+='<div class="week-progress"><span>'+doneCount+' из '+total+' постов сдано</span><div class="week-progress-bar"><div class="week-progress-fill'+(allDone?' done':'')+'" style="width:'+progressPct+'%"></div></div></div>';
+  // Посты
+  for(const post of week.posts){
+    html+='<div class="post-row'+(post.done?' done':'')+'">';
+    html+='<div class="post-name">📍 '+escapeHtml(post.postName)+'</div>';
+    if(canEdit&&!week.transferred){
+      const students=getStudentsOfClass(week.class);
+      html+='<div class="post-student"><select data-post-assign="'+week.id+'|'+post.postId+'">';
+      html+='<option value="">— не назначен —</option>';
+      for(const s of students){
+        html+='<option value="'+escapeHtml(s.name)+'"'+(s.name===post.studentName?' selected':'')+'>'+escapeHtml(s.name)+'</option>';
+      }
+      html+='</select></div>';
+    }else{
+      html+='<div class="post-student-text">'+escapeHtml(post.studentName||'—')+'</div>';
+    }
+    html+='<div class="post-status">';
+    if(canEdit&&!week.transferred){
+      html+='<button class="post-toggle '+(post.done?'is-done':'is-not')+'" data-post-toggle="'+week.id+'|'+post.postId+'">'+(post.done?'✓ Сдан':'✗ Не сдан')+'</button>';
+    }else{
+      html+=post.done?'<span class="tag good">✓ Сдан</span>':'<span class="tag warn">✗ Не сдан</span>';
+    }
+    html+='</div>';
+    html+='</div>';
+  }
+  // Кнопки
+  const btns=[];
+  if(canEdit&&!allDone&&!week.transferred){
+    btns.push('<button class="btn btn-success btn-sm" data-post-all-done="'+week.id+'">✓ Сдать все посты</button>');
+  }
+  if(canTransfer){
+    btns.push('<button class="btn btn-success btn-sm" data-transfer-week="'+week.id+'">📤 Передать следующему</button>');
+  }
+  if(session.isManager&&!week.transferred){
+    btns.push('<button class="btn btn-danger btn-sm" data-del-week="'+week.id+'">Удалить</button>');
+  }
+  if(btns.length){
+    html+='<div class="week-actions">'+btns.join('')+'</div>';
   }
   html+='</div>';
   return html;
@@ -2138,14 +2266,32 @@ function bindAllEvents(){
   document.querySelectorAll('[data-del-todo]').forEach(function(b){b.addEventListener('click',function(){data.todos=data.todos.filter(function(t){return t.id!==b.dataset.delTodo;});saveData();renderApp();});});
   document.getElementById('noteForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('noteText').value.trim();const sn=document.getElementById('noteStudent').value;if(!text)return;data.notes.push({id:uid(),teacherName:session.name,studentName:sn,text:text,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-del-note]').forEach(function(b){b.addEventListener('click',function(){data.notes=data.notes.filter(function(n){return n.id!==b.dataset.delNote;});saveData();renderApp();});});
+  
+  /* === ДЕЖУРСТВА ПО КЛАССУ === */
   document.getElementById('dutyForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('dutyDate').value;const sn=document.getElementById('dutyStudent').value;if(!date||!sn)return;data.duties.push({id:uid(),class:session.class,date:date,studentName:sn});saveData();toast('Назначено');renderApp();});
   document.querySelectorAll('[data-del-duty]').forEach(function(b){b.addEventListener('click',function(){data.duties=data.duties.filter(function(d){return d.id!==b.dataset.delDuty;});saveData();renderApp();});});
-  /* School duties */
+  
+  /* === ДЕЖУРСТВА ПО ШКОЛЕ === */
   document.getElementById('addPostForm')?.addEventListener('submit',function(e){e.preventDefault();const n=document.getElementById('newPostName').value.trim();if(!n)return;data.schoolPosts.push({id:uid(),name:n});saveData();toast('Пост добавлен');renderApp();});
   document.querySelectorAll('[data-del-post]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить пост?'))return;data.schoolPosts=data.schoolPosts.filter(function(p){return p.id!==b.dataset.delPost;});saveData();renderApp();});});
-  document.getElementById('schoolDutyForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('sdDate').value;const post=document.getElementById('sdPost').value;const cls=document.getElementById('sdClass').value;const sn=document.getElementById('sdStudent').value;if(!date||!post||!cls||!sn)return toast('Заполните',true);data.schoolDuties.push({id:uid(),date:date,post:post,class:cls,studentName:sn,assignedBy:session.name});saveData();toast('Назначено');renderApp();});
-  document.getElementById('sdClass')?.addEventListener('change',function(){const cls=this.value;document.getElementById('sdStudent').innerHTML=optionsHTML(getStudentsOfClass(cls).map(function(s){return s.name;}),'');});
-  document.querySelectorAll('[data-del-school-duty]').forEach(function(b){b.addEventListener('click',function(){data.schoolDuties=data.schoolDuties.filter(function(d){return d.id!==b.dataset.delSchoolDuty;});saveData();renderApp();});});
+  document.getElementById('createWeekForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const cls=document.getElementById('weekClass').value;
+    const start=document.getElementById('weekStart').value;
+    if(!cls||!start)return toast('Заполните',true);
+    const d=new Date(start+'T00:00:00');
+    if(d.getDay()!==1){if(!confirm('Дата не понедельник. Продолжить?'))return;}
+    if(data.schoolDutyWeeks.some(function(w){return w.startDate===start&&!w.transferred;}))return toast('На эту дату уже есть неделя',true);
+    createSchoolDutyWeek(cls,start);
+    logAction('add','Создана неделя дежурства: '+cls+' с '+formatDate(start));
+    toast('Неделя создана');renderApp();
+  });
+  document.querySelectorAll('[data-post-toggle]').forEach(function(b){b.addEventListener('click',function(){const p=b.dataset.postToggle.split('|');const week=data.schoolDutyWeeks.find(function(w){return w.id===p[0];});if(!week)return;const post=week.posts.find(function(x){return x.postId===p[1];});if(!post)return;post.done=!post.done;post.doneAt=post.done?new Date().toISOString():null;saveData();renderApp();});});
+  document.querySelectorAll('[data-post-assign]').forEach(function(s){s.addEventListener('change',function(){const p=s.dataset.postAssign.split('|');const week=data.schoolDutyWeeks.find(function(w){return w.id===p[0];});if(!week)return;const post=week.posts.find(function(x){return x.postId===p[1];});if(!post)return;post.studentName=s.value;saveData();renderApp();});});
+  document.querySelectorAll('[data-post-all-done]').forEach(function(b){b.addEventListener('click',function(){const week=data.schoolDutyWeeks.find(function(w){return w.id===b.dataset.postAllDone;});if(!week||!confirm('Отметить все посты как сданные?'))return;week.posts.forEach(function(p){if(!p.done){p.done=true;p.doneAt=new Date().toISOString();}});saveData();toast('Все посты сданы');renderApp();});});
+  document.querySelectorAll('[data-transfer-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Передать дежурство следующему классу?'))return;transferSchoolDuty(b.dataset.transferWeek);});});
+  document.querySelectorAll('[data-del-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить неделю дежурства?'))return;data.schoolDutyWeeks=data.schoolDutyWeeks.filter(function(w){return w.id!==b.dataset.delWeek;});saveData();toast('Удалено');renderApp();});});
+  
   document.getElementById('expAbsences')?.addEventListener('click',function(){exportCSV('absences');});
   document.getElementById('expHw')?.addEventListener('click',function(){exportCSV('homework');});
   document.getElementById('expRemarks')?.addEventListener('click',function(){exportCSV('remarks');});
