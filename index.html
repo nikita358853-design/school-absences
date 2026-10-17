@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Учёт пропусков и причин</title>
-
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%234f46e5%22/><stop offset=%221%22 stop-color=%22%230ea5e9%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22url(%23g)%22/><text x=%2250%22 y=%2268%22 font-size=%2255%22 text-anchor=%22middle%22>🎓</text></svg>">
 <link rel="manifest" id="manifestLink">
 <meta name="theme-color" content="#0f172a">
@@ -12,7 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="Пропуски">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
   import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
@@ -29,11 +27,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     window.firebaseDB = { db, ref, set, onValue, get, remove };
-    console.log('✓ Firebase подключена');
-  } catch (e) {
-    console.error('Firebase error:', e);
-    window.firebaseDB = null;
-  }
+  } catch (e) { console.error('Firebase error:', e); window.firebaseDB = null; }
 </script>
 
 <style>
@@ -48,7 +42,6 @@
   @keyframes scaleIn{from{opacity:0;transform:scale(.95) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
   @keyframes pulseWarn{0%,100%{box-shadow:0 4px 16px rgba(220,38,38,.08);}50%{box-shadow:0 4px 20px rgba(220,38,38,.16);}}
   @keyframes bellPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
-
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;}
   .login-wrap::before{content:"";position:absolute;inset:0;background-image:radial-gradient(600px 400px at 20% 10%,rgba(99,102,241,.15),transparent 60%),radial-gradient(500px 300px at 90% 90%,rgba(14,165,233,.12),transparent 60%);pointer-events:none;}
   .login-card{position:relative;background:var(--bg-card);border-radius:var(--radius-xl);padding:40px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);border:1px solid rgba(226,232,240,.8);animation:fadeUp .4s ease both;}
@@ -58,28 +51,21 @@
   .role-tab{flex:1;padding:10px 8px;border:none;background:transparent;cursor:pointer;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--text-mid);min-width:80px;transition:all .18s ease;}
   .role-tab:hover{color:var(--text);}
   .role-tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 6px rgba(15,23,42,.08);}
-
   label{display:block;font-size:12.5px;font-weight:600;color:var(--text-mid);margin-bottom:7px;margin-top:16px;}
   input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:var(--ring);}
   select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
-  input[type="password"]#tPin,input[type="password"]#adminPwd,input[type="password"]#sPin,input[type="password"]#resetMaster,input[type="password"]#cpOld,input[type="password"]#cpNew,input[type="password"]#cpConfirm{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
-
+  input[type="password"]{letter-spacing:8px;font-size:17px;font-family:'Courier New',monospace;text-align:center;}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 4px 12px rgba(79,70,229,.25);transition:transform .12s,box-shadow .15s;white-space:nowrap;}
   .btn:hover{background:linear-gradient(135deg,var(--primary-hover),var(--primary));box-shadow:0 6px 18px rgba(79,70,229,.35);transform:translateY(-1px);}
-  .btn:active{transform:translateY(0);}
   .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
   .btn-full{width:100%;margin-top:24px;padding:13px;font-size:15px;}
   .btn-secondary{background:#fff;color:var(--text);border:1.5px solid var(--border);box-shadow:0 1px 2px rgba(15,23,42,.04);}
   .btn-secondary:hover{background:#f8fafc;border-color:var(--border-strong);transform:translateY(-1px);}
   .btn-danger{background:linear-gradient(135deg,var(--danger),var(--danger-2));}
-  .btn-danger:hover{background:linear-gradient(135deg,#b91c1c,var(--danger));}
   .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px;}
-
   .forgot-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:12px;background:#f8fafc;border:1.5px dashed var(--border-strong);border-radius:10px;color:var(--text-mid);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s ease;}
   .forgot-link:hover{background:#eef2ff;border-color:var(--primary);color:var(--primary);border-style:solid;}
-  .forgot-link .forgot-icon{font-size:16px;}
-
   .topbar{background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#1e40af 130%);color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:0 4px 20px rgba(15,23,42,.15);position:sticky;top:0;z-index:100;}
   .topbar h2{margin:0;font-size:16px;font-weight:600;color:#f8fafc;}
   .topbar .user-info{display:flex;align-items:center;gap:12px;font-size:13.5px;flex-wrap:wrap;}
@@ -90,21 +76,16 @@
   .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
   .status-dot.online{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.25);}
   .status-dot.offline{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.2);}
-
   .container{max-width:1200px;margin:0 auto;padding:28px 24px 60px;}
   .card{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;box-shadow:var(--shadow);border:1px solid var(--border);}
   .card h3{margin:0 0 18px;font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
   .card h3::before{content:"";display:inline-block;width:4px;height:18px;background:linear-gradient(180deg,var(--primary),var(--accent));border-radius:2px;}
-  .card>h4{font-weight:600;color:var(--text-mid);}
   .card p{color:var(--text-mid);}
-
   .stats{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px;}
-  .stat{background:var(--bg-card);padding:20px 22px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s;}
+  .stat{background:var(--bg-card);padding:20px 22px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
   .stat::after{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at center,rgba(99,102,241,.1),transparent 70%);pointer-events:none;}
-  .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
   .stat .num{font-size:30px;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,#4f46e5,#0ea5e9);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1;}
   .stat .lbl{font-size:12.5px;color:var(--text-dim);margin-top:6px;font-weight:500;}
-
   .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
   table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;}
   th,td{padding:12px 14px;text-align:left;}
@@ -119,7 +100,6 @@
   th.sortable:hover{background:#eef2f7;color:var(--text);}
   th .sort-arrow{margin-left:5px;opacity:.35;font-size:10px;}
   th .sort-arrow.active{opacity:1;color:var(--primary);}
-
   .reason-tag{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:600;background:#e0e7ff;color:#3730a3;}
   .reason-tag.bad{background:#fee2e2;color:#991b1b;}
   .reason-tag.good{background:#dcfce7;color:#166534;}
@@ -129,45 +109,37 @@
   .source-tag.student{background:#fef3c7;color:#92400e;}
   .problem-badge{display:inline-block;margin-left:6px;background:linear-gradient(135deg,var(--danger),var(--danger-2));color:#fff;font-size:10.5px;font-weight:700;border-radius:10px;padding:3px 8px;}
   .parent-comment-tag{display:block;margin-top:5px;font-size:11px;color:#0369a1;font-style:italic;}
-
   .filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
   .filter-bar>*{flex:1;min-width:140px;}
   .journal-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:18px;}
   .journal-header h3{margin:0;}
   .journal-header h3::before{content:none;}
-
   .period-select{padding:9px 32px 9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:#fff;cursor:pointer;font-weight:500;color:var(--text);}
   .period-dates{color:var(--text-dim);font-size:12.5px;align-self:center;white-space:nowrap;font-weight:500;}
-
   .form-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
   .form-grid .full{grid-column:1/-1;}
   .form-grid label{margin-top:0;}
-
   .students-list{display:flex;flex-wrap:wrap;gap:8px;}
   .student-chip{background:#f1f5f9;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;border:1px solid var(--border);}
   .student-chip.problem{background:#fee2e2;color:#991b1b;font-weight:600;border-color:#fca5a5;}
   .student-chip button{border:none;background:transparent;color:var(--danger);cursor:pointer;font-size:15px;line-height:1;padding:0;}
   .student-self{background:linear-gradient(135deg,#eef2ff,#e0f2fe);border:1px solid #c7d2fe;color:#3730a3;padding:12px 16px;border-radius:var(--radius);font-size:13.5px;font-weight:500;}
-
   .periods-editor-row{display:grid;grid-template-columns:1fr 150px 150px 40px;gap:10px;margin-bottom:10px;align-items:center;padding:10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border);}
-
   .warning-banner{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-left:4px solid var(--danger);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;animation:pulseWarn 2.5s ease-in-out infinite;}
   .warning-banner .warn-icon{font-size:26px;flex-shrink:0;}
   .warning-banner .warn-text{flex:1;font-size:13.5px;color:#7f1d1d;line-height:1.5;}
   .warning-banner .warn-text b{font-size:14.5px;display:inline-block;margin-bottom:2px;}
-
   .bell-wrap{position:relative;display:inline-block;}
   .bell-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer;padding:6px 12px;border-radius:10px;position:relative;}
   .bell-btn:hover{background:rgba(255,255,255,.2);}
   .bell-count{position:absolute;top:-6px;right:-6px;background:linear-gradient(135deg,var(--danger),var(--danger-2));color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:2px 6px;min-width:18px;text-align:center;animation:bellPulse 1.4s ease-in-out infinite;}
-  .notif-panel{position:absolute;top:130%;right:0;background:#fff;color:var(--text);border-radius:var(--radius);box-shadow:var(--shadow-lg);border:1px solid var(--border);width:340px;max-height:420px;overflow-y:auto;z-index:200;padding:10px;animation:fadeUp .2s ease;}
+  .notif-panel{position:absolute;top:130%;right:0;background:#fff;color:var(--text);border-radius:var(--radius);box-shadow:var(--shadow-lg);border:1px solid var(--border);width:340px;max-height:420px;overflow-y:auto;z-index:200;padding:10px;}
   .notif-item{padding:12px 14px;border-radius:10px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--border);}
   .notif-item.unread{background:#eef2ff;border-left-color:var(--primary);}
   .notif-item:hover{background:#f1f5f9;}
   .notif-item .n-title{font-weight:600;font-size:13px;}
   .notif-item .n-text{font-size:12px;color:var(--text-dim);margin-top:3px;}
   .notif-item .n-time{font-size:11px;color:var(--muted);margin-top:5px;}
-
   .log-row td{font-size:12px;}
   .log-action{display:inline-block;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;}
   .log-action.add{background:#dcfce7;color:#166534;}
@@ -175,7 +147,6 @@
   .log-action.upd{background:#fef3c7;color:#92400e;}
   .log-action.login{background:#dbeafe;color:#1e40af;}
   .log-action.backup{background:#ede9fe;color:#5b21b6;}
-
   .schedule-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
   .schedule-day{background:#f8fafc;border-radius:var(--radius);padding:14px;border:1px solid var(--border);}
   .schedule-day-title{font-weight:700;font-size:13px;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
@@ -185,12 +156,10 @@
   .schedule-lesson button{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:0 4px;}
   .schedule-add{background:transparent;border:1.5px dashed var(--border-strong);color:var(--text-dim);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;width:100%;margin-top:6px;font-weight:500;}
   .schedule-add:hover{border-color:var(--primary);color:var(--primary);background:#eef2ff;}
-
   .backup-list{max-height:320px;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border);}
   .backup-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;}
   .backup-item:hover{background:#f8fafc;}
   .backup-item:last-child{border-bottom:none;}
-
   .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:900;padding:20px;animation:fadeIn .18s ease;}
   .modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:scaleIn .22s cubic-bezier(.2,.9,.3,1.2) both;}
   .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
@@ -199,13 +168,11 @@
   .modal-close:hover{color:var(--danger);background:#fee2e2;}
   .modal-body{padding:20px 24px;}
   .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:#f8fafc;}
-
   .reset-info{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#3730a3;line-height:1.6;margin-bottom:16px;}
   .reset-result{padding:12px 14px;border-radius:10px;font-size:13px;margin-top:14px;display:none;}
   .reset-result.show{display:block;}
   .reset-result.success{background:#dcfce7;border:1px solid #86efac;color:#166534;}
   .reset-result.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
-
   .drop-zone{border:2px dashed var(--border-strong);border-radius:var(--radius);padding:36px 20px;text-align:center;color:var(--text-dim);font-size:13.5px;cursor:pointer;background:#f8fafc;}
   .drop-zone:hover,.drop-zone.drag-over{border-color:var(--primary);background:#eef2ff;color:var(--primary);}
   .drop-zone .big-icon{font-size:44px;margin-bottom:12px;opacity:.8;}
@@ -219,7 +186,10 @@
   .import-summary b{color:var(--primary);font-weight:700;}
   .csv-hint{background:#f1f5f9;border-radius:var(--radius);padding:14px 16px;font-size:12px;color:var(--text-mid);margin-top:16px;line-height:1.7;}
   .csv-hint code{background:#fff;padding:2px 7px;border-radius:5px;font-family:'Courier New',monospace;font-size:11.5px;color:var(--primary);border:1px solid var(--border);}
-
+  .security-rules{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:10px;font-family:'Courier New',monospace;font-size:12px;line-height:1.6;overflow-x:auto;white-space:pre;}
+  .security-check{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;margin-bottom:8px;font-size:13px;color:#166534;}
+  .security-check.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e;}
+  .security-check .icon{font-size:18px;}
   .toast{position:fixed;bottom:28px;right:28px;left:28px;max-width:400px;margin-left:auto;background:#0f172a;color:#fff;padding:14px 22px;border-radius:var(--radius);box-shadow:0 20px 40px rgba(15,23,42,.25);font-size:13.5px;font-weight:500;opacity:0;transform:translateY(20px);transition:all .28s;pointer-events:none;z-index:1000;}
   .toast::before{content:"✓";display:inline-block;width:22px;height:22px;border-radius:50%;background:rgba(34,197,94,.2);color:#22c55e;text-align:center;line-height:22px;font-weight:700;font-size:13px;margin-right:10px;}
   .toast.show{opacity:1;transform:translateY(0);}
@@ -227,16 +197,11 @@
   .toast.error::before{content:"!";background:rgba(255,255,255,.2);color:#fff;}
   .toast.warn{background:linear-gradient(135deg,#78350f,#92400e);}
   .toast.warn::before{content:"⚠";background:rgba(255,255,255,.2);color:#fbbf24;}
-
   .empty{text-align:center;color:var(--text-dim);padding:40px 20px;font-size:14px;font-weight:500;background:#f8fafc;border-radius:var(--radius);border:1px dashed var(--border-strong);}
-
   .pwa-install-btn{display:none;position:fixed;bottom:24px;left:24px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;padding:13px 22px;border-radius:14px;box-shadow:0 12px 32px rgba(79,70,229,.4);border:none;cursor:pointer;font-weight:700;font-size:14px;z-index:500;align-items:center;gap:8px;}
-  .pwa-install-btn:hover{transform:translateY(-2px);}
   .pwa-install-btn.show{display:flex;}
-
   .student-name-link{color:var(--primary);text-decoration:none;font-weight:500;cursor:pointer;border-bottom:1px dashed transparent;}
   .student-name-link:hover{border-bottom-color:var(--primary);}
-
   .profile-header-card{display:flex;align-items:center;gap:16px;padding:20px 22px;background:linear-gradient(135deg,#eef2ff,#e0f2fe);border:1px solid #c7d2fe;border-radius:var(--radius-lg);margin-bottom:20px;}
   .profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 20px rgba(79,70,229,.25);}
   .profile-info h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em;}
@@ -250,17 +215,14 @@
   .profile-stat .lbl{font-size:11.5px;color:var(--text-dim);margin-top:4px;font-weight:500;}
   .profile-note-box{background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;}
   .profile-note-box textarea{min-height:70px;resize:vertical;}
-
   .print-header{display:none;}
   .print-signature{display:none;}
   .profile-print-meta{display:none;}
   .profile-signature{display:none;}
-
   @media (max-width:768px){
     .login-wrap{padding:16px;}
     .login-card{padding:26px 20px;border-radius:var(--radius-lg);}
     .login-card h1{font-size:24px;}
-    .subtitle{font-size:13px;margin-bottom:20px;}
     .role-tab{font-size:11.5px;padding:9px 4px;min-width:0;}
     .topbar{padding:12px 14px;flex-direction:column;align-items:stretch;gap:12px;position:static;}
     .topbar h2{font-size:14.5px;text-align:center;}
@@ -293,7 +255,6 @@
     .journal-header .period-select{flex:1;}
     .period-dates{font-size:12px;white-space:normal;}
     .periods-editor-row{grid-template-columns:1fr;gap:8px;padding:12px;}
-    .periods-editor-row button{width:100%;}
     .btn{padding:10px 15px;font-size:13px;}
     .card>div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important;gap:14px!important;}
     canvas{max-width:100%!important;}
@@ -308,10 +269,6 @@
     .profile-header-card{flex-direction:column;text-align:center;}
     .profile-stats{grid-template-columns:repeat(2,1fr);}
   }
-  @media (max-width:380px){
-    .stats{grid-template-columns:1fr;}
-  }
-
   @media print{
     @page{margin:15mm 10mm;size:A4 portrait;}
     body{background:#fff!important;color:#000;font-size:12px;}
@@ -332,23 +289,6 @@
     .print-header .meta span{margin-right:14px;}
     .print-signature{display:block!important;margin-top:30px;font-size:11px;}
     .print-signature .line{display:inline-block;border-bottom:1px solid #000;width:200px;margin-right:8px;}
-    body.print-profile .topbar,body.print-profile .container,body.print-profile .loading,body.print-profile .pwa-install-btn,body.print-profile #toast,body.print-profile .notif-panel{display:none!important;}
-    body.print-profile .modal-overlay{position:static!important;background:none!important;padding:0!important;backdrop-filter:none!important;}
-    body.print-profile .modal{box-shadow:none!important;border:none!important;max-height:none!important;max-width:100%!important;overflow:visible!important;}
-    body.print-profile .modal-header .modal-close,body.print-profile .modal-footer,body.print-profile .profile-note-box{display:none!important;}
-    body.print-profile .profile-avatar{background:#000!important;color:#fff!important;box-shadow:none!important;}
-    body.print-profile .profile-header-card{background:none!important;border:1px solid #000!important;}
-    body.print-profile .profile-print-meta{display:block!important;margin-bottom:16px;border-bottom:2px solid #000;padding-bottom:8px;}
-    body.print-profile .profile-print-meta h1{margin:0 0 6px;font-size:16px;}
-    body.print-profile .profile-print-meta .meta{font-size:11px;color:#333;}
-    body.print-profile .profile-print-meta .meta span{margin-right:14px;}
-    body.print-profile .profile-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-    body.print-profile .profile-stat{border:1px solid #999!important;}
-    body.print-profile .profile-stat .num{font-size:18px!important;color:#000!important;}
-    body.print-profile .profile-stat .lbl{color:#333!important;}
-    body.print-profile .profile-chart-box,body.print-profile canvas{display:none;}
-    body.print-profile .profile-signature{display:block!important;margin-top:30px;font-size:11px;}
-    body.print-profile .profile-signature .line{display:inline-block;border-bottom:1px solid #000;width:200px;margin-right:8px;}
   }
 </style>
 </head>
@@ -368,6 +308,10 @@ const BACKUP_PATH = 'backups';
 const BACKUP_KEEP_DAYS = 30;
 const ABSENCE_WARNING_THRESHOLD = 40;
 const DAYS_OF_WEEK = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+const MAX_PIN_ATTEMPTS = 5;
+const LOCKOUT_MS = 5 * 60 * 1000;
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const CLASSES = (() => {
   const arr = [];
@@ -400,13 +344,113 @@ const REASONS = [
 function reasonById(id) { return REASONS.find(r => r.id === id) || REASONS[REASONS.length - 1]; }
 
 /* ========================================================
-   УТИЛИТЫ
+   БЕЗОПАСНОСТЬ — PBKDF2 + LOCKOUT
    ======================================================== */
 function simpleHash(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
   return 'h' + Math.abs(h).toString(36);
 }
+
+function generateSalt() {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function pbkdf2Hash(str, salt) {
+  try {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(str), { name: 'PBKDF2' }, false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+      keyMaterial, 256
+    );
+    return 'pbkdf2$' + salt + '$' + Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    // Fallback для старых браузеров
+    return 'pbkdf2-fallback$' + simpleHash(str + salt);
+  }
+}
+
+async function setPinHash(pin) {
+  return await pbkdf2Hash(pin, generateSalt());
+}
+
+async function verifyPin(input, storedHash) {
+  if (!storedHash) return false;
+  if (storedHash.startsWith('pbkdf2$')) {
+    const parts = storedHash.split('$');
+    if (parts.length !== 3) return false;
+    const computed = await pbkdf2Hash(input, parts[1]);
+    return computed === storedHash;
+  }
+  if (storedHash.startsWith('pbkdf2-fallback$')) {
+    return storedHash === 'pbkdf2-fallback$' + simpleHash(input + '');
+  }
+  return simpleHash(input) === storedHash;
+}
+
+function isLegacyHash(hash) {
+  return hash && !hash.startsWith('pbkdf2') && !hash.startsWith('h') === false && hash.startsWith('h');
+}
+
+function checkLockout(user) {
+  if (!user) return { locked: false };
+  if (user.blockedUntil && Date.now() < user.blockedUntil) {
+    return { locked: true, seconds: Math.ceil((user.blockedUntil - Date.now()) / 1000) };
+  }
+  return { locked: false };
+}
+
+function registerFailure(user) {
+  if (!user) return;
+  user.attempts = (user.attempts || 0) + 1;
+  if (user.attempts >= MAX_PIN_ATTEMPTS) {
+    user.blockedUntil = Date.now() + LOCKOUT_MS;
+    user.attempts = 0;
+  }
+  saveData();
+}
+
+function resetAttempts(user) {
+  if (!user) return;
+  if (user.attempts || user.blockedUntil) {
+    user.attempts = 0;
+    user.blockedUntil = null;
+    saveData();
+  }
+}
+
+function isValidAbsenceDate(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (d > today) return false;
+  const fiveYearsAgo = new Date();
+  fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+  if (d < fiveYearsAgo) return false;
+  return true;
+}
+
+const RECOMMENDED_RULES = `{
+  "rules": {
+    "schoolData": {
+      ".read": true,
+      ".write": true
+    },
+    "backups": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}`;
+
+/* ========================================================
+   УТИЛИТЫ
+   ======================================================== */
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -443,7 +487,7 @@ function getDayOfWeek(dateISO) {
 function buildSeedData() {
   const names = ['Иванов Иван','Петрова Мария','Сидоров Пётр','Кузнецова Анна','Смирнов Дмитрий','Волкова Екатерина'];
   const students = [];
-  for (const c of CLASSES) for (const n of names) students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234'), teacherNote: '' });
+  for (const c of CLASSES) for (const n of names) students.push({ id: uid(), class: c, name: n, pin: simpleHash('1234'), teacherNote: '', attempts: 0, blockedUntil: null });
   return { students, absences: [], teachers: [], parents: [], periods: {}, currentPeriod: {}, schedules: {}, log: [], notifications: [], adminPasswordHash: null };
 }
 function loadLocalData() {
@@ -475,8 +519,7 @@ function saveData() {
         students: data.students || [], absences: data.absences || [],
         teachers: data.teachers || [], parents: data.parents || [],
         periods: data.periods || {}, currentPeriod: data.currentPeriod || {},
-        schedules: data.schedules || {},
-        adminPasswordHash: data.adminPasswordHash || null
+        schedules: data.schedules || {}, adminPasswordHash: data.adminPasswordHash || null
       });
       firebaseConnected = true; updateStatusBadge();
     } catch (e) { firebaseConnected = false; updateStatusBadge(); }
@@ -851,12 +894,9 @@ function renderAbsencesTable(rows, withActions, withParentComment, problemNames)
   const arrowDate = uiState.sortBy === 'date' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowName = uiState.sortBy === 'name' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
   const arrowReason = uiState.sortBy === 'reason' ? (uiState.sortDir === 'asc' ? '▲' : '▼') : '↕';
-
   const body = rows.map(a => {
     const r = reasonById(a.reason);
-    const srcLabel = a.addedByRole === 'student'
-      ? '<span class="source-tag student">добавил ученик</span>'
-      : '<span class="source-tag teacher">добавил учитель</span>';
+    const srcLabel = a.addedByRole === 'student' ? '<span class="source-tag student">добавил ученик</span>' : '<span class="source-tag teacher">добавил учитель</span>';
     const commentHTML = a.parentComment ? '<span class="parent-comment-tag">💬 Родитель: ' + escapeHtml(a.parentComment) + '</span>' : '';
     const isProblem = problemNames.has(a.studentName);
     const problemBadge = isProblem ? '<span class="problem-badge">⚠ Много</span>' : '';
@@ -875,7 +915,6 @@ function renderAbsencesTable(rows, withActions, withParentComment, problemNames)
     row += '</tr>';
     return row;
   }).join('');
-
   const parentCol = withParentComment && session.role === 'parent' ? '<th></th>' : '';
   return '<table><thead><tr>' +
     '<th class="sortable" data-sort="date">Дата<span class="sort-arrow ' + (uiState.sortBy === 'date' ? 'active' : '') + '">' + arrowDate + '</span></th>' +
@@ -931,12 +970,23 @@ function bindBell() {
 /* ========================================================
    СЕССИЯ
    ======================================================== */
-function saveSession() { if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session)); else localStorage.removeItem(SESSION_KEY); }
+function saveSession() {
+  if (session) {
+    if (!session.expiresAt) session.expiresAt = Date.now() + SESSION_TTL_MS;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } else {
+    localStorage.removeItem(SESSION_KEY);
+  }
+}
 function loadSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
+    if (s.expiresAt && Date.now() > s.expiresAt) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
     if (s.role === 'teacher') { const t = data.teachers.find(x => x.name === s.name); if (!t) return null; s.class = t.class; }
     if (s.role === 'student' || s.role === 'parent') { const st = data.students.find(x => x.class === s.class && x.name === s.name); if (!st) return null; }
     return s;
@@ -944,20 +994,19 @@ function loadSession() {
 }
 let loginState = { role: 'teacher', teacherName: '', teacherClass: CLASSES[0], studentClass: CLASSES[0], studentName: '' };
 const ADMIN_PASSWORD_HASH = simpleHash('admin1441');
-function isAdminPassword(pwd) {
-  const hash = data.adminPasswordHash || ADMIN_PASSWORD_HASH;
-  return simpleHash(pwd) === hash;
+async function isAdminPassword(pwd) {
+  if (data.adminPasswordHash) return await verifyPin(pwd, data.adminPasswordHash);
+  return simpleHash(pwd) === ADMIN_PASSWORD_HASH;
 }
 function findTeacher(name) { if (!data.teachers) data.teachers = []; return data.teachers.find(t => t.name.toLowerCase() === name.toLowerCase()); }
 
 /* ========================================================
-   МОДАЛКА СМЕНЫ PIN / ПАРОЛЯ
+   МОДАЛКА СМЕНЫ PIN
    ======================================================== */
 function openChangePinModal(opts) {
   opts = opts || {};
   const existing = document.getElementById('changePinOverlay');
   if (existing) existing.remove();
-
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'changePinOverlay';
@@ -981,47 +1030,31 @@ function openChangePinModal(opts) {
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
-
   const closeModal = () => overlay.remove();
   document.getElementById('cpCloseBtn').addEventListener('click', closeModal);
   document.getElementById('cpCancelBtn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   document.getElementById('cpOld').focus();
-
   ['cpOld', 'cpNew', 'cpConfirm'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('cpSaveBtn').click();
-    });
+    document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('cpSaveBtn').click(); });
   });
-
-  document.getElementById('cpSaveBtn').addEventListener('click', () => {
+  document.getElementById('cpSaveBtn').addEventListener('click', async () => {
     const oldVal = document.getElementById('cpOld').value.trim();
     const newVal = document.getElementById('cpNew').value.trim();
     const confVal = document.getElementById('cpConfirm').value.trim();
     const resultEl = document.getElementById('cpResult');
-
-    function showError(text) {
-      resultEl.className = 'reset-result show error';
-      resultEl.textContent = text;
-    }
-
+    const showError = (text) => { resultEl.className = 'reset-result show error'; resultEl.textContent = text; };
     if (!oldVal) return showError('Введите текущий ' + (opts.oldLabel || 'PIN').toLowerCase());
     if (!newVal) return showError('Введите новый ' + (opts.newLabel || 'PIN').toLowerCase());
     if (newVal !== confVal) return showError('Новый и повтор не совпадают');
     if (!/^\d{4,8}$/.test(newVal)) return showError('Только цифры, 4–8 знаков');
-
     let res;
-    try { res = opts.onSave ? opts.onSave(oldVal, newVal) : { ok: true }; }
+    try { res = opts.onSave ? await opts.onSave(oldVal, newVal) : { ok: true }; }
     catch (err) { return showError('Ошибка сохранения'); }
-
     if (res && !res.ok) return showError(res.error || 'Ошибка');
-
     resultEl.className = 'reset-result show success';
     resultEl.textContent = '✅ Изменения сохранены';
-    setTimeout(() => {
-      closeModal();
-      toast('Успешно сохранено');
-    }, 900);
+    setTimeout(() => { closeModal(); toast('Успешно сохранено'); }, 900);
   });
 }
 
@@ -1036,19 +1069,11 @@ function openResetPasswordModal() {
   overlay.id = 'resetPasswordOverlay';
   overlay.innerHTML =
     '<div class="modal" style="max-width:480px;" onclick="event.stopPropagation()">' +
-      '<div class="modal-header"><h3>🔑 Восстановление доступа</h3>' +
-        '<button class="modal-close" id="resetCloseBtn">×</button></div>' +
+      '<div class="modal-header"><h3>🔑 Восстановление доступа</h3><button class="modal-close" id="resetCloseBtn">×</button></div>' +
       '<div class="modal-body">' +
-        '<div class="reset-info">' +
-          'Сбросить PIN-код может только администратор школы с помощью мастер-пароля. ' +
-          'После сброса PIN становится <b>1234</b>. Ученику или учителю нужно сменить его при следующем входе.' +
-        '</div>' +
+        '<div class="reset-info">Сбросить PIN-код может только администратор школы с помощью мастер-пароля. После сброса PIN становится <b>1234</b>.</div>' +
         '<label for="resetRole">Тип аккаунта</label>' +
-        '<select id="resetRole">' +
-          '<option value="auto">Определить автоматически</option>' +
-          '<option value="teacher">Учитель</option>' +
-          '<option value="student">Ученик</option>' +
-        '</select>' +
+        '<select id="resetRole"><option value="auto">Определить автоматически</option><option value="teacher">Учитель</option><option value="student">Ученик</option></select>' +
         '<label for="resetName">ФИО (полностью, как при входе)</label>' +
         '<input type="text" id="resetName" placeholder="Иванова Ирина Ивановна" autocomplete="off">' +
         '<label for="resetMaster">Мастер-пароль администратора</label>' +
@@ -1061,37 +1086,24 @@ function openResetPasswordModal() {
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
-
   const closeModal = () => overlay.remove();
   document.getElementById('resetCloseBtn').addEventListener('click', closeModal);
   document.getElementById('resetCancelBtn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   document.getElementById('resetName').focus();
-
   ['resetName', 'resetMaster'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('resetConfirmBtn').click();
-    });
+    document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('resetConfirmBtn').click(); });
   });
-
-  document.getElementById('resetConfirmBtn').addEventListener('click', () => {
+  document.getElementById('resetConfirmBtn').addEventListener('click', async () => {
     const role = document.getElementById('resetRole').value;
     const name = (document.getElementById('resetName').value || '').trim();
     const master = (document.getElementById('resetMaster').value || '').trim();
     const resultEl = document.getElementById('resetResult');
-
-    function showResult(type, text) {
-      resultEl.className = 'reset-result show ' + type;
-      resultEl.textContent = text;
-    }
-
+    const showResult = (type, text) => { resultEl.className = 'reset-result show ' + type; resultEl.textContent = text; };
     if (!name) return showResult('error', 'Введите ФИО');
     if (!master) return showResult('error', 'Введите мастер-пароль');
     if (master !== 'school21') return showResult('error', 'Неверный мастер-пароль');
-
-    let targetType = null;
-    let targetObj = null;
-
+    let targetType = null, targetObj = null;
     if (role === 'teacher' || role === 'auto') {
       const t = findTeacher(name);
       if (t) { targetType = 'teacher'; targetObj = t; }
@@ -1100,17 +1112,56 @@ function openResetPasswordModal() {
       const s = data.students.find(st => st.name.toLowerCase() === name.toLowerCase());
       if (s) { targetType = 'student'; targetObj = s; }
     }
-
     if (!targetObj) return showResult('error', 'Пользователь с таким ФИО не найден');
-
-    targetObj.pin = simpleHash('1234');
+    targetObj.pin = await setPinHash('1234');
+    targetObj.attempts = 0;
+    targetObj.blockedUntil = null;
     saveData();
     logAction('upd', 'Сброшен PIN через восстановление доступа: ' + targetObj.name + ' (' + targetType + ')');
-
     const roleLabel = targetType === 'teacher' ? 'учителя' : 'ученика/родителя';
     showResult('success', '✅ PIN ' + roleLabel + ' «' + targetObj.name + '» сброшен на 1234');
     document.getElementById('resetName').value = '';
     document.getElementById('resetMaster').value = '';
+  });
+}
+
+/* ========================================================
+   ПАНЕЛЬ БЕЗОПАСНОСТИ (админ)
+   ======================================================== */
+function openSecurityPanel() {
+  const existing = document.getElementById('securityOverlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'securityOverlay';
+  overlay.innerHTML =
+    '<div class="modal" style="max-width:640px;" onclick="event.stopPropagation()">' +
+      '<div class="modal-header"><h3>🔒 Безопасность системы</h3><button class="modal-close" id="secCloseBtn">×</button></div>' +
+      '<div class="modal-body">' +
+        '<div class="security-check"><span class="icon">✅</span><span>PIN-коды хранятся в виде PBKDF2-хеша (100 000 итераций)</span></div>' +
+        '<div class="security-check"><span class="icon">✅</span><span>Защита от подбора: 5 неверных попыток → блокировка на 5 минут</span></div>' +
+        '<div class="security-check"><span class="icon">✅</span><span>Сессии истекают через 30 дней</span></div>' +
+        '<div class="security-check"><span class="icon">✅</span><span>Валидация дат: нельзя добавить будущее или старше 5 лет</span></div>' +
+        '<div class="security-check warn"><span class="icon">⚠️</span><span>Правила Firebase — настройте вручную (см. ниже)</span></div>' +
+        '<h4 style="margin:20px 0 10px;font-size:14px;">Рекомендуемые правила Firebase</h4>' +
+        '<p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Откройте Firebase Console → Realtime Database → Rules → вставьте этот код:</p>' +
+        '<div class="security-rules" id="rulesText">' + escapeHtml(RECOMMENDED_RULES) + '</div>' +
+        '<button class="btn btn-secondary btn-sm" id="copyRulesBtn" style="margin-top:12px;">📋 Скопировать правила</button>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn" id="secCloseBtn2">Закрыть</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  const closeModal = () => overlay.remove();
+  document.getElementById('secCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('secCloseBtn2').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.getElementById('copyRulesBtn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(RECOMMENDED_RULES);
+      toast('Правила скопированы');
+    } catch (e) { toast('Не удалось скопировать', true); }
   });
 }
 
@@ -1144,8 +1195,7 @@ function renderLogin() {
     const namesHTML = studentNames.length ? optionsHTML(studentNames, loginState.studentName) : '<option>— нет —</option>';
     formHTML = '<label for="sClass">Класс</label><select id="sClass">' + optionsHTML(CLASSES, loginState.studentClass) + '</select>' +
       '<label for="sName">ФИО ' + (loginState.role === 'parent' ? 'ребёнка' : 'ученика') + '</label><select id="sName"' + (studentNames.length ? '' : ' disabled') + '>' + namesHTML + '</select>' +
-      '<label for="sPin">PIN-код</label>' +
-      '<input type="password" id="sPin" placeholder="••••" inputmode="numeric" maxlength="8" required autocomplete="off">';
+      '<label for="sPin">PIN-код</label><input type="password" id="sPin" placeholder="••••" inputmode="numeric" maxlength="8" required autocomplete="off">';
   }
 
   app.innerHTML = '<div class="login-wrap"><div class="login-card"><h1>Учёт пропусков</h1>' +
@@ -1164,17 +1214,15 @@ function renderLogin() {
 
   updateStatusBadge();
   document.querySelectorAll('.role-tab').forEach(tab => tab.addEventListener('click', () => { loginState.role = tab.dataset.role; renderLogin(); }));
-
   const tName = document.getElementById('tName');
   const sClass = document.getElementById('sClass');
   const sName = document.getElementById('sName');
   if (tName) tName.addEventListener('input', () => loginState.teacherName = tName.value);
   if (sClass) sClass.addEventListener('change', () => { loginState.studentClass = sClass.value; renderLogin(); });
   if (sName) sName.addEventListener('change', () => loginState.studentName = sName.value);
-
   document.getElementById('forgotPinBtn').addEventListener('click', openResetPasswordModal);
 
-  document.getElementById('loginForm').addEventListener('submit', (e) => {
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (loginState.role === 'teacher') {
       const name = (tName.value || '').trim();
@@ -1182,24 +1230,45 @@ function renderLogin() {
       if (!name || !pin) return toast('Заполните поля', true);
       const teacher = findTeacher(name);
       if (!teacher) return toast('Учитель не зарегистрирован', true);
-      if (simpleHash(pin) !== teacher.pin) { document.getElementById('tPin').value = ''; return toast('Неверный PIN', true); }
-      session = { role: 'teacher', name: teacher.name, class: teacher.class };
+      const lock = checkLockout(teacher);
+      if (lock.locked) return toast('Заблокировано на ' + lock.seconds + ' сек.', true);
+      const ok = await verifyPin(pin, teacher.pin);
+      if (!ok) {
+        registerFailure(teacher);
+        document.getElementById('tPin').value = '';
+        return toast('Неверный PIN', true);
+      }
+      if (!teacher.pin.startsWith('pbkdf2')) {
+        teacher.pin = await setPinHash(pin);
+        saveData();
+      }
+      resetAttempts(teacher);
+      session = { role: 'teacher', name: teacher.name, class: teacher.class, expiresAt: Date.now() + SESSION_TTL_MS };
     } else if (loginState.role === 'admin') {
       const pwd = document.getElementById('adminPwd').value;
-      if (!isAdminPassword(pwd)) return toast('Неверный пароль', true);
-      session = { role: 'admin', name: 'Администратор' };
+      const ok = await isAdminPassword(pwd);
+      if (!ok) return toast('Неверный пароль', true);
+      session = { role: 'admin', name: 'Администратор', expiresAt: Date.now() + SESSION_TTL_MS };
     } else {
       if (!loginState.studentName) return toast('Выберите ученика', true);
       const st = data.students.find(s => s.class === sClass.value && s.name === loginState.studentName);
       if (!st) return toast('Ученик не найден', true);
       const pinValue = (document.getElementById('sPin')?.value || '').trim();
       if (!pinValue) return toast('Введите PIN-код', true);
-      if (!st.pin) { st.pin = simpleHash('1234'); saveData(); }
-      if (simpleHash(pinValue) !== st.pin) {
+      const lock = checkLockout(st);
+      if (lock.locked) return toast('Заблокировано на ' + lock.seconds + ' сек.', true);
+      const ok = await verifyPin(pinValue, st.pin);
+      if (!ok) {
+        registerFailure(st);
         document.getElementById('sPin').value = '';
         return toast('Неверный PIN-код', true);
       }
-      session = { role: loginState.role, name: loginState.studentName, class: sClass.value };
+      if (!st.pin.startsWith('pbkdf2')) {
+        st.pin = await setPinHash(pinValue);
+        saveData();
+      }
+      resetAttempts(st);
+      session = { role: loginState.role, name: loginState.studentName, class: sClass.value, expiresAt: Date.now() + SESSION_TTL_MS };
     }
     ensurePeriods(session.class);
     if (session.class) ensureSchedule(session.class);
@@ -1227,11 +1296,7 @@ function bindLogout() {
 }
 function bindProfileLinks() {
   document.querySelectorAll('[data-open-profile]').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const parts = link.dataset.openProfile.split('|');
-      openStudentProfile(parts[1], parts[0]);
-    });
+    link.addEventListener('click', (e) => { e.preventDefault(); const parts = link.dataset.openProfile.split('|'); openStudentProfile(parts[1], parts[0]); });
   });
 }
 
@@ -1333,27 +1398,23 @@ function bindTeacherEvents() {
     printJournal(session.class, period.name);
   });
   document.getElementById('notifyPermBtn')?.addEventListener('click', requestNotificationPermission);
-
-  // Смена PIN — открывает отдельное окно
   document.getElementById('changeTeacherPinBtn')?.addEventListener('click', () => {
     const teacher = findTeacher(session.name);
-    if (!teacher) return toast('Ошибка: учитель не найден', true);
+    if (!teacher) return toast('Ошибка', true);
     openChangePinModal({
       title: 'Смена PIN-кода',
       subtitle: 'PIN-код используется для входа в систему',
-      oldLabel: 'Текущий PIN',
-      newLabel: 'Новый PIN',
-      confirmLabel: 'Повторите новый PIN',
-      onSave: (oldVal, newVal) => {
-        if (simpleHash(oldVal) !== teacher.pin) return { ok: false, error: 'Неверный текущий PIN' };
-        teacher.pin = simpleHash(newVal);
+      onSave: async (oldVal, newVal) => {
+        if (!await verifyPin(oldVal, teacher.pin)) return { ok: false, error: 'Неверный текущий PIN' };
+        teacher.pin = await setPinHash(newVal);
+        teacher.attempts = 0;
+        teacher.blockedUntil = null;
         logAction('upd', 'Учитель сменил PIN');
         saveData();
         return { ok: true };
       }
     });
   });
-
   document.getElementById('absenceForm').addEventListener('submit', e => {
     e.preventDefault();
     const date = document.getElementById('aDate').value;
@@ -1362,6 +1423,7 @@ function bindTeacherEvents() {
     const reason = document.getElementById('aReason').value;
     const note = document.getElementById('aNote').value.trim();
     if (!date || !studentName || !subject || !reason) return toast('Заполните поля', true);
+    if (!isValidAbsenceDate(date)) return toast('Некорректная дата', true);
     data.absences.push({ id: uid(), date, class: session.class, studentName, subject, reason, note, addedBy: session.name, addedByRole: 'teacher' });
     logAction('add', 'Пропуск: ' + studentName + ' (' + date + ')');
     saveData(); toast('Запись добавлена'); renderTeacher();
@@ -1385,10 +1447,13 @@ function bindTeacherEvents() {
   document.getElementById('fDate').addEventListener('change', e => { uiState.filterDate = e.target.value; renderTeacher(); });
   document.getElementById('clearFilters').addEventListener('click', () => { uiState.filterReason = ''; uiState.filterStudent = ''; uiState.filterDate = ''; uiState.searchQuery = ''; renderTeacher(); });
   document.querySelectorAll('[data-reset-pin]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const st = data.students.find(s => s.id === btn.dataset.resetPin);
       if (!st || !confirm('Сбросить PIN "' + st.name + '"?')) return;
-      st.pin = simpleHash('1234'); saveData();
+      st.pin = await setPinHash('1234');
+      st.attempts = 0;
+      st.blockedUntil = null;
+      saveData();
       logAction('upd', 'Сброшен PIN ' + st.name); toast('PIN сброшен');
     });
   });
@@ -1402,12 +1467,13 @@ function bindTeacherEvents() {
     });
   });
   document.getElementById('importStudentsBtn')?.addEventListener('click', () => openImportModal(session.class));
-  document.getElementById('addStudentForm').addEventListener('submit', e => {
+  document.getElementById('addStudentForm').addEventListener('submit', async e => {
     e.preventDefault();
     const name = (document.getElementById('newStudentName').value || '').trim();
     if (!name) return toast('Введите ФИО', true);
     if (data.students.some(s => s.class === session.class && s.name.toLowerCase() === name.toLowerCase())) return toast('Уже есть', true);
-    data.students.push({ id: uid(), class: session.class, name, pin: simpleHash('1234'), teacherNote: '' });
+    const pinHash = await setPinHash('1234');
+    data.students.push({ id: uid(), class: session.class, name, pin: pinHash, teacherNote: '', attempts: 0, blockedUntil: null });
     logAction('add', 'Ученик ' + name + ' в ' + session.class);
     saveData(); uiState.newStudentName = ''; toast('Ученик добавлен'); renderTeacher();
   });
@@ -1473,27 +1539,23 @@ function renderStudent() {
         '<div class="table-wrap">' + renderAbsencesTable(myAbsences, false, false, problemNames) + '</div></div></div>';
 
   bindLogout();
-
-  // Смена PIN — открывает отдельное окно
   document.getElementById('changePinBtn')?.addEventListener('click', () => {
     const st = data.students.find(s => s.class === session.class && s.name === session.name);
-    if (!st) return toast('Ошибка: ученик не найден', true);
+    if (!st) return toast('Ошибка', true);
     openChangePinModal({
       title: 'Смена PIN-кода',
       subtitle: 'PIN-код используется для входа в систему',
-      oldLabel: 'Текущий PIN',
-      newLabel: 'Новый PIN',
-      confirmLabel: 'Повторите новый PIN',
-      onSave: (oldVal, newVal) => {
-        if (simpleHash(oldVal) !== st.pin) return { ok: false, error: 'Неверный текущий PIN' };
-        st.pin = simpleHash(newVal);
+      onSave: async (oldVal, newVal) => {
+        if (!await verifyPin(oldVal, st.pin)) return { ok: false, error: 'Неверный текущий PIN' };
+        st.pin = await setPinHash(newVal);
+        st.attempts = 0;
+        st.blockedUntil = null;
         logAction('upd', 'Ученик ' + st.name + ' сменил PIN');
         saveData();
         return { ok: true };
       }
     });
   });
-
   document.getElementById('studentAbsenceForm').addEventListener('submit', e => {
     e.preventDefault();
     const date = document.getElementById('saDate').value;
@@ -1501,6 +1563,7 @@ function renderStudent() {
     const reason = document.getElementById('saReason').value;
     const note = document.getElementById('saNote').value.trim();
     if (!date || !subject || !reason) return toast('Заполните поля', true);
+    if (!isValidAbsenceDate(date)) return toast('Некорректная дата', true);
     data.absences.push({ id: uid(), date, class: cls, studentName: session.name, subject, reason, note, addedBy: session.name, addedByRole: 'student' });
     logAction('add', 'Ученик ' + session.name + ' добавил пропуск');
     const teacher = (data.teachers || []).find(t => t.class === cls);
@@ -1543,27 +1606,23 @@ function renderParent() {
         '<div class="print-signature" id="printSignature"></div></div></div>';
 
   bindLogout();
-
-  // Смена PIN ребёнка — открывает отдельное окно
   document.getElementById('changeParentPinBtn')?.addEventListener('click', () => {
     const st = data.students.find(s => s.class === session.class && s.name === session.name);
-    if (!st) return toast('Ошибка: ученик не найден', true);
+    if (!st) return toast('Ошибка', true);
     openChangePinModal({
       title: 'Смена PIN-кода ребёнка',
       subtitle: 'PIN-код ребёнка используется для входа в систему. Текущий PIN нужно знать.',
-      oldLabel: 'Текущий PIN ребёнка',
-      newLabel: 'Новый PIN ребёнка',
-      confirmLabel: 'Повторите новый PIN',
-      onSave: (oldVal, newVal) => {
-        if (simpleHash(oldVal) !== st.pin) return { ok: false, error: 'Неверный текущий PIN' };
-        st.pin = simpleHash(newVal);
+      onSave: async (oldVal, newVal) => {
+        if (!await verifyPin(oldVal, st.pin)) return { ok: false, error: 'Неверный текущий PIN' };
+        st.pin = await setPinHash(newVal);
+        st.attempts = 0;
+        st.blockedUntil = null;
         logAction('upd', 'Родитель ' + st.name + ' сменил PIN ребёнка');
         saveData();
         return { ok: true };
       }
     });
   });
-
   document.getElementById('periodSelect')?.addEventListener('change', e => { data.currentPeriod[session.class] = parseInt(e.target.value, 10); saveData(); renderParent(); });
   document.getElementById('parentPrintBtn')?.addEventListener('click', () => { const period = getCurrentPeriod(cls); printJournal(cls, period.name, { studentName: childName }); });
   document.querySelectorAll('[data-parent-comment]').forEach(btn => {
@@ -1594,7 +1653,6 @@ function openStudentProfile(cls, studentName) {
   const period = getCurrentPeriod(cls);
   const absences = filterByPeriod(data.absences.filter(a => a.class === cls && a.studentName === studentName), cls)
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
   const total = absences.length;
   const good = absences.filter(a => reasonById(a.reason).type === 'good').length;
   const bad = absences.filter(a => reasonById(a.reason).type === 'bad').length;
@@ -1602,7 +1660,6 @@ function openStudentProfile(cls, studentName) {
   const initials = studentName.split(' ').map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
   const teacherNote = st.teacherNote || '';
   const isProblem = total >= ABSENCE_WARNING_THRESHOLD;
-
   const reasonCounts = {};
   absences.forEach(a => { const n = reasonById(a.reason).name; reasonCounts[n] = (reasonCounts[n] || 0) + 1; });
 
@@ -1637,7 +1694,6 @@ function openStudentProfile(cls, studentName) {
       '<div class="modal-footer"><button class="btn btn-secondary" id="profilePrintBtn">🖨 Печать отчёта</button>' +
         '<button class="btn" id="profileCloseBtn2">Закрыть</button></div>' +
     '</div>';
-
   document.body.appendChild(overlay);
 
   if (total > 0 && typeof Chart !== 'undefined') {
@@ -1653,29 +1709,23 @@ function openStudentProfile(cls, studentName) {
       });
     }
   }
-
-  function closeModal() { overlay.remove(); }
+  const closeModal = () => overlay.remove();
   document.getElementById('profileCloseBtn').addEventListener('click', closeModal);
   document.getElementById('profileCloseBtn2').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-
   document.getElementById('profileSaveNoteBtn')?.addEventListener('click', () => {
     st.teacherNote = document.getElementById('profileTeacherNote').value.trim();
     logAction('upd', 'Заметка учителя о ' + studentName + ' обновлена');
     saveData(); toast('Заметка сохранена');
   });
-
   document.getElementById('profilePrintBtn')?.addEventListener('click', () => {
     document.body.classList.add('print-profile');
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => document.body.classList.remove('print-profile'), 300);
-    }, 100);
+    setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove('print-profile'), 300); }, 100);
   });
 }
 
 /* ========================================================
-   ИМПОРТ УЧЕНИКОВ
+   ИМПОРТ CSV
    ======================================================== */
 function parseStudentsCSV(text, defaultClass) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -1687,12 +1737,10 @@ function parseStudentsCSV(text, defaultClass) {
   const firstRow = first.split(sep).map(s => s.trim().toLowerCase());
   const hasHeader = firstRow.some(c => c.includes('фио') || c === 'имя' || c === 'ученик' || c === 'класс' || c === 'name' || c === 'class');
   let nameIdx = 0, classIdx = -1;
-  if (hasHeader) {
-    firstRow.forEach((c, i) => {
-      if (c.includes('фио') || c === 'имя' || c === 'ученик' || c === 'name') nameIdx = i;
-      if (c.includes('класс') || c === 'class') classIdx = i;
-    });
-  }
+  if (hasHeader) firstRow.forEach((c, i) => {
+    if (c.includes('фио') || c === 'имя' || c === 'ученик' || c === 'name') nameIdx = i;
+    if (c.includes('класс') || c === 'class') classIdx = i;
+  });
   const startIdx = hasHeader ? 1 : 0;
   const result = [];
   for (let i = startIdx; i < lines.length; i++) {
@@ -1702,10 +1750,10 @@ function parseStudentsCSV(text, defaultClass) {
     let cls = defaultClass;
     if (classIdx >= 0 && parts[classIdx]) {
       cls = parts[classIdx].trim().toUpperCase().replace(/\s+/g, '');
-      if (!CLASSES.includes(cls)) { result.push({ name, cls: parts[classIdx], status: 'err', reason: 'Класс "' + parts[classIdx] + '" не существует' }); continue; }
+      if (!CLASSES.includes(cls)) { result.push({ name, cls: parts[classIdx], status: 'err', reason: 'Класс не существует' }); continue; }
     }
     const exists = data.students.some(s => s.class === cls && s.name.toLowerCase() === name.toLowerCase());
-    result.push({ name, cls, status: exists ? 'dup' : 'ok', reason: exists ? 'Уже есть в ' + cls : '' });
+    result.push({ name, cls, status: exists ? 'dup' : 'ok', reason: exists ? 'Уже есть' : '' });
   }
   return result;
 }
@@ -1721,26 +1769,19 @@ function openImportModal(defaultClass) {
     '<div class="drop-zone" id="dropZone"><div class="big-icon">📄</div><div><b>Перетащите CSV-файл сюда</b><br>или нажмите, чтобы выбрать</div>' +
     '<input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;"></div>' +
     '<div id="importPreviewBox"></div>' +
-    '<div class="csv-hint"><b>Формат файла:</b><br>• Одна колонка — ФИО: <code>Иванов Иван</code><br>• Две колонки — ФИО;Класс: <code>Иванов Иван;7А</code><br>• С заголовком: <code>ФИО;Класс</code><br>• Разделитель: <code>;</code>, <code>,</code> или табуляция</div>' +
-    '<div style="margin-top:14px;"><label>Класс по умолчанию (если в файле не указан)</label><select id="importDefaultClass">' + optionsHTML(CLASSES, defaultClass) + '</select></div>' +
+    '<div class="csv-hint"><b>Формат:</b> <code>Иванов Иван</code> или <code>Иванов Иван;7А</code></div>' +
+    '<div style="margin-top:14px;"><label>Класс по умолчанию</label><select id="importDefaultClass">' + optionsHTML(CLASSES, defaultClass) + '</select></div>' +
     '</div><div class="modal-footer"><button class="btn btn-secondary" id="importCancelBtn">Отмена</button>' +
     '<button class="btn" id="importConfirmBtn" disabled>Импортировать</button></div></div>';
   document.body.appendChild(overlay);
-
   let parsedRows = [];
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('csvFileInput');
-  const previewBox = document.getElementById('importPreviewBox');
-  const confirmBtn = document.getElementById('importConfirmBtn');
-  const defaultClassSel = document.getElementById('importDefaultClass');
-
+  const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('csvFileInput'), previewBox = document.getElementById('importPreviewBox'), confirmBtn = document.getElementById('importConfirmBtn'), defaultClassSel = document.getElementById('importDefaultClass');
   dropZone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleFile(f); });
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
   defaultClassSel.addEventListener('change', () => { if (window._lastCsvText) { parsedRows = parseStudentsCSV(window._lastCsvText, defaultClassSel.value); renderPreview(); } });
-
   function handleFile(file) {
     if (file.size > 1024 * 1024) return toast('Файл больше 1 МБ', true);
     const reader = new FileReader();
@@ -1748,18 +1789,15 @@ function openImportModal(defaultClass) {
     reader.readAsText(file, 'UTF-8');
   }
   function renderPreview() {
-    if (!parsedRows.length) { previewBox.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px;">Файл пуст</div>'; confirmBtn.disabled = true; return; }
-    const ok = parsedRows.filter(r => r.status === 'ok').length;
-    const dup = parsedRows.filter(r => r.status === 'dup').length;
-    const err = parsedRows.filter(r => r.status === 'err').length;
+    if (!parsedRows.length) { previewBox.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Файл пуст</div>'; confirmBtn.disabled = true; return; }
+    const ok = parsedRows.filter(r => r.status === 'ok').length, dup = parsedRows.filter(r => r.status === 'dup').length, err = parsedRows.filter(r => r.status === 'err').length;
     const rowsHTML = parsedRows.slice(0, 200).map(r => {
       const cls = r.status === 'ok' ? 'ok' : (r.status === 'dup' ? 'dup' : 'err');
       const icon = r.status === 'ok' ? '✓' : (r.status === 'dup' ? '⚠' : '✕');
-      const note = r.status === 'ok' ? 'будет добавлен' : (r.status === 'dup' ? 'уже есть' : r.reason);
-      return '<div class="import-row ' + cls + '"><span>' + icon + ' ' + escapeHtml(r.name) + ' <b style="color:var(--primary);">' + escapeHtml(r.cls || '') + '</b></span><span>' + escapeHtml(note) + '</span></div>';
+      const note = r.status === 'ok' ? 'добавить' : (r.status === 'dup' ? 'уже есть' : r.reason);
+      return '<div class="import-row ' + cls + '"><span>' + icon + ' ' + escapeHtml(r.name) + ' <b>' + escapeHtml(r.cls || '') + '</b></span><span>' + escapeHtml(note) + '</span></div>';
     }).join('');
-    previewBox.innerHTML = '<div class="import-summary"><span>Всего: <b>' + parsedRows.length + '</b></span><span style="color:#166534;">Новых: <b>' + ok + '</b></span><span style="color:#92400e;">Дубликатов: <b>' + dup + '</b></span><span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span></div>' +
-      '<div class="import-preview">' + rowsHTML + '</div>' + (parsedRows.length > 200 ? '<p style="font-size:12px;color:#64748b;margin:8px 0 0;">Показано 200 из ' + parsedRows.length + '</p>' : '');
+    previewBox.innerHTML = '<div class="import-summary"><span>Всего: <b>' + parsedRows.length + '</b></span><span style="color:#166534;">Новых: <b>' + ok + '</b></span><span style="color:#92400e;">Дублей: <b>' + dup + '</b></span><span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span></div><div class="import-preview">' + rowsHTML + '</div>';
     confirmBtn.disabled = ok === 0;
     confirmBtn.textContent = ok > 0 ? 'Импортировать (' + ok + ')' : 'Импортировать';
   }
@@ -1767,10 +1805,11 @@ function openImportModal(defaultClass) {
   document.getElementById('importCloseBtn').addEventListener('click', closeModal);
   document.getElementById('importCancelBtn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-  confirmBtn.addEventListener('click', () => {
+  confirmBtn.addEventListener('click', async () => {
     const toAdd = parsedRows.filter(r => r.status === 'ok');
     if (!toAdd.length) return;
-    toAdd.forEach(r => { data.students.push({ id: uid(), class: r.cls, name: r.name, pin: simpleHash('1234'), teacherNote: '' }); });
+    const pinHash = await setPinHash('1234');
+    toAdd.forEach(r => { data.students.push({ id: uid(), class: r.cls, name: r.name, pin: pinHash, teacherNote: '', attempts: 0, blockedUntil: null }); });
     logAction('add', 'Импортировано ' + toAdd.length + ' учеников из CSV');
     saveData(); toast('Добавлено: ' + toAdd.length); closeModal(); renderApp();
   });
@@ -1787,15 +1826,13 @@ function parseTeachersCSV(text, defaultClass) {
   if (first.split('\t').length > first.split(';').length && first.split('\t').length > first.split(',').length) sep = '\t';
   else if (first.split(',').length > first.split(';').length) sep = ',';
   const firstRow = first.split(sep).map(s => s.trim().toLowerCase());
-  const hasHeader = firstRow.some(c => c.includes('фио') || c === 'имя' || c.includes('учител') || c.includes('преподав') || c === 'класс' || c === 'class' || c === 'pin' || c === 'пин' || c === 'name');
+  const hasHeader = firstRow.some(c => c.includes('фио') || c.includes('учител') || c === 'класс' || c === 'pin' || c === 'name');
   let nameIdx = 0, classIdx = -1, pinIdx = -1;
-  if (hasHeader) {
-    firstRow.forEach((c, i) => {
-      if (c.includes('фио') || c === 'имя' || c.includes('учител') || c.includes('преподав') || c === 'name') nameIdx = i;
-      if (c.includes('класс') || c === 'class') classIdx = i;
-      if (c === 'pin' || c === 'пин' || c.includes('код')) pinIdx = i;
-    });
-  }
+  if (hasHeader) firstRow.forEach((c, i) => {
+    if (c.includes('фио') || c.includes('учител') || c === 'name') nameIdx = i;
+    if (c.includes('класс') || c === 'class') classIdx = i;
+    if (c === 'pin' || c === 'пин') pinIdx = i;
+  });
   const startIdx = hasHeader ? 1 : 0;
   const result = [];
   for (let i = startIdx; i < lines.length; i++) {
@@ -1805,17 +1842,16 @@ function parseTeachersCSV(text, defaultClass) {
     let cls = defaultClass;
     if (classIdx >= 0 && parts[classIdx]) {
       cls = parts[classIdx].trim().toUpperCase().replace(/\s+/g, '');
-      if (!CLASSES.includes(cls)) { result.push({ name, cls: parts[classIdx], pin: null, status: 'err', reason: 'Класс "' + parts[classIdx] + '" не существует' }); continue; }
+      if (!CLASSES.includes(cls)) { result.push({ name, cls: parts[classIdx], pin: null, status: 'err', reason: 'Класс не существует' }); continue; }
     }
     let pin = '1234';
     if (pinIdx >= 0 && parts[pinIdx]) {
       const rawPin = parts[pinIdx].trim();
       if (/^\d{4,8}$/.test(rawPin)) pin = rawPin;
-      else { result.push({ name, cls, pin: null, status: 'err', reason: 'PIN должен быть 4–8 цифр' }); continue; }
+      else { result.push({ name, cls, pin: null, status: 'err', reason: 'PIN 4-8 цифр' }); continue; }
     }
-    const classBusy = data.teachers.find(t => t.class === cls && t.name.toLowerCase() !== name.toLowerCase());
     const exists = data.teachers.some(t => t.name.toLowerCase() === name.toLowerCase());
-    result.push({ name, cls, pin, status: exists ? 'dup' : 'ok', reason: exists ? 'Уже зарегистрирован' : (classBusy ? 'Класс занят: ' + classBusy.name : '') });
+    result.push({ name, cls, pin, status: exists ? 'dup' : 'ok', reason: exists ? 'Уже есть' : '' });
   }
   return result;
 }
@@ -1828,29 +1864,22 @@ function openImportTeachersModal(defaultClass) {
   overlay.innerHTML =
     '<div class="modal" onclick="event.stopPropagation()"><div class="modal-header"><h3>📥 Импорт учителей из CSV</h3>' +
     '<button class="modal-close" id="importTeachersCloseBtn">×</button></div><div class="modal-body">' +
-    '<div class="drop-zone" id="dropTeachersZone"><div class="big-icon">📄</div><div><b>Перетащите CSV-файл сюда</b><br>или нажмите, чтобы выбрать</div>' +
+    '<div class="drop-zone" id="dropTeachersZone"><div class="big-icon">📄</div><div><b>Перетащите CSV-файл сюда</b></div>' +
     '<input type="file" id="csvTeachersInput" accept=".csv,.txt" style="display:none;"></div>' +
     '<div id="importTeachersPreviewBox"></div>' +
-    '<div class="csv-hint"><b>Формат файла:</b><br>• Одна колонка — ФИО: <code>Иванова Ирина Ивановна</code><br>• Две колонки — ФИО;Класс: <code>Иванова И.И.;7А</code><br>• Три колонки — ФИО;Класс;PIN: <code>Иванова И.И.;7А;5678</code><br><b>Если PIN не указан — ставится 1234</b></div>' +
+    '<div class="csv-hint"><b>Формат:</b> <code>Иванова И.И.;7А;5678</code></div>' +
     '<div style="margin-top:14px;"><label>Класс по умолчанию</label><select id="importTeachersDefaultClass">' + optionsHTML(CLASSES, defaultClass) + '</select></div>' +
     '</div><div class="modal-footer"><button class="btn btn-secondary" id="importTeachersCancelBtn">Отмена</button>' +
     '<button class="btn" id="importTeachersConfirmBtn" disabled>Импортировать</button></div></div>';
   document.body.appendChild(overlay);
-
   let parsedRows = [];
-  const dropZone = document.getElementById('dropTeachersZone');
-  const fileInput = document.getElementById('csvTeachersInput');
-  const previewBox = document.getElementById('importTeachersPreviewBox');
-  const confirmBtn = document.getElementById('importTeachersConfirmBtn');
-  const defaultClassSel = document.getElementById('importTeachersDefaultClass');
-
+  const dropZone = document.getElementById('dropTeachersZone'), fileInput = document.getElementById('csvTeachersInput'), previewBox = document.getElementById('importTeachersPreviewBox'), confirmBtn = document.getElementById('importTeachersConfirmBtn'), defaultClassSel = document.getElementById('importTeachersDefaultClass');
   dropZone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleFile(f); });
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
   defaultClassSel.addEventListener('change', () => { if (window._lastTeachersCsvText) { parsedRows = parseTeachersCSV(window._lastTeachersCsvText, defaultClassSel.value); renderPreview(); } });
-
   function handleFile(file) {
     if (file.size > 1024 * 1024) return toast('Файл больше 1 МБ', true);
     const reader = new FileReader();
@@ -1858,20 +1887,15 @@ function openImportTeachersModal(defaultClass) {
     reader.readAsText(file, 'UTF-8');
   }
   function renderPreview() {
-    if (!parsedRows.length) { previewBox.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px;">Файл пуст</div>'; confirmBtn.disabled = true; return; }
-    const ok = parsedRows.filter(r => r.status === 'ok').length;
-    const dup = parsedRows.filter(r => r.status === 'dup').length;
-    const err = parsedRows.filter(r => r.status === 'err').length;
+    if (!parsedRows.length) { previewBox.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Файл пуст</div>'; confirmBtn.disabled = true; return; }
+    const ok = parsedRows.filter(r => r.status === 'ok').length, dup = parsedRows.filter(r => r.status === 'dup').length, err = parsedRows.filter(r => r.status === 'err').length;
     const rowsHTML = parsedRows.slice(0, 200).map(r => {
       const cls = r.status === 'ok' ? 'ok' : (r.status === 'dup' ? 'dup' : 'err');
       const icon = r.status === 'ok' ? '✓' : (r.status === 'dup' ? '⚠' : '✕');
-      let note = '';
-      if (r.status === 'ok') { note = 'добавить · ' + escapeHtml(r.cls) + ' · PIN ' + escapeHtml(r.pin); if (r.reason) note += ' (' + escapeHtml(r.reason) + ')'; }
-      else note = r.reason;
-      return '<div class="import-row ' + cls + '"><span>' + icon + ' ' + escapeHtml(r.name) + ' <b style="color:var(--primary);">' + escapeHtml(r.cls || '') + '</b></span><span>' + note + '</span></div>';
+      const note = r.status === 'ok' ? 'добавить · ' + escapeHtml(r.cls) : (r.status === 'dup' ? 'уже есть' : r.reason);
+      return '<div class="import-row ' + cls + '"><span>' + icon + ' ' + escapeHtml(r.name) + ' <b>' + escapeHtml(r.cls || '') + '</b></span><span>' + note + '</span></div>';
     }).join('');
-    previewBox.innerHTML = '<div class="import-summary"><span>Всего: <b>' + parsedRows.length + '</b></span><span style="color:#166534;">Новых: <b>' + ok + '</b></span><span style="color:#92400e;">Дубликатов: <b>' + dup + '</b></span><span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span></div>' +
-      '<div class="import-preview">' + rowsHTML + '</div>';
+    previewBox.innerHTML = '<div class="import-summary"><span>Всего: <b>' + parsedRows.length + '</b></span><span style="color:#166534;">Новых: <b>' + ok + '</b></span><span style="color:#92400e;">Дублей: <b>' + dup + '</b></span><span style="color:#991b1b;">Ошибок: <b>' + err + '</b></span></div><div class="import-preview">' + rowsHTML + '</div>';
     confirmBtn.disabled = ok === 0;
     confirmBtn.textContent = ok > 0 ? 'Импортировать (' + ok + ')' : 'Импортировать';
   }
@@ -1879,10 +1903,12 @@ function openImportTeachersModal(defaultClass) {
   document.getElementById('importTeachersCloseBtn').addEventListener('click', closeModal);
   document.getElementById('importTeachersCancelBtn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-  confirmBtn.addEventListener('click', () => {
+  confirmBtn.addEventListener('click', async () => {
     const toAdd = parsedRows.filter(r => r.status === 'ok');
     if (!toAdd.length) return;
-    toAdd.forEach(r => { data.teachers.push({ name: r.name, class: r.cls, pin: simpleHash(r.pin || '1234'), createdAt: new Date().toISOString() }); });
+    for (const r of toAdd) {
+      data.teachers.push({ name: r.name, class: r.cls, pin: await setPinHash(r.pin || '1234'), createdAt: new Date().toISOString(), attempts: 0, blockedUntil: null });
+    }
     logAction('add', 'Импортировано ' + toAdd.length + ' учителей из CSV');
     saveData(); toast('Добавлено учителей: ' + toAdd.length); closeModal(); renderApp();
   });
@@ -1900,9 +1926,7 @@ function renderAllClassesSummary() {
     const teacher = (data.teachers || []).find(t => t.class === cls);
     return { cls, total: absences.length, good, bad, students: data.students.filter(s => s.class === cls).length, teacher: teacher ? teacher.name : '—' };
   });
-  const gT = rows.reduce((s, r) => s + r.total, 0);
-  const gG = rows.reduce((s, r) => s + r.good, 0);
-  const gB = rows.reduce((s, r) => s + r.bad, 0);
+  const gT = rows.reduce((s, r) => s + r.total, 0), gG = rows.reduce((s, r) => s + r.good, 0), gB = rows.reduce((s, r) => s + r.bad, 0);
   const body = rows.map(r => '<tr><td data-label="Класс"><b>' + escapeHtml(r.cls) + '</b></td>' +
     '<td data-label="Кл. рук." style="font-size:13px;color:var(--text-dim);">' + escapeHtml(r.teacher) + '</td>' +
     '<td data-label="Учеников">' + r.students + '</td><td data-label="Всего">' + r.total + '</td>' +
@@ -1911,9 +1935,7 @@ function renderAllClassesSummary() {
   return '<div class="card"><h3>Сводная по классам</h3><div class="table-wrap"><table><thead><tr>' +
     '<th>Класс</th><th>Кл. руководитель</th><th>Учеников</th><th>Всего</th><th>Уваж.</th><th>Неуваж.</th>' +
     '</tr></thead><tbody>' + body +
-    '<tr style="font-weight:700;background:#f1f5f9;"><td colspan="3" data-label="">ИТОГО</td><td data-label="Всего">' + gT + '</td>' +
-    '<td data-label="Уваж." style="color:#166534;">' + gG + '</td>' +
-    '<td data-label="Неуваж." style="color:#991b1b;">' + gB + '</td></tr></tbody></table></div></div>';
+    '<tr style="font-weight:700;background:#f1f5f9;"><td colspan="3">ИТОГО</td><td>' + gT + '</td><td style="color:#166534;">' + gG + '</td><td style="color:#991b1b;">' + gB + '</td></tr></tbody></table></div></div>';
 }
 function renderAdminClassStats(selectedClass) {
   ensurePeriods(selectedClass);
@@ -1941,8 +1963,7 @@ function renderAdminClassStats(selectedClass) {
         periodSelectorHTML(selectedClass) +
         '<button class="btn btn-secondary btn-sm" id="adminExportBtn">CSV</button>' +
         '<button class="btn btn-secondary btn-sm" id="adminPrintBtn">🖨</button>' +
-      '</div>' +
-    '</div>' +
+      '</div></div>' +
     '<div class="stats">' +
       '<div class="stat"><div class="num">' + total + '</div><div class="lbl">Всего</div></div>' +
       '<div class="stat"><div class="num">' + good + '</div><div class="lbl">Уваж.</div></div>' +
@@ -1961,10 +1982,7 @@ function renderHistoryLog() {
   const filtered = q ? log.filter(l => (l.user || '').toLowerCase().includes(q) || (l.details || '').toLowerCase().includes(q)) : log;
   const rows = filtered.slice(0, 100).map(l => {
     let cls = 'upd';
-    if (l.action === 'add') cls = 'add';
-    else if (l.action === 'del') cls = 'del';
-    else if (l.action === 'login') cls = 'login';
-    else if (l.action === 'backup') cls = 'backup';
+    if (l.action === 'add') cls = 'add'; else if (l.action === 'del') cls = 'del'; else if (l.action === 'login') cls = 'login'; else if (l.action === 'backup') cls = 'backup';
     return '<tr class="log-row"><td data-label="Время">' + escapeHtml(formatDateTime(l.time)) + '</td>' +
       '<td data-label="Кто">' + escapeHtml(l.user) + '</td>' +
       '<td data-label="Роль">' + escapeHtml(l.role) + '</td>' +
@@ -1974,19 +1992,17 @@ function renderHistoryLog() {
   return '<div class="card"><div class="journal-header"><h3>📜 История (только админ)</h3>' +
     '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
       '<input type="text" id="logSearch" placeholder="🔍 Поиск..." value="' + escapeHtml(uiState.logFilter) + '" style="min-width:200px;">' +
-      '<button class="btn btn-secondary btn-sm" id="clearLogBtn">Очистить</button>' +
-    '</div></div>' +
+      '<button class="btn btn-secondary btn-sm" id="clearLogBtn">Очистить</button></div></div>' +
     '<p style="font-size:12px;color:var(--text-dim);margin:0 0 12px;">Всего: ' + log.length + ' (показано 100)</p>' +
-    (filtered.length ? '<div class="table-wrap"><table><thead><tr><th>Время</th><th>Кто</th><th>Роль</th><th>Действие</th><th>Детали</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty">Записей нет</div>') +
-    '</div>';
+    (filtered.length ? '<div class="table-wrap"><table><thead><tr><th>Время</th><th>Кто</th><th>Роль</th><th>Действие</th><th>Детали</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty">Записей нет</div>') + '</div>';
 }
 function renderBackupsCard() {
   return '<div class="card"><h3>💾 Резервные копии</h3>' +
-    '<p style="font-size:12px;color:var(--text-dim);margin:0 0 12px;">Автобэкап создаётся раз в день при входе. Хранятся последние ' + BACKUP_KEEP_DAYS + ' дней.</p>' +
+    '<p style="font-size:12px;color:var(--text-dim);margin:0 0 12px;">Автобэкап раз в день. Хранятся ' + BACKUP_KEEP_DAYS + ' дней.</p>' +
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">' +
       '<button class="btn btn-secondary btn-sm" id="manualBackupBtn">💾 Создать бэкап</button>' +
-      '<button class="btn btn-secondary btn-sm" id="refreshBackupsBtn">🔄 Обновить</button>' +
-    '</div><div class="backup-list" id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';
+      '<button class="btn btn-secondary btn-sm" id="refreshBackupsBtn">🔄 Обновить</button></div>' +
+    '<div class="backup-list" id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';
 }
 
 function renderAdmin() {
@@ -2002,16 +2018,14 @@ function renderAdmin() {
       '<td><button class="btn btn-danger btn-sm" data-tdel="' + escapeHtml(t.name) + '">Удалить</button></td></tr>').join('');
     tCard = '<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th>PIN</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
-
   const app = document.getElementById('app');
   app.innerHTML =
-    topbarHTML('Панель администратора', '<button class="btn btn-secondary btn-sm" id="changeAdminPwdBtn">Сменить пароль</button>') +
+    topbarHTML('Панель администратора', '<button class="btn btn-secondary btn-sm" id="changeAdminPwdBtn">Сменить пароль</button><button class="btn btn-secondary btn-sm" id="securityBtn">🔒 Безопасность</button>') +
     '<div class="container">' +
       '<div class="card"><div class="journal-header"><h3>📥 Импорт из CSV</h3>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
           '<button class="btn" id="adminImportBtn">👨‍🎓 Ученики</button>' +
-          '<button class="btn btn-secondary" id="adminImportTeachersBtn">👩‍🏫 Учителя</button>' +
-        '</div></div><p style="font-size:13px;color:var(--text-dim);margin:0;">Загрузите файл со списком учеников или учителей.</p></div>' +
+          '<button class="btn btn-secondary" id="adminImportTeachersBtn">👩‍🏫 Учителя</button></div></div></div>' +
       '<div class="card"><h3>Зарегистрировать учителя</h3><form id="addTeacherForm"><div class="form-grid">' +
         '<div><label for="newTeacherName">ФИО</label><input type="text" id="newTeacherName" required></div>' +
         '<div><label for="newTeacherClass">Класс</label><select id="newTeacherClass" required>' + optionsHTML(CLASSES, CLASSES[0]) + '</select></div>' +
@@ -2022,39 +2036,33 @@ function renderAdmin() {
       renderAdminClassStats(uiState.adminSelectedClass || CLASSES[0]) +
       '<div class="card"><div class="journal-header"><h3>📅 Расписание классов</h3>' +
         '<div style="display:flex;gap:10px;align-items:center;">' +
-          '<select id="adminScheduleClass" class="period-select">' +
-            optionsHTML(CLASSES, uiState.scheduleEditClass || CLASSES[0]) +
-          '</select></div></div>' +
-        '<p style="font-size:12px;color:var(--text-dim);margin:0 0 12px;">Выберите класс и настройте уроки по дням недели.</p>' +
+          '<select id="adminScheduleClass" class="period-select">' + optionsHTML(CLASSES, uiState.scheduleEditClass || CLASSES[0]) + '</select></div></div>' +
         '<div id="adminScheduleBox"></div></div>' +
       renderBackupsCard() +
-      renderHistoryLog() +
-    '</div>';
+      renderHistoryLog() + '</div>';
 
   bindProfileLinks();
   bindLogout();
-
-  // Смена пароля админа — открывает отдельное окно
+  document.getElementById('securityBtn')?.addEventListener('click', openSecurityPanel);
   document.getElementById('changeAdminPwdBtn')?.addEventListener('click', () => {
     openChangePinModal({
       title: 'Смена пароля администратора',
-      subtitle: 'Пароль администратора используется для входа в панель управления. Только цифры, 4–8 знаков.',
+      subtitle: 'Пароль администратора. Только цифры, 4–8 знаков.',
       oldLabel: 'Текущий пароль',
       newLabel: 'Новый пароль',
       confirmLabel: 'Повторите новый пароль',
-      onSave: (oldVal, newVal) => {
-        if (!isAdminPassword(oldVal)) return { ok: false, error: 'Неверный текущий пароль' };
-        data.adminPasswordHash = simpleHash(newVal);
+      onSave: async (oldVal, newVal) => {
+        if (!await isAdminPassword(oldVal)) return { ok: false, error: 'Неверный текущий пароль' };
+        data.adminPasswordHash = await setPinHash(newVal);
         logAction('upd', 'Администратор сменил пароль');
         saveData();
         return { ok: true };
       }
     });
   });
-
   document.getElementById('adminImportBtn')?.addEventListener('click', () => openImportModal(CLASSES[0]));
   document.getElementById('adminImportTeachersBtn')?.addEventListener('click', () => openImportTeachersModal(CLASSES[0]));
-  document.getElementById('addTeacherForm').addEventListener('submit', e => {
+  document.getElementById('addTeacherForm').addEventListener('submit', async e => {
     e.preventDefault();
     const name = document.getElementById('newTeacherName').value.trim();
     const cls = document.getElementById('newTeacherClass').value;
@@ -2063,26 +2071,27 @@ function renderAdmin() {
     if (findTeacher(name)) return toast('Уже есть', true);
     const pin = pinRaw || '1234';
     if (!/^\d{4,8}$/.test(pin)) return toast('PIN 4-8 цифр', true);
-    data.teachers.push({ name, class: cls, pin: simpleHash(pin), createdAt: new Date().toISOString() });
-    logAction('add', 'Учитель ' + name + ' (класс ' + cls + ')');
+    data.teachers.push({ name, class: cls, pin: await setPinHash(pin), createdAt: new Date().toISOString(), attempts: 0, blockedUntil: null });
+    logAction('add', 'Учитель ' + name);
     saveData(); toast('Учитель добавлен'); renderAdmin();
   });
   document.querySelectorAll('[data-tclass]').forEach(sel => {
     sel.addEventListener('change', e => {
       const t = findTeacher(sel.dataset.tclass);
       if (!t) return;
-      const old = t.class;
       t.class = e.target.value;
-      logAction('upd', 'Класс ' + t.name + ' с ' + old + ' на ' + t.class);
+      logAction('upd', 'Класс ' + t.name + ' → ' + t.class);
       saveData(); toast('Класс изменён');
     });
   });
   document.querySelectorAll('[data-treset]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const name = btn.dataset.treset;
       const t = findTeacher(name);
       if (!t || !confirm('Сбросить PIN?')) return;
-      t.pin = simpleHash('1234'); saveData();
+      t.pin = await setPinHash('1234');
+      t.attempts = 0; t.blockedUntil = null;
+      saveData();
       logAction('upd', 'Сброшен PIN ' + name); toast('PIN сброшен');
     });
   });
@@ -2091,15 +2100,13 @@ function renderAdmin() {
       const name = btn.dataset.tdel;
       if (!confirm('Удалить учителя "' + name + '"?')) return;
       data.teachers = data.teachers.filter(t => t.name !== name);
-      logAction('del', 'Учитель ' + name);
-      saveData(); toast('Удалён'); renderAdmin();
+      logAction('del', 'Учитель ' + name); saveData(); toast('Удалён'); renderAdmin();
     });
   });
   document.getElementById('adminClassSelect')?.addEventListener('change', e => { uiState.adminSelectedClass = e.target.value; renderAdmin(); });
   document.getElementById('periodSelect')?.addEventListener('change', e => {
     const cls = uiState.adminSelectedClass || CLASSES[0];
-    data.currentPeriod[cls] = parseInt(e.target.value, 10);
-    saveData(); renderAdmin();
+    data.currentPeriod[cls] = parseInt(e.target.value, 10); saveData(); renderAdmin();
   });
   document.getElementById('adminExportBtn')?.addEventListener('click', () => {
     const cls = uiState.adminSelectedClass || CLASSES[0];
@@ -2113,18 +2120,14 @@ function renderAdmin() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'пропуски_' + cls + '_' + period.name + '.csv';
-    link.click();
-    toast('Скачано');
+    link.click(); toast('Скачано');
   });
   document.getElementById('adminPrintBtn')?.addEventListener('click', () => {
     const cls = uiState.adminSelectedClass || CLASSES[0];
     const period = getCurrentPeriod(cls);
     printJournal(cls, period.name);
   });
-  document.getElementById('adminScheduleClass')?.addEventListener('change', e => {
-    uiState.scheduleEditClass = e.target.value;
-    renderAdminScheduleBox();
-  });
+  document.getElementById('adminScheduleClass')?.addEventListener('change', e => { uiState.scheduleEditClass = e.target.value; renderAdminScheduleBox(); });
   document.getElementById('logSearch')?.addEventListener('input', e => {
     uiState.logFilter = e.target.value;
     clearTimeout(window._logTimer);
@@ -2136,23 +2139,10 @@ function renderAdmin() {
       if (ni) { ni.focus(); ni.setSelectionRange(pos, pos); }
     }, 300);
   });
-  document.getElementById('clearLogBtn')?.addEventListener('click', () => {
-    if (!confirm('Очистить всю историю?')) return;
-    data.log = []; saveData(); toast('Очищено'); renderAdmin();
-  });
-  document.getElementById('manualBackupBtn')?.addEventListener('click', async () => {
-    toast('Создаю бэкап...');
-    await runAutoBackup(true);
-    logAction('backup', 'Ручной бэкап');
-    toast('Бэкап создан');
-    loadBackupList();
-  });
+  document.getElementById('clearLogBtn')?.addEventListener('click', () => { if (!confirm('Очистить всю историю?')) return; data.log = []; saveData(); toast('Очищено'); renderAdmin(); });
+  document.getElementById('manualBackupBtn')?.addEventListener('click', async () => { toast('Создаю бэкап...'); await runAutoBackup(true); logAction('backup', 'Ручной бэкап'); toast('Бэкап создан'); loadBackupList(); });
   document.getElementById('refreshBackupsBtn')?.addEventListener('click', loadBackupList);
-
-  renderAdminScheduleBox();
-  loadBackupList();
-  bindSortHandlers();
-  bindBell();
+  renderAdminScheduleBox(); loadBackupList(); bindSortHandlers(); bindBell();
 }
 
 function renderAdminScheduleBox() {
@@ -2163,7 +2153,6 @@ function renderAdminScheduleBox() {
   box.innerHTML = renderScheduleInner(cls);
   bindScheduleEvents(cls, () => renderAdminScheduleBox());
 }
-
 async function loadBackupList() {
   const list = document.getElementById('backupList');
   if (!list) return;
@@ -2179,10 +2168,8 @@ async function loadBackupList() {
       const date = btn.dataset.restore;
       if (!confirm('Восстановить базу из бэкапа ' + date + '?')) return;
       const ok = await restoreBackup(date);
-      if (ok) {
-        logAction('upd', 'Восстановление из бэкапа ' + date);
-        toast('База восстановлена'); renderApp();
-      } else toast('Ошибка', true);
+      if (ok) { logAction('upd', 'Восстановление из бэкапа ' + date); toast('База восстановлена'); renderApp(); }
+      else toast('Ошибка', true);
     });
   });
 }
@@ -2192,52 +2179,24 @@ async function loadBackupList() {
    ======================================================== */
 (function setupPwaManifest() {
   const iconSvg = 'data:image/svg+xml,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">' +
-    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
-    '<stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs>' +
-    '<rect width="192" height="192" rx="44" fill="url(#g)"/>' +
-    '<text x="96" y="128" font-size="100" text-anchor="middle">🎓</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs><rect width="192" height="192" rx="44" fill="url(#g)"/><text x="96" y="128" font-size="100" text-anchor="middle">🎓</text></svg>'
   );
-  const manifest = {
-    name: 'Учёт пропусков', short_name: 'Пропуски',
-    description: 'Школьная система учёта пропусков и причин',
-    start_url: '.', scope: '.', display: 'standalone', orientation: 'portrait',
-    background_color: '#f5f7fb', theme_color: '#0f172a', lang: 'ru',
-    icons: [
-      { src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-      { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  };
+  const manifest = { name: 'Учёт пропусков', short_name: 'Пропуски', description: 'Школьная система учёта пропусков и причин', start_url: '.', scope: '.', display: 'standalone', orientation: 'portrait', background_color: '#f5f7fb', theme_color: '#0f172a', lang: 'ru', icons: [{ src: iconSvg, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' }, { src: iconSvg, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }] };
   const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
   const url = URL.createObjectURL(blob);
   const link = document.getElementById('manifestLink');
   if (link) link.href = url;
 })();
-
 if ('serviceWorker' in navigator) {
-  const swCode = "self.addEventListener('install',e=>self.skipWaiting());" +
-    "self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));" +
-    "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;" +
-    "e.respondWith(caches.open('v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(_){}return res}).catch(()=>c.match('/')))))});";
+  const swCode = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.open('v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(_){}return res}).catch(()=>c.match('/')))))});";
   try {
     const swBlob = new Blob([swCode], { type: 'application/javascript' });
     navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
   } catch (e) {}
 }
-
 let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('installPwaBtn');
-  if (btn) btn.classList.add('show');
-});
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('installPwaBtn');
-  if (btn) btn.classList.remove('show');
-  deferredPrompt = null;
-  toast('Приложение установлено');
-});
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('installPwaBtn'); if (btn) btn.classList.add('show'); });
+window.addEventListener('appinstalled', () => { const btn = document.getElementById('installPwaBtn'); if (btn) btn.classList.remove('show'); deferredPrompt = null; toast('Приложение установлено'); });
 
 /* ========================================================
    СТАРТ
@@ -2251,17 +2210,13 @@ window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     document.getElementById('installPwaBtn').classList.remove('show');
   });
-
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const ids = ['importModalOverlay', 'importTeachersModalOverlay', 'studentProfileOverlay', 'resetPasswordOverlay', 'changePinOverlay'];
-      ids.forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+      ['importModalOverlay', 'importTeachersModalOverlay', 'studentProfileOverlay', 'resetPasswordOverlay', 'changePinOverlay', 'securityOverlay'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
     }
   });
-
   session = loadSession();
   renderApp();
-
   setTimeout(async () => {
     await new Promise(resolve => {
       const start = Date.now();
