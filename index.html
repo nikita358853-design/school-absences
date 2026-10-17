@@ -278,6 +278,22 @@ body.dark .warning-banner .warn-text{color:#fecaca}
   background:var(--bg-subtle);border-radius:9px;margin-bottom:6px;border:1px solid var(--border);font-size:13px}
 .duty-today{border-color:var(--primary);border-width:2px}
 .chart-wrap{height:260px;position:relative}
+/* Управление ДЗ учителем */
+.hw-students-list{margin-top:10px;padding:10px;background:var(--bg-card);
+  border-radius:9px;border:1px solid var(--border)}
+.hw-student-row{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 8px;border-radius:6px;font-size:12.5px;margin-bottom:3px}
+.hw-student-row:hover{background:var(--bg-subtle)}
+.hw-student-row.done{background:rgba(16,185,129,.06)}
+.hw-toggle-btn{border:none;cursor:pointer;font-family:inherit;font-weight:700;
+  font-size:11px;padding:4px 10px;border-radius:var(--radius-full);
+  background:var(--bg-subtle);color:var(--text-dim);transition:all .15s;white-space:nowrap}
+.hw-toggle-btn:hover{transform:scale(1.05)}
+.hw-toggle-btn.is-done{background:var(--success);color:#fff;box-shadow:0 2px 6px rgba(16,185,129,.3)}
+.hw-toggle-btn.is-not{background:var(--danger-soft);color:#991b1b}
+body.dark .hw-toggle-btn.is-not{color:#fca5a5}
+.hw-actions-row{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)}
+.hw-actions-row .btn{flex:1;font-size:11.5px;padding:6px 8px}
 @media(max-width:768px){
   input,select,textarea{font-size:16px !important;padding:12px !important;min-height:44px}
   .btn{min-height:42px;padding:10px 16px !important;font-size:13.5px !important}
@@ -335,7 +351,7 @@ const DAYS_OF_WEEK=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const MAX_PIN_ATTEMPTS=5;
 const LOCKOUT_MS=5*60*1000;
 const SESSION_TTL_MS=30*24*60*60*1000;
-const CLASSES=(()=>{
+const CLASSES=(function(){
   const arr=[];
   for(let g=1;g<=9;g++)for(const l of ['А','Б','В'])arr.push(g+l);
   arr.push('10','11');
@@ -364,9 +380,7 @@ const REMARK_TYPES=[
 ];
 
 /* ============ УТИЛИТЫ ============ */
-function uid(){
-  return Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -384,7 +398,7 @@ function optionsHTML(items,selected,valueKey){
 }
 function todayISO(){
   const d=new Date();
-  const p=n=>String(n).padStart(2,'0');
+  const p=function(n){return String(n).padStart(2,'0');};
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
 }
 function formatDate(iso){
@@ -429,21 +443,19 @@ function simpleHash(str){
 function generateSalt(){
   const arr=new Uint8Array(16);
   crypto.getRandomValues(arr);
-  return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  return Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 async function pbkdf2Hash(str,salt){
   try{
     const enc=new TextEncoder();
     const keyMaterial=await crypto.subtle.importKey('raw',enc.encode(str),{name:'PBKDF2'},false,['deriveBits']);
     const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},keyMaterial,256);
-    return 'pbkdf2$'+salt+'$'+Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return 'pbkdf2$'+salt+'$'+Array.from(new Uint8Array(bits)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
   }catch(e){
     return 'pbkdf2-fallback$'+simpleHash(str+salt);
   }
 }
-async function setPinHash(pin){
-  return await pbkdf2Hash(pin,generateSalt());
-}
+async function setPinHash(pin){return await pbkdf2Hash(pin,generateSalt());}
 async function verifyPin(input,storedHash){
   if(!storedHash)return false;
   if(storedHash.startsWith('pbkdf2$')){
@@ -465,29 +477,20 @@ function checkLockout(user){
 function registerFailure(user){
   if(!user)return;
   user.attempts=(user.attempts||0)+1;
-  if(user.attempts>=MAX_PIN_ATTEMPTS){
-    user.blockedUntil=Date.now()+LOCKOUT_MS;
-    user.attempts=0;
-  }
+  if(user.attempts>=MAX_PIN_ATTEMPTS){user.blockedUntil=Date.now()+LOCKOUT_MS;user.attempts=0;}
   saveData();
 }
 function resetAttempts(user){
   if(!user)return;
-  if(user.attempts||user.blockedUntil){
-    user.attempts=0;
-    user.blockedUntil=null;
-    saveData();
-  }
+  if(user.attempts||user.blockedUntil){user.attempts=0;user.blockedUntil=null;saveData();}
 }
 function isValidAbsenceDate(dateStr){
   if(!dateStr||!/^\d{4}-\d{2}-\d{2}$/.test(dateStr))return false;
   const d=new Date(dateStr+'T00:00:00');
   if(isNaN(d.getTime()))return false;
-  const today=new Date();
-  today.setHours(23,59,59,999);
+  const today=new Date();today.setHours(23,59,59,999);
   if(d>today)return false;
-  const fiveYearsAgo=new Date();
-  fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear()-5);
+  const fiveYearsAgo=new Date();fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear()-5);
   if(d<fiveYearsAgo)return false;
   return true;
 }
@@ -520,9 +523,7 @@ function loadLocalData(){
 }
 let data=loadLocalData();
 const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','meetings','duties','todos','parentNotes','log','notifications'];
-for(const f of LIST_FIELDS){
-  if(!Array.isArray(data[f]))data[f]=[];
-}
+for(const f of LIST_FIELDS){if(!Array.isArray(data[f]))data[f]=[];}
 if(!data.periods)data.periods={};
 if(!data.currentPeriod)data.currentPeriod={};
 if(!data.schedules)data.schedules={};
@@ -546,79 +547,49 @@ function saveData(){
     try{
       const{db,ref,set}=window.firebaseDB;
       await set(ref(db,FB_PATH+'/main'),{
-        students:data.students,
-        absences:data.absences,
-        teachers:data.teachers,
-        periods:data.periods,
-        currentPeriod:data.currentPeriod,
-        schedules:data.schedules,
-        homework:data.homework,
-        questions:data.questions,
-        announcements:data.announcements,
-        remarks:data.remarks,
-        notes:data.notes,
-        contacts:data.contacts,
-        meetings:data.meetings,
-        duties:data.duties,
-        todos:data.todos,
-        parentNotes:data.parentNotes,
+        students:data.students,absences:data.absences,teachers:data.teachers,
+        periods:data.periods,currentPeriod:data.currentPeriod,schedules:data.schedules,
+        homework:data.homework,questions:data.questions,announcements:data.announcements,
+        remarks:data.remarks,notes:data.notes,contacts:data.contacts,meetings:data.meetings,
+        duties:data.duties,todos:data.todos,parentNotes:data.parentNotes,
         adminPasswordHash:data.adminPasswordHash
       });
-      firebaseConnected=true;
-      updateStatusBadge();
-    }catch(e){
-      firebaseConnected=false;
-      updateStatusBadge();
-    }
+      firebaseConnected=true;updateStatusBadge();
+    }catch(e){firebaseConnected=false;updateStatusBadge();}
   },600);
 }
 function saveLog(){
   if(!firebaseReady||!window.firebaseDB)return;
   clearTimeout(saveLogTimer);
   saveLogTimer=setTimeout(async function(){
-    try{
-      const{db,ref,set}=window.firebaseDB;
-      await set(ref(db,FB_PATH+'/log'),data.log||[]);
-    }catch(e){}
+    try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/log'),data.log||[]);}catch(e){}
   },2000);
 }
 function saveNotifications(){
   if(!firebaseReady||!window.firebaseDB)return;
   clearTimeout(saveNotifTimer);
   saveNotifTimer=setTimeout(async function(){
-    try{
-      const{db,ref,set}=window.firebaseDB;
-      await set(ref(db,FB_PATH+'/notifications'),data.notifications||[]);
-    }catch(e){}
+    try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/notifications'),data.notifications||[]);}catch(e){}
   },1000);
 }
 function logAction(action,details){
-  data.log.push({
-    time:new Date().toISOString(),
-    user:session?session.name:'—',
-    role:session?session.role:'—',
-    action:action,
-    details:details||''
-  });
+  data.log.push({time:new Date().toISOString(),user:session?session.name:'—',role:session?session.role:'—',action:action,details:details||''});
   if(data.log.length>300)data.log=data.log.slice(-300);
   saveLog();
 }
 
 /* ============ ПОМОЩНИКИ ============ */
 function getStudentsOfClass(cls){
-  const list=data.students.filter(s=>s.class===cls);
-  list.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  const list=data.students.filter(function(s){return s.class===cls;});
+  list.sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
   return list;
 }
 function getDayOfWeek(dateISO){
   if(!dateISO)return null;
-  try{
-    const d=new Date(dateISO+'T00:00:00');
-    return DAYS_OF_WEEK[(d.getDay()+6)%7];
-  }catch(e){return null;}
+  try{const d=new Date(dateISO+'T00:00:00');return DAYS_OF_WEEK[(d.getDay()+6)%7];}catch(e){return null;}
 }
 function findTeacher(name){
-  return data.teachers.find(t=>t.name.toLowerCase()===name.toLowerCase());
+  return data.teachers.find(function(t){return t.name.toLowerCase()===name.toLowerCase();});
 }
 function ensurePeriods(cls){
   if(!data.periods[cls]){
@@ -645,14 +616,11 @@ function ensurePeriods(cls){
   if(data.currentPeriod[cls]===undefined)data.currentPeriod[cls]=data.periods[cls].length-1;
   saveData();
 }
-function getCurrentPeriod(cls){
-  ensurePeriods(cls);
-  return data.periods[cls][data.currentPeriod[cls]];
-}
+function getCurrentPeriod(cls){ensurePeriods(cls);return data.periods[cls][data.currentPeriod[cls]];}
 function filterByPeriod(rows,cls){
   const p=getCurrentPeriod(cls);
   if(!p)return rows;
-  return rows.filter(a=>a.date>=p.start&&a.date<=p.end);
+  return rows.filter(function(a){return a.date>=p.start&&a.date<=p.end;});
 }
 function ensureSchedule(cls){
   if(!data.schedules[cls]){
@@ -671,10 +639,10 @@ function getLessonsFor(cls,dateISO){
 }
 function getStudentFlags(name,cls){
   const flags=[];
-  const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
-  const hw=data.homework.filter(h=>h.class===cls&&h.deadline&&h.deadline<=todayISO());
-  const notDone=hw.filter(h=>!(h.done||[]).includes(name));
-  const rem=filterByPeriod(data.remarks.filter(r=>r.class===cls&&r.studentName===name),cls);
+  const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
+  const hw=data.homework.filter(function(h){return h.class===cls&&h.deadline&&h.deadline<=todayISO();});
+  const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
+  const rem=filterByPeriod(data.remarks.filter(function(r){return r.class===cls&&r.studentName===name;}),cls);
   if(abs.length>=3)flags.push({type:'danger',text:'Пропусков: '+abs.length});
   if(notDone.length>=3)flags.push({type:'danger',text:'Долгов по ДЗ: '+notDone.length});
   else if(notDone.length>=1)flags.push({type:'warn',text:'Долг по ДЗ: '+notDone.length});
@@ -683,26 +651,25 @@ function getStudentFlags(name,cls){
 }
 function getClassAttention(cls){
   const items=[];
-  const pendingAbs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.status==='pending'),cls);
+  const pendingAbs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.status==='pending';}),cls);
   if(pendingAbs.length)items.push({type:'danger',text:'Пропусков на рассмотрении: '+pendingAbs.length,block:'attendance'});
   const students=getStudentsOfClass(cls);
-  const hw=data.homework.filter(h=>h.class===cls&&h.deadline&&h.deadline<=todayISO());
-  const debtors=students.filter(s=>hw.filter(h=>!(h.done||[]).includes(s.name)).length>=3);
+  const hw=data.homework.filter(function(h){return h.class===cls&&h.deadline&&h.deadline<=todayISO();});
+  const debtors=students.filter(function(s){
+    return hw.filter(function(h){return !(h.done||[]).includes(s.name);}).length>=3;
+  });
   if(debtors.length)items.push({type:'danger',text:'Учеников с долгами: '+debtors.length,block:'homework'});
-  const openQ=data.questions.filter(q=>q.class===cls&&!q.answered);
+  const openQ=data.questions.filter(function(q){return q.class===cls&&!q.answered;});
   if(openQ.length)items.push({type:'info',text:'Вопросов без ответа: '+openQ.length,block:'questions'});
-  const todayDuties=data.duties.filter(d=>d.class===cls&&d.date===todayISO());
-  if(todayDuties.length)items.push({type:'info',text:'Сегодня дежурят: '+todayDuties.map(d=>d.studentName).join(', '),block:'duties'});
-  const upcoming=data.meetings.filter(m=>m.class===cls&&m.date>=todayISO()).sort((a,b)=>a.date.localeCompare(b.date));
+  const todayDuties=data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();});
+  if(todayDuties.length)items.push({type:'info',text:'Сегодня дежурят: '+todayDuties.map(function(d){return d.studentName;}).join(', '),block:'duties'});
+  const upcoming=data.meetings.filter(function(m){return m.class===cls&&m.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);});
   if(upcoming.length)items.push({type:'info',text:'Ближайшее собрание: '+formatDate(upcoming[0].date)+' — '+upcoming[0].topic,block:'meetings'});
   return items;
 }
 
 /* ============ FIREBASE ============ */
-async function initFirebaseSync(){
-  firebaseReady=true;
-  return !!window.firebaseDB;
-}
+async function initFirebaseSync(){firebaseReady=true;return !!window.firebaseDB;}
 function subscribeToFirebase(){
   if(!window.firebaseDB)return;
   const{db,ref,onValue,set}=window.firebaseDB;
@@ -723,8 +690,7 @@ function subscribeToFirebase(){
     data.schedules=inc.schedules||{};
     data.adminPasswordHash=inc.adminPasswordHash||null;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-    firebaseConnected=true;
-    updateStatusBadge();
+    firebaseConnected=true;updateStatusBadge();
     if(session)renderApp();
   });
   onValue(ref(db,FB_PATH+'/log'),function(s){data.log=s.val()||[];});
@@ -749,9 +715,7 @@ async function runAutoBackup(force){
     const snap=await get(ref(db,BACKUP_PATH));
     const ex=snap.val()||{};
     const keys=Object.keys(ex).sort();
-    while(keys.length>=BACKUP_KEEP_DAYS){
-      try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}
-    }
+    while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}}
     await set(ref(db,BACKUP_PATH+'/'+today),{
       time:new Date().toISOString(),
       data:JSON.parse(JSON.stringify({
@@ -772,7 +736,7 @@ async function listBackups(){
     const{db,ref,get}=window.firebaseDB;
     const snap=await get(ref(db,BACKUP_PATH));
     const v=snap.val()||{};
-    return Object.keys(v).map(d=>({date:d,time:v[d].time})).sort((a,b)=>b.date.localeCompare(a.date));
+    return Object.keys(v).map(function(d){return {date:d,time:v[d].time};}).sort(function(a,b){return b.date.localeCompare(a.date);});
   }catch(e){return [];}
 }
 async function restoreBackup(date){
@@ -784,8 +748,7 @@ async function restoreBackup(date){
     if(!v||!v.data)return false;
     Object.assign(data,v.data);
     localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-    saveData();
-    return true;
+    saveData();return true;
   }catch(e){return false;}
 }
 
@@ -836,10 +799,8 @@ function showNativeNotification(title,body){
 }
 function pushNotification(toRole,toUser,message,detail,type){
   const notif={
-    id:uid(),toRole:toRole,toUser:toUser,message:message,
-    detail:detail||'',type:type||'info',
-    from:session?session.name:'—',
-    fromRole:session?session.role:'—',
+    id:uid(),toRole:toRole,toUser:toUser,message:message,detail:detail||'',
+    type:type||'info',from:session?session.name:'—',fromRole:session?session.role:'—',
     time:new Date().toISOString(),read:false
   };
   data.notifications.push(notif);
@@ -852,11 +813,11 @@ function pushNotification(toRole,toUser,message,detail,type){
 }
 function getMyNotifications(){
   if(!session)return [];
-  const mine=data.notifications.filter(n=>n.toRole===session.role&&n.toUser===session.name);
-  mine.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+  const mine=data.notifications.filter(function(n){return n.toRole===session.role&&n.toUser===session.name;});
+  mine.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   return mine;
 }
-function unreadCount(){return getMyNotifications().filter(n=>!n.read).length;}
+function unreadCount(){return getMyNotifications().filter(function(n){return !n.read;}).length;}
 function markRead(id){
   let changed=false;
   for(const n of data.notifications){if(n.id===id&&!n.read){n.read=true;changed=true;}}
@@ -870,11 +831,13 @@ function markAllRead(){
   if(changed)saveNotifications();
 }
 function deleteNotification(id){
-  data.notifications=data.notifications.filter(n=>n.id!==id);
+  data.notifications=data.notifications.filter(function(n){return n.id!==id;});
   saveNotifications();
 }
 function clearAllNotifications(){
-  data.notifications=data.notifications.filter(n=>!(n.toRole===session.role&&n.toUser===session.name));
+  data.notifications=data.notifications.filter(function(n){
+    return !(n.toRole===session.role&&n.toUser===session.name);
+  });
   saveNotifications();
 }
 function processIncomingNotifications(){
@@ -912,8 +875,8 @@ function openNotifPanel(){
   const exist=document.getElementById('notifPanel');
   if(exist)exist.remove();
   const all=getMyNotifications();
-  const unread=all.filter(n=>!n.read).length;
-  const shown=_notifFilter==='unread'?all.filter(n=>!n.read):all;
+  const unread=all.filter(function(n){return !n.read;}).length;
+  const shown=_notifFilter==='unread'?all.filter(function(n){return !n.read;}):all;
   const panel=document.createElement('div');
   panel.className='notif-panel';
   panel.id='notifPanel';
@@ -989,9 +952,7 @@ function openNotifPanel(){
     clearAllNotifications();openNotifPanel();renderApp();
   });
   setTimeout(function(){
-    const close=function(ev){
-      if(!panel.contains(ev.target)){panel.remove();document.removeEventListener('click',close);}
-    };
+    const close=function(ev){if(!panel.contains(ev.target)){panel.remove();document.removeEventListener('click',close);}};
     document.addEventListener('click',close);
   },10);
 }
@@ -1001,9 +962,7 @@ function saveSession(){
   if(session){
     if(!session.expiresAt)session.expiresAt=Date.now()+SESSION_TTL_MS;
     localStorage.setItem(SESSION_KEY,JSON.stringify(session));
-  }else{
-    localStorage.removeItem(SESSION_KEY);
-  }
+  }else localStorage.removeItem(SESSION_KEY);
 }
 function loadSession(){
   try{
@@ -1011,13 +970,9 @@ function loadSession(){
     if(!raw)return null;
     const s=JSON.parse(raw);
     if(s.expiresAt&&Date.now()>s.expiresAt){localStorage.removeItem(SESSION_KEY);return null;}
-    if(s.role==='teacher'){
-      const t=findTeacher(s.name);
-      if(!t)return null;
-      s.class=t.class;
-    }
+    if(s.role==='teacher'){const t=findTeacher(s.name);if(!t)return null;s.class=t.class;}
     if(s.role==='student'||s.role==='parent'){
-      const st=data.students.find(x=>x.class===s.class&&x.name===s.name);
+      const st=data.students.find(function(x){return x.class===s.class&&x.name===s.name;});
       if(!st)return null;
     }
     return s;
@@ -1029,7 +984,7 @@ async function isAdminPassword(pwd){
   return simpleHash(pwd)===ADMIN_PASSWORD_HASH;
 }
 
-/* ============ СОСТОЯНИЕ UI ============ */
+/* ============ СОСТОЯНИЕ ============ */
 let currentView='home';
 let uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:''};
 let loginState={role:'teacher',teacherName:'',studentClass:CLASSES[0],studentName:''};
@@ -1080,8 +1035,8 @@ function renderSubnav(){
   const cnt={};
   if(session.role==='teacher'){
     const cls=session.class;
-    cnt.questions=data.questions.filter(q=>q.class===cls&&!q.answered).length;
-    cnt.attendance=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.status==='pending'),cls).length;
+    cnt.questions=data.questions.filter(function(q){return q.class===cls&&!q.answered;}).length;
+    cnt.attendance=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.status==='pending';}),cls).length;
   }
   let html='<div class="subnav">';
   for(const n of nav){
@@ -1107,9 +1062,7 @@ function bindSubnav(){
 /* ============ TOPBAR ============ */
 function topbarHTML(title){
   const isDark=document.body.classList.contains('dark');
-  let html='<div class="topbar">';
-  html+='<h2>'+escapeHtml(title)+'</h2>';
-  html+='<div class="user-info">';
+  let html='<div class="topbar"><h2>'+escapeHtml(title)+'</h2><div class="user-info">';
   html+='<span>'+escapeHtml(session.name)+'</span>';
   if(session.class)html+='<span class="badge">'+escapeHtml(session.class)+'</span>';
   html+='<button class="theme-toggle" id="themeToggle">'+(isDark?'☀️':'🌙')+'</button>';
@@ -1122,9 +1075,7 @@ function bindLogout(){
   const b=document.getElementById('logoutBtn');
   if(b)b.addEventListener('click',function(){
     logAction('login','Выход');
-    session=null;
-    saveSession();
-    renderApp();
+    session=null;saveSession();renderApp();
   });
 }
 function bindThemeToggle(){
@@ -1138,10 +1089,10 @@ function bindThemeToggle(){
   });
 }
 
-/* ============ РЕНДЕР ВХОДА ============ */
+/* ============ ВХОД ============ */
 function renderLogin(){
   const app=document.getElementById('app');
-  const studentNames=getStudentsOfClass(loginState.studentClass).map(s=>s.name);
+  const studentNames=getStudentsOfClass(loginState.studentClass).map(function(s){return s.name;});
   if(!studentNames.includes(loginState.studentName))loginState.studentName=studentNames[0]||'';
   let formHTML='';
   if(loginState.role==='teacher'){
@@ -1158,8 +1109,7 @@ function renderLogin(){
     formHTML+='<label>PIN</label><input type="password" id="sPin" maxlength="8" autocomplete="off">';
   }
   let html='<div class="login-wrap"><div class="login-card">';
-  html+='<h1>Классный</h1>';
-  html+='<p class="subtitle">Помощник учителя: посещаемость, ДЗ, дисциплина</p>';
+  html+='<h1>Классный</h1><p class="subtitle">Помощник учителя: посещаемость, ДЗ, дисциплина</p>';
   html+='<div class="role-tabs">';
   html+='<button class="role-tab '+(loginState.role==='teacher'?'active':'')+'" data-role="teacher">Учитель</button>';
   html+='<button class="role-tab '+(loginState.role==='student'?'active':'')+'" data-role="student">Ученик</button>';
@@ -1207,7 +1157,7 @@ async function handleLogin(e){
     session={role:'admin',name:'Администратор',expiresAt:Date.now()+SESSION_TTL_MS};
   }else{
     if(!loginState.studentName)return toast('Выберите ученика',true);
-    const st=data.students.find(s=>s.class===loginState.studentClass&&s.name===loginState.studentName);
+    const st=data.students.find(function(s){return s.class===loginState.studentClass&&s.name===loginState.studentName;});
     if(!st)return toast('Не найден',true);
     const pv=(document.getElementById('sPin').value||'').trim();
     if(!pv)return toast('Введите PIN',true);
@@ -1235,8 +1185,7 @@ function openResetPasswordModal(){
   const exist=document.getElementById('resetPasswordOverlay');
   if(exist)exist.remove();
   const o=document.createElement('div');
-  o.className='modal-overlay';
-  o.id='resetPasswordOverlay';
+  o.className='modal-overlay';o.id='resetPasswordOverlay';
   let html='<div class="modal" style="max-width:460px">';
   html+='<div class="modal-header"><h3>🔑 Восстановление</h3><button class="modal-close" id="rpClose">×</button></div>';
   html+='<div class="modal-body">';
@@ -1261,15 +1210,12 @@ function openResetPasswordModal(){
     if(!name)return err('Введите ФИО');
     if(master!=='school21')return err('Неверный мастер-пароль');
     let user=findTeacher(name);
-    if(!user)user=data.students.find(s=>s.name.toLowerCase()===name.toLowerCase());
+    if(!user)user=data.students.find(function(s){return s.name.toLowerCase()===name.toLowerCase();});
     if(!user)return err('Не найден');
     user.pin=await setPinHash('1234');
-    user.attempts=0;
-    user.blockedUntil=null;
+    user.attempts=0;user.blockedUntil=null;
     saveData();
-    res.style.display='block';
-    res.style.background='var(--success-soft)';
-    res.style.color='#065f46';
+    res.style.display='block';res.style.background='var(--success-soft)';res.style.color='#065f46';
     res.textContent='✅ PIN сброшен на 1234';
     setTimeout(close,1500);
   });
@@ -1279,8 +1225,7 @@ function openChangePinModal(opts){
   const exist=document.getElementById('changePinOverlay');
   if(exist)exist.remove();
   const o=document.createElement('div');
-  o.className='modal-overlay';
-  o.id='changePinOverlay';
+  o.className='modal-overlay';o.id='changePinOverlay';
   let html='<div class="modal" style="max-width:460px">';
   html+='<div class="modal-header"><h3>'+escapeHtml(opts.title||'Смена PIN')+'</h3><button class="modal-close" id="cpClose">×</button></div>';
   html+='<div class="modal-body">';
@@ -1310,9 +1255,7 @@ function openChangePinModal(opts){
     let r;
     try{r=opts.onSave?await opts.onSave(oldV,newV):{ok:true};}catch(e){return err('Ошибка');}
     if(r&&!r.ok)return err(r.error||'Ошибка');
-    res.style.display='block';
-    res.style.background='var(--success-soft)';
-    res.style.color='#065f46';
+    res.style.display='block';res.style.background='var(--success-soft)';res.style.color='#065f46';
     res.textContent='✅ Сохранено';
     setTimeout(function(){close();toast('Сохранено');},900);
   });
@@ -1338,11 +1281,7 @@ function renderApp(){
     topbarHTML(titles[session.role]||'Классный')+
     renderSubnav()+
     '<div class="container">'+body+'</div>';
-  bindLogout();
-  bindBell();
-  bindThemeToggle();
-  bindSubnav();
-  bindAllEvents();
+  bindLogout();bindBell();bindThemeToggle();bindSubnav();bindAllEvents();
   setTimeout(function(){if(currentView==='reports')drawReportsCharts();},50);
 }
 
@@ -1365,19 +1304,20 @@ function renderTeacherView(){
 function renderTeacherHome(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
-  const absAll=filterByPeriod(data.absences.filter(a=>a.class===cls),cls);
-  const todayAbs=absAll.filter(a=>a.date===todayISO());
-  const hw=data.homework.filter(h=>h.class===cls);
-  const hwOpen=hw.filter(h=>h.deadline&&h.deadline<=todayISO());
-  const debtors=students.filter(s=>hwOpen.filter(h=>!(h.done||[]).includes(s.name)).length>0);
-  const openQ=data.questions.filter(q=>q.class===cls&&!q.answered);
+  const absAll=filterByPeriod(data.absences.filter(function(a){return a.class===cls;}),cls);
+  const todayAbs=absAll.filter(function(a){return a.date===todayISO();});
+  const hw=data.homework.filter(function(h){return h.class===cls;});
+  const hwOpen=hw.filter(function(h){return h.deadline&&h.deadline<=todayISO();});
+  const debtors=students.filter(function(s){
+    return hwOpen.filter(function(h){return !(h.done||[]).includes(s.name);}).length>0;
+  });
+  const openQ=data.questions.filter(function(q){return q.class===cls&&!q.answered;});
   const attention=getClassAttention(cls);
-  const todayDuties=data.duties.filter(d=>d.class===cls&&d.date===todayISO());
-  const upcoming=data.meetings.filter(m=>m.class===cls&&m.date>=todayISO()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+  const todayDuties=data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();});
+  const upcoming=data.meetings.filter(function(m){return m.class===cls&&m.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3);
   const scheduleToday=(data.schedules[cls]&&data.schedules[cls][getDayOfWeek(todayISO())])||[];
-  const allFlags=students.map(s=>({student:s,flags:getStudentFlags(s.name,cls)})).filter(x=>x.flags.length>0);
-  let html='';
-  html+='<div class="stats">';
+  const allFlags=students.map(function(s){return {student:s,flags:getStudentFlags(s.name,cls)};}).filter(function(x){return x.flags.length>0;});
+  let html='<div class="stats">';
   html+='<div class="stat"><div class="num">'+students.length+'</div><div class="lbl">Учеников</div></div>';
   html+='<div class="stat"><div class="num'+(todayAbs.length>0?' warn':'')+'">'+todayAbs.length+'</div><div class="lbl">Отсутствуют</div></div>';
   html+='<div class="stat"><div class="num'+(debtors.length>0?' warn':' ok')+'">'+debtors.length+'</div><div class="lbl">Должников</div></div>';
@@ -1395,9 +1335,7 @@ function renderTeacherHome(){
   html+='<div class="grid-2">';
   html+='<div class="card"><h3>📅 Расписание на сегодня</h3>';
   if(scheduleToday.length){
-    for(let i=0;i<scheduleToday.length;i++){
-      html+='<div class="hw-card"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(scheduleToday[i])+'</div></div>';
-    }
+    for(let i=0;i<scheduleToday.length;i++)html+='<div class="hw-card"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(scheduleToday[i])+'</div></div>';
   }else html+='<div class="empty">Уроков нет</div>';
   html+='</div>';
   html+='<div class="card"><h3>⏰ Ближайшее</h3>';
@@ -1407,14 +1345,12 @@ function renderTeacherHome(){
       html+='<div class="hw-card-meta">'+formatDate(m.date)+'</div></div>';
     }
   }else html+='<div class="empty">Мероприятий нет</div>';
-  if(todayDuties.length){
-    html+='<div style="margin-top:12px;font-size:13px"><b>Дежурят:</b> '+todayDuties.map(d=>escapeHtml(d.studentName)).join(', ')+'</div>';
-  }
+  if(todayDuties.length)html+='<div style="margin-top:12px;font-size:13px"><b>Дежурят:</b> '+todayDuties.map(function(d){return escapeHtml(d.studentName);}).join(', ')+'</div>';
   html+='</div></div>';
   if(allFlags.length){
     html+='<div class="card"><h3>⚠️ Ученики требуют внимания</h3>';
     for(const x of allFlags){
-      const initials=x.student.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+      const initials=x.student.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
       html+='<div class="student-card" data-open-student="'+escapeHtml(x.student.name)+'">';
       html+='<div class="student-avatar">'+escapeHtml(initials)+'</div>';
       html+='<div class="student-info"><div class="student-name">'+escapeHtml(x.student.name)+'</div>';
@@ -1430,20 +1366,19 @@ function renderTeacherHome(){
 function renderAttendance(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
-  const absAll=filterByPeriod(data.absences.filter(a=>a.class===cls),cls);
+  const absAll=filterByPeriod(data.absences.filter(function(a){return a.class===cls;}),cls);
   let list=absAll.filter(function(a){
     if(uiState.filterReason&&a.reason!==uiState.filterReason)return false;
     if(uiState.filterStudent&&a.studentName!==uiState.filterStudent)return false;
     if(uiState.filterDate&&a.date!==uiState.filterDate)return false;
     return true;
   });
-  list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  const pending=absAll.filter(a=>a.status==='pending').length;
-  let html='';
-  html+='<div class="card"><h3>➕ Добавить</h3><form id="attForm">';
+  list.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  const pending=absAll.filter(function(a){return a.status==='pending';}).length;
+  let html='<div class="card"><h3>➕ Добавить</h3><form id="attForm">';
   html+='<div class="grid-2">';
   html+='<div><label>Дата</label><input type="date" id="attDate" value="'+todayISO()+'"></div>';
-  html+='<div><label>Ученик</label><select id="attStudent">'+optionsHTML(students.map(s=>s.name),'')+'</select></div>';
+  html+='<div><label>Ученик</label><select id="attStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
   html+='<div><label>Предмет</label><select id="attSubject">'+optionsHTML(getLessonsFor(cls,todayISO()),'')+'</select></div>';
   html+='<div><label>Причина</label><select id="attReason">'+optionsHTML(REASONS,'','id')+'</select></div>';
   html+='</div>';
@@ -1452,8 +1387,8 @@ function renderAttendance(){
   if(pending)html+='<div class="warning-banner" style="background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.06));border-left-color:var(--warn)"><div class="warn-icon">🟡</div><div class="warn-text" style="color:#92400e"><b>На рассмотрении: '+pending+'</b></div></div>';
   html+='<div class="card"><h3>📋 Журнал ('+list.length+')</h3>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
-  html+='<select id="fStudent" style="flex:1;min-width:140px"><option value="">Все ученики</option>'+optionsHTML(students.map(s=>s.name),uiState.filterStudent)+'</select>';
-  html+='<select id="fReason" style="flex:1;min-width:140px"><option value="">Все причины</option>'+REASONS.map(r=>'<option value="'+r.id+'"'+(uiState.filterReason===r.id?' selected':'')+'>'+escapeHtml(r.name)+'</option>').join('')+'</select>';
+  html+='<select id="fStudent" style="flex:1;min-width:140px"><option value="">Все ученики</option>'+optionsHTML(students.map(function(s){return s.name;}),uiState.filterStudent)+'</select>';
+  html+='<select id="fReason" style="flex:1;min-width:140px"><option value="">Все причины</option>'+REASONS.map(function(r){return '<option value="'+r.id+'"'+(uiState.filterReason===r.id?' selected':'')+'>'+escapeHtml(r.name)+'</option>';}).join('')+'</select>';
   html+='<input type="date" id="fDate" value="'+uiState.filterDate+'" style="flex:1;min-width:130px">';
   html+='<button class="btn btn-secondary btn-sm" id="clearFilters">Сбросить</button></div>';
   if(list.length){
@@ -1484,13 +1419,13 @@ function renderAttendance(){
   return html;
 }
 
+/* ============ HOMEWORK (главное изменение) ============ */
 function renderHomework(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
-  const hw=data.homework.filter(h=>h.class===cls);
-  hw.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  let html='';
-  html+='<div class="card"><h3>➕ Задать ДЗ</h3><form id="hwForm">';
+  const hw=data.homework.filter(function(h){return h.class===cls;});
+  hw.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  let html='<div class="card"><h3>➕ Задать ДЗ</h3><form id="hwForm">';
   html+='<div class="grid-2">';
   html+='<div><label>Дата</label><input type="date" id="hwDate" value="'+todayISO()+'"></div>';
   html+='<div><label>Предмет</label><select id="hwSubject">'+optionsHTML(getLessonsFor(cls,todayISO()),'')+'</select></div>';
@@ -1503,20 +1438,35 @@ function renderHomework(){
     for(const h of hw){
       const total=students.length;
       const done=(h.done||[]).length;
-      const debtors=students.filter(s=>!(h.done||[]).includes(s.name));
-      html+='<div class="hw-card"><div class="hw-card-header">';
+      const debtors=students.filter(function(s){return !(h.done||[]).includes(s.name);});
+      html+='<div class="hw-card">';
+      html+='<div class="hw-card-header">';
       html+='<div><div class="hw-card-title">'+escapeHtml(h.subject)+'</div>';
       html+='<div class="hw-card-meta">'+formatDate(h.date)+(h.deadline?' · до '+formatDate(h.deadline):'')+'</div></div>';
       html+='<button class="btn btn-danger btn-sm" data-del-hw="'+h.id+'">✕</button></div>';
       html+='<div class="hw-card-text">'+escapeHtml(h.text)+'</div>';
-      html+='<div style="font-size:12px;margin-top:6px"><span style="color:var(--success);font-weight:700">✓ '+done+'/'+total+'</span>';
-      if(debtors.length)html+=' <span style="color:var(--danger);font-weight:700">· '+debtors.length+' не сдали</span>';
+      html+='<div style="font-size:12px;margin-top:6px">';
+      html+='<span style="color:var(--success);font-weight:700">✓ Сдали: '+done+'/'+total+'</span>';
+      if(debtors.length)html+=' <span style="color:var(--danger);font-weight:700">· не сдали: '+debtors.length+'</span>';
       html+='</div>';
-      if(debtors.length){
-        html+='<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">';
-        for(const d of debtors)html+='<span class="tag bad">'+escapeHtml(d.name)+'</span>';
+      /* Кнопка управления */
+      html+='<button class="btn btn-secondary btn-sm" data-hw-manage="'+h.id+'" style="margin-top:8px;width:100%">👥 Управление статусом</button>';
+      /* Раскрывающийся список учеников */
+      html+='<div class="hw-students-list" id="hw-manage-'+h.id+'" style="display:none">';
+      html+='<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Нажмите на кнопку, чтобы переключить:</div>';
+      for(const s of students){
+        const isDone=(h.done||[]).includes(s.name);
+        const btnClass=isDone?'is-done':'is-not';
+        const btnLabel=isDone?'✓ Сдал':'✗ Не сдал';
+        html+='<div class="hw-student-row'+(isDone?' done':'')+'">';
+        html+='<span>'+escapeHtml(s.name)+'</span>';
+        html+='<button class="hw-toggle-btn '+btnClass+'" data-hw-toggle="'+h.id+'|'+escapeHtml(s.name)+'">'+btnLabel+'</button>';
         html+='</div>';
       }
+      html+='<div class="hw-actions-row">';
+      html+='<button class="btn btn-secondary btn-sm" data-hw-all-done="'+h.id+'">Все сдали</button>';
+      html+='<button class="btn btn-secondary btn-sm" data-hw-all-clear="'+h.id+'">Сбросить</button>';
+      html+='</div></div>';
       html+='</div>';
     }
   }else html+='<div class="empty">ДЗ ещё не задано</div>';
@@ -1526,8 +1476,8 @@ function renderHomework(){
 
 function renderAnnouncements(){
   const cls=session.class;
-  const list=data.announcements.filter(a=>a.class===cls);
-  list.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+  const list=data.announcements.filter(function(a){return a.class===cls;});
+  list.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   let html='<div class="card"><h3>📢 Новое объявление</h3><form id="annForm">';
   html+='<textarea id="annText" rows="2" placeholder="Например: завтра контрольная..." style="margin-bottom:10px"></textarea>';
   html+='<button type="submit" class="btn">Отправить</button></form></div>';
@@ -1547,16 +1497,15 @@ function renderAnnouncements(){
 
 function renderQuestions(){
   const cls=session.class;
-  const list=data.questions.filter(q=>q.class===cls);
-  list.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
-  const open=list.filter(q=>!q.answered);
-  const closed=list.filter(q=>q.answered);
+  const list=data.questions.filter(function(q){return q.class===cls;});
+  list.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
+  const open=list.filter(function(q){return !q.answered;});
+  const closed=list.filter(function(q){return q.answered;});
   let html='<div class="card"><h3>❓ Вопросы ('+list.length+')</h3>';
   html+='<div style="margin-bottom:12px;font-size:13px"><b>Без ответа: '+open.length+'</b></div>';
   if(open.length){
     for(const q of open){
-      html+='<div class="msg-item unread"><div class="msg-head">';
-      html+='<span class="msg-from">'+escapeHtml(q.from)+'</span>';
+      html+='<div class="msg-item unread"><div class="msg-head"><span class="msg-from">'+escapeHtml(q.from)+'</span>';
       html+='<span class="msg-time">'+formatDateTime(q.time)+'</span></div>';
       html+='<div class="msg-text">'+escapeHtml(q.text)+'</div>';
       html+='<div style="margin-top:8px;display:flex;gap:6px"><input type="text" id="ans-'+q.id+'" placeholder="Ответ..." style="flex:1">';
@@ -1586,7 +1535,7 @@ function renderStudents(){
   if(students.length){
     for(const s of students){
       const flags=getStudentFlags(s.name,cls);
-      const initials=s.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+      const initials=s.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
       html+='<div class="student-card" data-open-student="'+escapeHtml(s.name)+'">';
       html+='<div class="student-avatar">'+escapeHtml(initials)+'</div>';
       html+='<div class="student-info"><div class="student-name">'+escapeHtml(s.name)+'</div>';
@@ -1603,14 +1552,14 @@ function renderStudents(){
 
 function renderNotes(){
   const cls=session.class;
-  const todos=data.todos.filter(t=>t.teacherName===session.name);
-  const notes=data.notes.filter(n=>n.teacherName===session.name);
-  notes.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+  const todos=data.todos.filter(function(t){return t.teacherName===session.name;});
+  const notes=data.notes.filter(function(n){return n.teacherName===session.name;});
+  notes.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   let html='<div class="grid-2">';
   html+='<div class="card"><h3>✅ Чек-лист</h3>';
   html+='<form id="todoForm" class="todo-form"><input type="text" id="todoText" placeholder="Что нужно сделать?"><button class="btn" type="submit">+</button></form>';
   if(todos.length){
-    todos.sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+    todos.sort(function(a,b){return (a.done?1:0)-(b.done?1:0);});
     for(const t of todos){
       html+='<div class="todo-item'+(t.done?' done':'')+'">';
       html+='<button class="todo-check'+(t.done?' checked':'')+'" data-toggle-todo="'+t.id+'">✓</button>';
@@ -1621,7 +1570,7 @@ function renderNotes(){
   html+='</div>';
   html+='<div class="card"><h3>📝 Личные заметки</h3>';
   html+='<form id="noteForm"><textarea id="noteText" rows="2" placeholder="Заметка..." style="margin-bottom:8px"></textarea>';
-  html+='<select id="noteStudent" style="margin-bottom:8px"><option value="">— общая —</option>'+optionsHTML(getStudentsOfClass(cls).map(s=>s.name),'')+'</select>';
+  html+='<select id="noteStudent" style="margin-bottom:8px"><option value="">— общая —</option>'+optionsHTML(getStudentsOfClass(cls).map(function(s){return s.name;}),'')+'</select>';
   html+='<button class="btn" type="submit">Сохранить</button></form>';
   if(notes.length){
     html+='<div style="margin-top:12px">';
@@ -1639,8 +1588,8 @@ function renderNotes(){
 
 function renderMeetings(){
   const cls=session.class;
-  const list=data.meetings.filter(m=>m.class===cls);
-  list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const list=data.meetings.filter(function(m){return m.class===cls;});
+  list.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   let html='<div class="card"><h3>➕ Запланировать собрание</h3><form id="meetForm">';
   html+='<div class="grid-2">';
   html+='<div><label>Дата</label><input type="date" id="meetDate"></div>';
@@ -1665,12 +1614,12 @@ function renderMeetings(){
 
 function renderDuties(){
   const cls=session.class;
-  const list=data.duties.filter(d=>d.class===cls);
-  list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const list=data.duties.filter(function(d){return d.class===cls;});
+  list.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
   let html='<div class="card"><h3>➕ Назначить дежурство</h3><form id="dutyForm">';
   html+='<div class="grid-2">';
   html+='<div><label>Дата</label><input type="date" id="dutyDate" value="'+todayISO()+'"></div>';
-  html+='<div><label>Ученик</label><select id="dutyStudent">'+optionsHTML(getStudentsOfClass(cls).map(s=>s.name),'')+'</select></div>';
+  html+='<div><label>Ученик</label><select id="dutyStudent">'+optionsHTML(getStudentsOfClass(cls).map(function(s){return s.name;}),'')+'</select></div>';
   html+='</div><button type="submit" class="btn" style="margin-top:10px">Назначить</button></form></div>';
   html+='<div class="card"><h3>🎯 График дежурств</h3>';
   if(list.length){
@@ -1706,12 +1655,11 @@ function drawReportsCharts(){
   const gc=isDark?'rgba(255,255,255,.06)':'rgba(11,18,41,.06)';
   if(window._charts){for(const c of window._charts)c.destroy();}
   window._charts=[];
-  const abs=filterByPeriod(data.absences.filter(a=>a.class===cls),cls);
+  const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls;}),cls);
   const weeks={};
   for(const a of abs){
     const d=new Date(a.date+'T00:00:00');
-    const y=new Date(d);
-    y.setDate(d.getDate()-d.getDay());
+    const y=new Date(d);y.setDate(d.getDate()-d.getDay());
     const k=y.toISOString().slice(0,10);
     weeks[k]=(weeks[k]||0)+1;
   }
@@ -1720,18 +1668,20 @@ function drawReportsCharts(){
   if(c1){
     window._charts.push(new Chart(c1,{
       type:'bar',
-      data:{labels:wk.map(w=>formatDate(w)),datasets:[{label:'Пропусков',data:wk.map(w=>weeks[w]),backgroundColor:'rgba(99,102,241,.85)',borderRadius:8,maxBarThickness:40}]},
+      data:{labels:wk.map(function(w){return formatDate(w);}),datasets:[{label:'Пропусков',data:wk.map(function(w){return weeks[w];}),backgroundColor:'rgba(99,102,241,.85)',borderRadius:8,maxBarThickness:40}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:tc,precision:0},grid:{color:gc}},x:{ticks:{color:tc,font:{size:10}},grid:{display:false}}}}
     }));
   }
-  const hw=data.homework.filter(h=>h.class===cls);
+  const hw=data.homework.filter(function(h){return h.class===cls;});
   const students=getStudentsOfClass(cls);
-  const debt=students.map(s=>({name:s.name,count:hw.filter(h=>!(h.done||[]).includes(s.name)&&h.deadline&&h.deadline<=todayISO()).length})).sort((a,b)=>b.count-a.count).slice(0,8);
+  const debt=students.map(function(s){
+    return {name:s.name,count:hw.filter(function(h){return !(h.done||[]).includes(s.name)&&h.deadline&&h.deadline<=todayISO();}).length};
+  }).sort(function(a,b){return b.count-a.count;}).slice(0,8);
   const c2=document.getElementById('hwChart');
   if(c2){
     window._charts.push(new Chart(c2,{
       type:'bar',
-      data:{labels:debt.map(d=>d.name),datasets:[{label:'Долгов',data:debt.map(d=>d.count),backgroundColor:'rgba(239,68,68,.8)',borderRadius:8,maxBarThickness:40}]},
+      data:{labels:debt.map(function(d){return d.name;}),datasets:[{label:'Долгов',data:debt.map(function(d){return d.count;}),backgroundColor:'rgba(239,68,68,.8)',borderRadius:8,maxBarThickness:40}]},
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{color:tc,precision:0},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{display:false}}}}
     }));
   }
@@ -1767,11 +1717,11 @@ function renderStudentView(){
   const cls=session.class;
   const name=session.name;
   if(currentView==='home'){
-    const hw=data.homework.filter(h=>h.class===cls);
-    hw.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    const pending=hw.filter(h=>h.deadline&&h.deadline<=todayISO()&&!(h.done||[]).includes(name));
-    const ann=data.announcements.filter(a=>a.class===cls).slice(-3).reverse();
-    const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
+    const hw=data.homework.filter(function(h){return h.class===cls;});
+    hw.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    const pending=hw.filter(function(h){return h.deadline&&h.deadline<=todayISO()&&!(h.done||[]).includes(name);});
+    const ann=data.announcements.filter(function(a){return a.class===cls;}).slice(-3).reverse();
+    const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
     const schedule=(data.schedules[cls]&&data.schedules[cls][getDayOfWeek(todayISO())])||[];
     let html='<div class="stats">';
     html+='<div class="stat"><div class="num'+(pending.length>0?' warn':' ok')+'">'+pending.length+'</div><div class="lbl">Долгов ДЗ</div></div>';
@@ -1779,14 +1729,13 @@ function renderStudentView(){
     html+='<div class="stat"><div class="num">'+ann.length+'</div><div class="lbl">Объявлений</div></div></div>';
     if(schedule.length){
       html+='<div class="card"><h3>📅 Сегодня</h3>';
-      for(let i=0;i<schedule.length;i++){
-        html+='<div class="hw-card"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(schedule[i])+'</div></div>';
-      }
+      for(let i=0;i<schedule.length;i++)html+='<div class="hw-card"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(schedule[i])+'</div></div>';
       html+='</div>';
     }
     html+='<div class="card"><h3>📢 Объявления</h3>';
-    if(ann.length){for(const a of ann)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div></div>';}
-    else html+='<div class="empty">Нет объявлений</div>';
+    if(ann.length){
+      for(const a of ann)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div></div>';
+    }else html+='<div class="empty">Нет объявлений</div>';
     html+='</div>';
     html+='<div class="card"><h3>📚 Последние ДЗ</h3>';
     if(hw.length){
@@ -1803,8 +1752,8 @@ function renderStudentView(){
     return html;
   }
   if(currentView==='homework'){
-    const hw=data.homework.filter(h=>h.class===cls);
-    hw.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const hw=data.homework.filter(function(h){return h.class===cls;});
+    hw.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
     let html='<div class="card"><h3>📚 Мои задания</h3>';
     if(hw.length){
       for(const h of hw){
@@ -1820,8 +1769,8 @@ function renderStudentView(){
     return html;
   }
   if(currentView==='absences'){
-    const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
-    abs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
+    abs.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
     let html='<div class="card"><h3>📋 Мои пропуски ('+abs.length+')</h3>';
     html+='<button class="btn" id="addMyAbsBtn" style="margin-bottom:12px">➕ Сообщить о пропуске</button>';
     if(abs.length){
@@ -1829,7 +1778,7 @@ function renderStudentView(){
       for(const a of abs){
         const r=reasonById(a.reason);
         const st=a.status||'approved';
-        let stIcon=st==='pending'?'🟡':st==='rejected'?'🔴':'🟢';
+        const stIcon=st==='pending'?'🟡':st==='rejected'?'🔴':'🟢';
         html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td>';
         html+='<td data-label="Предмет">'+escapeHtml(a.subject)+'</td>';
         html+='<td data-label="Причина"><span class="tag '+r.type+'">'+escapeHtml(r.name)+'</span></td>';
@@ -1841,17 +1790,18 @@ function renderStudentView(){
     return html;
   }
   if(currentView==='announcements'){
-    const ann=data.announcements.filter(a=>a.class===cls);
-    ann.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+    const ann=data.announcements.filter(function(a){return a.class===cls;});
+    ann.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
     let html='<div class="card"><h3>📢 Объявления</h3>';
-    if(ann.length){for(const a of ann)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div></div>';}
-    else html+='<div class="empty">Нет объявлений</div>';
+    if(ann.length){
+      for(const a of ann)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div></div>';
+    }else html+='<div class="empty">Нет объявлений</div>';
     html+='</div>';
     return html;
   }
   if(currentView==='questions'){
-    const qs=data.questions.filter(q=>q.from===name&&q.class===cls);
-    qs.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+    const qs=data.questions.filter(function(q){return q.from===name&&q.class===cls;});
+    qs.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
     let html='<div class="card"><h3>❓ Задать вопрос</h3><form id="qForm">';
     html+='<textarea id="qText" rows="2" placeholder="Ваш вопрос..." style="margin-bottom:10px"></textarea>';
     html+='<button type="submit" class="btn">Отправить</button></form></div>';
@@ -1876,8 +1826,8 @@ function renderParentView(){
   const cls=session.class;
   const name=session.name;
   if(currentView==='home'){
-    const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
-    const hwOpen=data.homework.filter(h=>h.class===cls&&h.deadline&&h.deadline<=todayISO()&&!(h.done||[]).includes(name));
+    const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
+    const hwOpen=data.homework.filter(function(h){return h.class===cls&&h.deadline&&h.deadline<=todayISO()&&!(h.done||[]).includes(name);});
     const flags=getStudentFlags(name,cls);
     let html='<div class="stats">';
     html+='<div class="stat"><div class="num">'+abs.length+'</div><div class="lbl">Пропусков</div></div>';
@@ -1891,8 +1841,8 @@ function renderParentView(){
     return html;
   }
   if(currentView==='absences'){
-    const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
-    abs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
+    abs.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
     let html='<div class="card"><h3>📋 Пропуски ('+abs.length+')</h3>';
     html+='<button class="btn" id="addParentNoteBtn" style="margin-bottom:12px">📝 Отправить записку</button>';
     if(abs.length){
@@ -1912,8 +1862,8 @@ function renderParentView(){
     return html;
   }
   if(currentView==='messages'){
-    const msgs=data.contacts.filter(c=>c.studentName===name);
-    msgs.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+    const msgs=data.contacts.filter(function(c){return c.studentName===name;});
+    msgs.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
     let html='<div class="card"><h3>💬 Написать учителю</h3><form id="parentMsgForm">';
     html+='<textarea id="pmText" rows="2" placeholder="Сообщение..." style="margin-bottom:10px"></textarea>';
     html+='<button type="submit" class="btn">Отправить</button></form></div>';
@@ -1929,8 +1879,8 @@ function renderParentView(){
     return html;
   }
   if(currentView==='notes'){
-    const list=data.parentNotes.filter(n=>n.studentName===name);
-    list.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+    const list=data.parentNotes.filter(function(n){return n.studentName===name;});
+    list.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
     let html='<div class="card"><h3>📝 Записка учителю</h3><form id="noteParentForm">';
     html+='<div class="grid-2">';
     html+='<div><label>Дата</label><input type="date" id="pnDate" value="'+todayISO()+'"></div>';
@@ -1959,7 +1909,7 @@ function renderParentView(){
 function renderAdminView(){
   if(currentView==='users'){
     const teachers=data.teachers.slice();
-    teachers.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+    teachers.sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
     let html='<div class="card"><h3>➕ Добавить учителя</h3><form id="addTeacherForm">';
     html+='<div class="grid-2">';
     html+='<div><label>ФИО</label><input type="text" id="ntName"></div>';
@@ -1990,7 +1940,7 @@ function renderAdminView(){
   }
   if(currentView==='log'){
     const log=data.log.slice();
-    log.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+    log.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
     let html='<div class="card"><h3>📜 История действий</h3>';
     if(log.length){
       html+='<div class="table-wrap"><table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Детали</th></tr></thead><tbody>';
@@ -2008,20 +1958,19 @@ function renderAdminView(){
   return '';
 }
 
-/* ============ МОДАЛКА: КАРТОЧКА УЧЕНИКА ============ */
+/* ============ МОДАЛКА: ПРОФИЛЬ ============ */
 function openStudentProfile(name){
   const cls=session.class;
-  const st=data.students.find(s=>s.class===cls&&s.name===name);
+  const st=data.students.find(function(s){return s.class===cls&&s.name===name;});
   if(!st)return toast('Не найден',true);
-  const abs=filterByPeriod(data.absences.filter(a=>a.class===cls&&a.studentName===name),cls);
-  abs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  const hw=data.homework.filter(h=>h.class===cls&&h.deadline&&h.deadline<=todayISO());
-  const notDone=hw.filter(h=>!(h.done||[]).includes(name));
-  const rem=filterByPeriod(data.remarks.filter(r=>r.class===cls&&r.studentName===name),cls);
-  const notes=data.notes.filter(n=>n.teacherName===session.name&&n.studentName===name);
+  const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
+  abs.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  const hw=data.homework.filter(function(h){return h.class===cls&&h.deadline&&h.deadline<=todayISO();});
+  const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
+  const rem=filterByPeriod(data.remarks.filter(function(r){return r.class===cls&&r.studentName===name;}),cls);
+  const notes=data.notes.filter(function(n){return n.teacherName===session.name&&n.studentName===name;});
   const o=document.createElement('div');
-  o.className='modal-overlay';
-  o.id='profileOverlay';
+  o.className='modal-overlay';o.id='profileOverlay';
   let html='<div class="modal" style="max-width:680px">';
   html+='<div class="modal-header"><h3>👤 '+escapeHtml(name)+'</h3><button class="modal-close" id="prClose">×</button></div>';
   html+='<div class="modal-body">';
@@ -2057,14 +2006,13 @@ function openStudentProfile(name){
 function openAddAbsenceModal(){
   const cls=session.class;
   const o=document.createElement('div');
-  o.className='modal-overlay';
-  o.id='addAbsModal';
+  o.className='modal-overlay';o.id='addAbsModal';
   let html='<div class="modal" style="max-width:460px">';
   html+='<div class="modal-header"><h3>➕ Сообщить о пропуске</h3><button class="modal-close" id="aaClose">×</button></div>';
   html+='<div class="modal-body">';
   html+='<label>Дата</label><input type="date" id="aaDate" value="'+todayISO()+'">';
   html+='<label>Предмет</label><select id="aaSubject">'+optionsHTML(getLessonsFor(cls,todayISO()),'')+'</select>';
-  html+='<label>Причина</label><select id="aaReason">'+optionsHTML(REASONS.filter(r=>r.type!=='bad'),'','id')+'</select>';
+  html+='<label>Причина</label><select id="aaReason">'+optionsHTML(REASONS.filter(function(r){return r.type!=='bad';}),'','id')+'</select>';
   html+='<label>Комментарий</label><input type="text" id="aaNote">';
   html+='</div>';
   html+='<div class="modal-footer"><button class="btn btn-secondary" id="aaCancel">Отмена</button><button class="btn" id="aaOk">Отправить</button></div></div>';
@@ -2080,16 +2028,10 @@ function openAddAbsenceModal(){
     const note=document.getElementById('aaNote').value.trim();
     if(!date||!subject||!reason)return toast('Заполните',true);
     if(!isValidAbsenceDate(date))return toast('Неверная дата',true);
-    data.absences.push({
-      id:uid(),date:date,class:cls,studentName:session.name,subject:subject,
-      reason:reason,note:note,addedBy:session.name,addedByRole:'student',status:'pending'
-    });
-    const teacher=data.teachers.find(t=>t.class===cls);
+    data.absences.push({id:uid(),date:date,class:cls,studentName:session.name,subject:subject,reason:reason,note:note,addedBy:session.name,addedByRole:'student',status:'pending'});
+    const teacher=data.teachers.find(function(t){return t.class===cls;});
     if(teacher)pushNotification('teacher',teacher.name,'Новый пропуск от ученика',session.name+' · '+formatDate(date),'absence');
-    saveData();
-    toast('Отправлено');
-    close();
-    renderApp();
+    saveData();toast('Отправлено');close();renderApp();
   });
 }
 
@@ -2098,8 +2040,7 @@ function openAddParentNote(){
   const cls=session.class;
   const name=session.name;
   const o=document.createElement('div');
-  o.className='modal-overlay';
-  o.id='pnModal';
+  o.className='modal-overlay';o.id='pnModal';
   let html='<div class="modal" style="max-width:460px">';
   html+='<div class="modal-header"><h3>📝 Записка учителю</h3><button class="modal-close" id="pnClose">×</button></div>';
   html+='<div class="modal-body">';
@@ -2118,21 +2059,11 @@ function openAddParentNote(){
     const reason=document.getElementById('pnReason2').value;
     const text=document.getElementById('pnText2').value.trim();
     if(!date||!reason||!text)return toast('Заполните',true);
-    data.parentNotes.push({
-      id:uid(),date:date,class:cls,studentName:name,reason:reason,
-      text:text,status:'pending',time:new Date().toISOString()
-    });
-    data.absences.push({
-      id:uid(),date:date,class:cls,studentName:name,
-      subject:getLessonsFor(cls,date)[0]||'—',reason:reason,
-      note:'Записка родителя: '+text,addedBy:name,addedByRole:'parent',status:'pending'
-    });
-    const teacher=data.teachers.find(t=>t.class===cls);
+    data.parentNotes.push({id:uid(),date:date,class:cls,studentName:name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});
+    data.absences.push({id:uid(),date:date,class:cls,studentName:name,subject:getLessonsFor(cls,date)[0]||'—',reason:reason,note:'Записка родителя: '+text,addedBy:name,addedByRole:'parent',status:'pending'});
+    const teacher=data.teachers.find(function(t){return t.class===cls;});
     if(teacher)pushNotification('teacher',teacher.name,'Записка от родителя',name+' · '+formatDate(date),'absence');
-    saveData();
-    toast('Отправлено');
-    close();
-    renderApp();
+    saveData();toast('Отправлено');close();renderApp();
   });
 }
 
@@ -2159,9 +2090,7 @@ function bindAllEvents(){
     if(!isValidAbsenceDate(date))return toast('Неверная дата',true);
     data.absences.push({id:uid(),date:date,class:session.class,studentName:sn,subject:subj,reason:r,note:note,addedBy:session.name,addedByRole:'teacher',status:'approved'});
     pushNotification('parent',sn,'Учитель внёс пропуск',formatDate(date),'absence');
-    saveData();
-    toast('Добавлено');
-    renderApp();
+    saveData();toast('Добавлено');renderApp();
   });
   const attDate=document.getElementById('attDate');
   if(attDate)attDate.addEventListener('change',function(e){
@@ -2177,22 +2106,18 @@ function bindAllEvents(){
   if(cf)cf.addEventListener('click',function(){uiState.filterReason='';uiState.filterStudent='';uiState.filterDate='';renderApp();});
   document.querySelectorAll('[data-approve]').forEach(function(b){
     b.addEventListener('click',function(){
-      const a=data.absences.find(x=>x.id===b.dataset.approve);
+      const a=data.absences.find(function(x){return x.id===b.dataset.approve;});
       if(!a)return;
-      a.status='approved';
-      saveData();
-      toast('Подтверждено');
+      a.status='approved';saveData();toast('Подтверждено');
       pushNotification('student',a.studentName,'Пропуск подтверждён',formatDate(a.date),'absence');
       renderApp();
     });
   });
   document.querySelectorAll('[data-reject]').forEach(function(b){
     b.addEventListener('click',function(){
-      const a=data.absences.find(x=>x.id===b.dataset.reject);
+      const a=data.absences.find(function(x){return x.id===b.dataset.reject;});
       if(!a||!confirm('Отклонить?'))return;
-      a.status='rejected';
-      saveData();
-      toast('Отклонено',true);
+      a.status='rejected';saveData();toast('Отклонено',true);
       pushNotification('student',a.studentName,'Пропуск отклонён',formatDate(a.date),'absence');
       renderApp();
     });
@@ -2200,12 +2125,11 @@ function bindAllEvents(){
   document.querySelectorAll('[data-del-abs]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Удалить?'))return;
-      data.absences=data.absences.filter(a=>a.id!==b.dataset.delAbs);
-      saveData();
-      toast('Удалено');
-      renderApp();
+      data.absences=data.absences.filter(function(a){return a.id!==b.dataset.delAbs;});
+      saveData();toast('Удалено');renderApp();
     });
   });
+  /* ============ ДЗ: форма ============ */
   const hwForm=document.getElementById('hwForm');
   if(hwForm)hwForm.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2220,32 +2144,78 @@ function bindAllEvents(){
     for(const s of students){
       pushNotification('student',s.name,'Новое ДЗ: '+subj,formatDate(newHw.deadline)+' — '+text,'homework');
     }
-    saveData();
-    toast('Задано');
-    renderApp();
+    saveData();toast('Задано');renderApp();
   });
   document.querySelectorAll('[data-del-hw]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Удалить?'))return;
-      data.homework=data.homework.filter(h=>h.id!==b.dataset.delHw);
-      saveData();
-      toast('Удалено');
-      renderApp();
+      data.homework=data.homework.filter(function(h){return h.id!==b.dataset.delHw;});
+      saveData();toast('Удалено');renderApp();
     });
   });
+  /* ============ ДЗ: управление учителем ============ */
+  document.querySelectorAll('[data-hw-manage]').forEach(function(b){
+    b.addEventListener('click',function(){
+      const id=b.dataset.hwManage;
+      const panel=document.getElementById('hw-manage-'+id);
+      if(!panel)return;
+      const isHidden=panel.style.display==='none'||!panel.style.display;
+      panel.style.display=isHidden?'block':'none';
+      b.textContent=isHidden?'👥 Скрыть управление':'👥 Управление статусом';
+    });
+  });
+  document.querySelectorAll('[data-hw-toggle]').forEach(function(b){
+    b.addEventListener('click',function(){
+      const parts=b.dataset.hwToggle.split('|');
+      const hwId=parts[0];
+      const studentName=parts[1];
+      const h=data.homework.find(function(x){return x.id===hwId;});
+      if(!h)return;
+      if(!h.done)h.done=[];
+      const idx=h.done.indexOf(studentName);
+      if(idx>=0){
+        h.done.splice(idx,1);
+        toast('Снята отметка: '+studentName);
+      }else{
+        h.done.push(studentName);
+        toast('Отмечен: '+studentName);
+        pushNotification('student',studentName,'ДЗ отмечено как сданное',h.subject+' · '+formatDate(h.date),'homework');
+      }
+      saveData();renderApp();
+    });
+  });
+  document.querySelectorAll('[data-hw-all-done]').forEach(function(b){
+    b.addEventListener('click',function(){
+      const h=data.homework.find(function(x){return x.id===b.dataset.hwAllDone;});
+      if(!h)return;
+      if(!confirm('Отметить ВСЕХ как сдавших?'))return;
+      const students=getStudentsOfClass(session.class);
+      h.done=students.map(function(s){return s.name;});
+      saveData();toast('Все отмечены');renderApp();
+    });
+  });
+  document.querySelectorAll('[data-hw-all-clear]').forEach(function(b){
+    b.addEventListener('click',function(){
+      const h=data.homework.find(function(x){return x.id===b.dataset.hwAllClear;});
+      if(!h)return;
+      if(!confirm('Сбросить отметки у всех?'))return;
+      h.done=[];
+      saveData();toast('Сброшено');renderApp();
+    });
+  });
+  /* ============ ДЗ: ученик ============ */
   document.querySelectorAll('[data-toggle-done]').forEach(function(b){
     b.addEventListener('click',function(){
-      const h=data.homework.find(x=>x.id===b.dataset.toggleDone);
+      const h=data.homework.find(function(x){return x.id===b.dataset.toggleDone;});
       if(!h)return;
       if(!h.done)h.done=[];
       const idx=h.done.indexOf(session.name);
       if(idx>=0)h.done.splice(idx,1);
       else h.done.push(session.name);
-      saveData();
-      toast('Сохранено');
-      renderApp();
+      saveData();toast('Сохранено');renderApp();
     });
   });
+  /* ============ Объявления ============ */
   const annForm=document.getElementById('annForm');
   if(annForm)annForm.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2256,79 +2226,70 @@ function bindAllEvents(){
     for(const s of students){
       pushNotification('student',s.name,'📢 Объявление',text,'message');
     }
-    saveData();
-    toast('Отправлено');
-    renderApp();
+    saveData();toast('Отправлено');renderApp();
   });
   document.querySelectorAll('[data-del-ann]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Удалить?'))return;
-      data.announcements=data.announcements.filter(a=>a.id!==b.dataset.delAnn);
-      saveData();
-      renderApp();
+      data.announcements=data.announcements.filter(function(a){return a.id!==b.dataset.delAnn;});
+      saveData();renderApp();
     });
   });
+  /* ============ Вопросы ============ */
   document.querySelectorAll('[data-ans-q]').forEach(function(b){
     b.addEventListener('click',function(){
       const id=b.dataset.ansQ;
       const el=document.getElementById('ans-'+id);
       const ans=el?el.value.trim():'';
       if(!ans)return toast('Введите ответ',true);
-      const q=data.questions.find(x=>x.id===id);
+      const q=data.questions.find(function(x){return x.id===id;});
       if(!q)return;
-      q.answered=true;
-      q.answer=ans;
+      q.answered=true;q.answer=ans;
       pushNotification('student',q.from,'Ответ на ваш вопрос',ans,'message');
-      saveData();
-      toast('Отвечено');
-      renderApp();
+      saveData();toast('Отвечено');renderApp();
     });
   });
+  /* ============ Ученики ============ */
   const addStuForm=document.getElementById('addStudentForm');
   if(addStuForm)addStuForm.addEventListener('submit',async function(e){
     e.preventDefault();
     const name=(document.getElementById('newStudentName').value||'').trim();
     if(!name)return;
-    if(data.students.some(s=>s.class===session.class&&s.name.toLowerCase()===name.toLowerCase()))return toast('Уже есть',true);
+    if(data.students.some(function(s){return s.class===session.class&&s.name.toLowerCase()===name.toLowerCase();}))return toast('Уже есть',true);
     data.students.push({id:uid(),class:session.class,name:name,pin:await setPinHash('1234'),attempts:0,blockedUntil:null});
-    saveData();
-    toast('Добавлен');
-    renderApp();
+    saveData();toast('Добавлен');renderApp();
   });
   const nsInput=document.getElementById('newStudentName');
   if(nsInput)nsInput.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
   document.querySelectorAll('[data-del-student]').forEach(function(b){
     b.addEventListener('click',function(e){
       e.stopPropagation();
-      const st=data.students.find(s=>s.id===b.dataset.delStudent);
+      const st=data.students.find(function(s){return s.id===b.dataset.delStudent;});
       if(!st||!confirm('Удалить ученика?'))return;
-      data.students=data.students.filter(s=>s.id!==st.id);
-      data.absences=data.absences.filter(a=>!(a.class===st.class&&a.studentName===st.name));
-      saveData();
-      toast('Удалён');
-      renderApp();
+      data.students=data.students.filter(function(s){return s.id!==st.id;});
+      data.absences=data.absences.filter(function(a){return !(a.class===st.class&&a.studentName===st.name);});
+      saveData();toast('Удалён');renderApp();
     });
   });
+  /* ============ Чек-лист и заметки ============ */
   const todoForm=document.getElementById('todoForm');
   if(todoForm)todoForm.addEventListener('submit',function(e){
     e.preventDefault();
     const t=document.getElementById('todoText').value.trim();
     if(!t)return;
     data.todos.push({id:uid(),teacherName:session.name,text:t,done:false,time:new Date().toISOString()});
-    saveData();
-    renderApp();
+    saveData();renderApp();
   });
   document.querySelectorAll('[data-toggle-todo]').forEach(function(b){
     b.addEventListener('click',function(){
-      const t=data.todos.find(x=>x.id===b.dataset.toggleTodo);
+      const t=data.todos.find(function(x){return x.id===b.dataset.toggleTodo;});
       if(t){t.done=!t.done;saveData();renderApp();}
     });
   });
   document.querySelectorAll('[data-del-todo]').forEach(function(b){
     b.addEventListener('click',function(){
-      data.todos=data.todos.filter(t=>t.id!==b.dataset.delTodo);
-      saveData();
-      renderApp();
+      data.todos=data.todos.filter(function(t){return t.id!==b.dataset.delTodo;});
+      saveData();renderApp();
     });
   });
   const noteForm=document.getElementById('noteForm');
@@ -2338,16 +2299,15 @@ function bindAllEvents(){
     const sn=document.getElementById('noteStudent').value;
     if(!text)return;
     data.notes.push({id:uid(),teacherName:session.name,studentName:sn,text:text,time:new Date().toISOString()});
-    saveData();
-    renderApp();
+    saveData();renderApp();
   });
   document.querySelectorAll('[data-del-note]').forEach(function(b){
     b.addEventListener('click',function(){
-      data.notes=data.notes.filter(n=>n.id!==b.dataset.delNote);
-      saveData();
-      renderApp();
+      data.notes=data.notes.filter(function(n){return n.id!==b.dataset.delNote;});
+      saveData();renderApp();
     });
   });
+  /* ============ Собрания ============ */
   const meetForm=document.getElementById('meetForm');
   if(meetForm)meetForm.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2356,18 +2316,16 @@ function bindAllEvents(){
     const protocol=document.getElementById('meetProtocol').value.trim();
     if(!date||!topic)return toast('Заполните',true);
     data.meetings.push({id:uid(),class:session.class,date:date,topic:topic,protocol:protocol,createdBy:session.name});
-    saveData();
-    toast('Создано');
-    renderApp();
+    saveData();toast('Создано');renderApp();
   });
   document.querySelectorAll('[data-del-meet]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Удалить?'))return;
-      data.meetings=data.meetings.filter(m=>m.id!==b.dataset.delMeet);
-      saveData();
-      renderApp();
+      data.meetings=data.meetings.filter(function(m){return m.id!==b.dataset.delMeet;});
+      saveData();renderApp();
     });
   });
+  /* ============ Дежурства ============ */
   const dutyForm=document.getElementById('dutyForm');
   if(dutyForm)dutyForm.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2375,23 +2333,22 @@ function bindAllEvents(){
     const sn=document.getElementById('dutyStudent').value;
     if(!date||!sn)return;
     data.duties.push({id:uid(),class:session.class,date:date,studentName:sn});
-    saveData();
-    toast('Назначено');
-    renderApp();
+    saveData();toast('Назначено');renderApp();
   });
   document.querySelectorAll('[data-del-duty]').forEach(function(b){
     b.addEventListener('click',function(){
-      data.duties=data.duties.filter(d=>d.id!==b.dataset.delDuty);
-      saveData();
-      renderApp();
+      data.duties=data.duties.filter(function(d){return d.id!==b.dataset.delDuty;});
+      saveData();renderApp();
     });
   });
+  /* ============ Экспорт ============ */
   const expA=document.getElementById('expAbsences');
   if(expA)expA.addEventListener('click',function(){exportCSV('absences');});
   const expH=document.getElementById('expHw');
   if(expH)expH.addEventListener('click',function(){exportCSV('homework');});
   const expR=document.getElementById('expRemarks');
   if(expR)expR.addEventListener('click',function(){exportCSV('remarks');});
+  /* ============ Настройки ============ */
   const cpBtn=document.getElementById('changePinBtn');
   if(cpBtn)cpBtn.addEventListener('click',function(){
     const t=findTeacher(session.name);
@@ -2400,10 +2357,8 @@ function bindAllEvents(){
       onSave:async function(old,newP){
         if(!await verifyPin(old,t.pin))return {ok:false,error:'Неверный PIN'};
         t.pin=await setPinHash(newP);
-        t.attempts=0;
-        t.blockedUntil=null;
-        saveData();
-        return {ok:true};
+        t.attempts=0;t.blockedUntil=null;
+        saveData();return {ok:true};
       }
     });
   });
@@ -2416,16 +2371,14 @@ function bindAllEvents(){
       const arr=data.schedules[session.class][d];
       if(arr.length>=10)return toast('Макс 10',true);
       arr.push(getSubjects(session.class)[0]);
-      saveData();
-      renderApp();
+      saveData();renderApp();
     });
   });
   document.querySelectorAll('[data-sched-del]').forEach(function(b){
     b.addEventListener('click',function(){
       const parts=b.dataset.schedDel.split('|');
       data.schedules[session.class][parts[0]].splice(+parts[1],1);
-      saveData();
-      renderApp();
+      saveData();renderApp();
     });
   });
   document.querySelectorAll('[data-sched-day]').forEach(function(s){
@@ -2434,6 +2387,7 @@ function bindAllEvents(){
       saveData();
     });
   });
+  /* ============ Ученик / Родитель ============ */
   const addAbsBtn=document.getElementById('addMyAbsBtn');
   if(addAbsBtn)addAbsBtn.addEventListener('click',openAddAbsenceModal);
   const qForm=document.getElementById('qForm');
@@ -2441,13 +2395,11 @@ function bindAllEvents(){
     e.preventDefault();
     const text=document.getElementById('qText').value.trim();
     if(!text)return;
-    const teacher=data.teachers.find(t=>t.class===session.class);
+    const teacher=data.teachers.find(function(t){return t.class===session.class;});
     const q={id:uid(),class:session.class,from:session.name,to:teacher?teacher.name:'—',text:text,time:new Date().toISOString(),answered:false};
     data.questions.push(q);
     if(teacher)pushNotification('teacher',teacher.name,'Вопрос от '+session.name,text,'question');
-    saveData();
-    toast('Отправлено');
-    renderApp();
+    saveData();toast('Отправлено');renderApp();
   });
   const addPNBtn=document.getElementById('addParentNoteBtn');
   if(addPNBtn)addPNBtn.addEventListener('click',openAddParentNote);
@@ -2456,12 +2408,10 @@ function bindAllEvents(){
     e.preventDefault();
     const text=document.getElementById('pmText').value.trim();
     if(!text)return;
-    const teacher=data.teachers.find(t=>t.class===session.class);
+    const teacher=data.teachers.find(function(t){return t.class===session.class;});
     data.contacts.push({id:uid(),class:session.class,studentName:session.name,from:session.name,fromRole:'parent',to:teacher?teacher.name:'—',text:text,time:new Date().toISOString(),read:false});
     if(teacher)pushNotification('teacher',teacher.name,'Сообщение от '+session.name,text,'message');
-    saveData();
-    toast('Отправлено');
-    renderApp();
+    saveData();toast('Отправлено');renderApp();
   });
   const noteParentForm=document.getElementById('noteParentForm');
   if(noteParentForm)noteParentForm.addEventListener('submit',function(e){
@@ -2471,12 +2421,11 @@ function bindAllEvents(){
     const text=document.getElementById('pnText').value.trim();
     if(!date||!reason||!text)return toast('Заполните',true);
     data.parentNotes.push({id:uid(),date:date,class:session.class,studentName:session.name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});
-    const teacher=data.teachers.find(t=>t.class===session.class);
+    const teacher=data.teachers.find(function(t){return t.class===session.class;});
     if(teacher)pushNotification('teacher',teacher.name,'Записка от родителя',session.name+' · '+formatDate(date),'absence');
-    saveData();
-    toast('Отправлено');
-    renderApp();
+    saveData();toast('Отправлено');renderApp();
   });
+  /* ============ Админ ============ */
   const addTeacherForm=document.getElementById('addTeacherForm');
   if(addTeacherForm)addTeacherForm.addEventListener('submit',async function(e){
     e.preventDefault();
@@ -2488,9 +2437,7 @@ function bindAllEvents(){
     const pin=pinRaw||'1234';
     if(!/^\d{4,8}$/.test(pin))return toast('PIN 4-8 цифр',true);
     data.teachers.push({name:name,class:cls,pin:await setPinHash(pin),createdAt:new Date().toISOString(),attempts:0,blockedUntil:null});
-    saveData();
-    toast('Добавлен');
-    renderApp();
+    saveData();toast('Добавлен');renderApp();
   });
   document.querySelectorAll('[data-tclass]').forEach(function(s){
     s.addEventListener('change',function(e){
@@ -2503,17 +2450,14 @@ function bindAllEvents(){
       const t=findTeacher(b.dataset.treset);
       if(!t||!confirm('Сбросить PIN?'))return;
       t.pin=await setPinHash('1234');
-      saveData();
-      toast('Сброшено');
-      renderApp();
+      saveData();toast('Сброшено');renderApp();
     });
   });
   document.querySelectorAll('[data-tdel]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Удалить?'))return;
-      data.teachers=data.teachers.filter(t=>t.name!==b.dataset.tdel);
-      saveData();
-      renderApp();
+      data.teachers=data.teachers.filter(function(t){return t.name!==b.dataset.tdel;});
+      saveData();renderApp();
     });
   });
   const mbBtn=document.getElementById('manualBackupBtn');
@@ -2523,7 +2467,7 @@ function bindAllEvents(){
   if(currentView==='backups')loadBackupList();
 }
 
-/* ============ CSV ЭКСПОРТ ============ */
+/* ============ CSV ============ */
 function exportCSV(type){
   const cls=session.class;
   const rows=[];
@@ -2531,7 +2475,7 @@ function exportCSV(type){
   if(type==='absences'){
     name='пропуски';
     rows.push(['Дата','ФИО','Класс','Предмет','Причина','Статус','Примечание']);
-    const list=filterByPeriod(data.absences.filter(a=>a.class===cls),cls);
+    const list=filterByPeriod(data.absences.filter(function(a){return a.class===cls;}),cls);
     for(const a of list){
       const statusText=a.status==='pending'?'на рассмотрении':a.status==='rejected'?'отклонён':'подтверждён';
       rows.push([a.date,a.studentName,a.class,a.subject,reasonById(a.reason).name,statusText,a.note||'']);
@@ -2539,7 +2483,7 @@ function exportCSV(type){
   }else if(type==='homework'){
     name='ДЗ';
     rows.push(['Дата','Предмет','Текст','Сдать до','Сдали']);
-    const list=data.homework.filter(h=>h.class===cls);
+    const list=data.homework.filter(function(h){return h.class===cls;});
     for(const h of list){
       const doneList=(h.done||[]).join(', ');
       rows.push([h.date,h.subject,h.text,h.deadline||'','"'+doneList+'"']);
@@ -2547,7 +2491,7 @@ function exportCSV(type){
   }else if(type==='remarks'){
     name='замечания';
     rows.push(['Дата','ФИО','Тип','Текст']);
-    const list=data.remarks.filter(r=>r.class===cls);
+    const list=data.remarks.filter(function(r){return r.class===cls;});
     for(const r of list){
       rows.push([r.date,r.studentName,remarkTypeById(r.type).name,r.text||'']);
     }
@@ -2591,10 +2535,7 @@ async function loadBackupList(){
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     const ids=['changePinOverlay','resetPasswordOverlay','profileOverlay','addAbsModal','pnModal','notifPanel'];
-    for(const id of ids){
-      const el=document.getElementById(id);
-      if(el)el.remove();
-    }
+    for(const id of ids){const el=document.getElementById(id);if(el)el.remove();}
   }
 });
 
