@@ -104,6 +104,7 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
 .topbar .user-info>span:first-child{color:#e2e8f0;font-weight:500}
 .topbar .badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);
   padding:4px 10px;border-radius:var(--radius-full);font-size:11.5px;font-weight:600;color:#e2e8f0}
+.topbar .badge.position{background:linear-gradient(135deg,rgba(245,158,11,.25),rgba(245,158,11,.15));border-color:rgba(245,158,11,.4);color:#fcd34d}
 .topbar .btn-secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);
   box-shadow:none;padding:8px 14px;font-size:12.5px}
 .topbar select.class-switch{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
@@ -155,6 +156,8 @@ body.dark .tag.good{color:#6ee7b7}
 .tag.warn{background:var(--warn-soft);color:#92400e;border-color:rgba(245,158,11,.25)}
 body.dark .tag.warn{color:#fcd34d}
 .tag.neutral{background:var(--bg-subtle);color:var(--text-mid);border-color:var(--border)}
+.tag.position{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));color:#92400e;border-color:rgba(245,158,11,.3)}
+body.dark .tag.position{color:#fcd34d}
 .empty{text-align:center;color:var(--text-dim);padding:30px 18px;font-size:13.5px;
   background:var(--bg-subtle);border-radius:var(--radius);border:1px dashed var(--border-strong)}
 .warning-banner{background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.04));
@@ -306,8 +309,10 @@ body.dark .hw-toggle-btn.is-not{color:#fca5a5}
 .teacher-role-info{padding:12px 14px;background:var(--primary-soft);border-radius:10px;
   font-size:12.5px;color:var(--primary-dark);margin-bottom:12px;line-height:1.5}
 body.dark .teacher-role-info{color:var(--primary-light)}
-
-/* ========== НОВЫЕ МОДУЛИ ========== */
+.manager-info{padding:12px 14px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.05));
+  border:1px solid rgba(245,158,11,.3);border-radius:10px;font-size:12.5px;
+  color:#92400e;margin-bottom:12px;line-height:1.5}
+body.dark .manager-info{color:#fcd34d}
 .bells-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .bell-item{background:var(--bg-subtle);padding:9px 12px;border-radius:10px;
   display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);font-size:13px}
@@ -372,7 +377,14 @@ body.dark .event-type.event{color:#6ee7b7}
   padding:4px 10px;border-radius:999px;transition:all .15s;white-space:nowrap}
 .att-toggle.present{background:var(--success);color:#fff}
 .att-toggle.absent{background:var(--bg-subtle);color:var(--text-dim);border:1px solid var(--border)}
-
+.school-summary-row{display:grid;grid-template-columns:80px 1fr 60px 60px 60px;gap:8px;
+  padding:8px 10px;align-items:center;font-size:12.5px;border-radius:8px;transition:background .15s}
+.school-summary-row:hover{background:var(--bg-subtle)}
+.school-summary-row.header{font-weight:700;color:var(--text-dim);font-size:11px;
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);border-radius:0}
+.school-summary-row .cls{font-weight:700}
+.school-summary-row .bar{height:6px;background:var(--bg-subtle);border-radius:999px;overflow:hidden}
+.school-summary-row .bar-fill{height:100%;background:var(--primary);border-radius:999px}
 @media(max-width:768px){
   input,select,textarea{font-size:16px !important;padding:12px !important;min-height:44px}
   .btn{min-height:42px;padding:10px 16px !important;font-size:13.5px !important}
@@ -418,6 +430,7 @@ body.dark .event-type.event{color:#6ee7b7}
   .toast{left:12px;right:12px;bottom:70px;padding:11px 14px 11px 42px}
   .todo-form{flex-direction:column}
   .attendance-grid{grid-template-columns:1fr}
+  .school-summary-row{grid-template-columns:60px 1fr 40px 40px 40px;font-size:11.5px}
 }
 </style>
 </head>
@@ -427,8 +440,8 @@ body.dark .event-type.event{color:#6ee7b7}
 
 <script>
 /* ============ КОНСТАНТЫ ============ */
-const STORAGE_KEY='school_helper_v4';
-const SESSION_KEY='school_helper_session_v4';
+const STORAGE_KEY='school_helper_v5';
+const SESSION_KEY='school_helper_session_v5';
 const FB_PATH='schoolData';
 const BACKUP_PATH='backups';
 const BACKUP_KEEP_DAYS=30;
@@ -474,6 +487,11 @@ const EVENT_TYPES=[
   {id:'olymp',name:'Олимпиада',cls:'olymp'},
   {id:'contest',name:'Конкурс',cls:'contest'},
   {id:'event',name:'Мероприятие',cls:'event'}
+];
+const POSITIONS=[
+  {id:'teacher',name:'Учитель',emoji:''},
+  {id:'zavuch',name:'Завуч',emoji:'📋'},
+  {id:'director',name:'Директор',emoji:'🏛'}
 ];
 const DEFAULT_BELLS=[
   {num:1,start:'08:00',end:'08:45'},
@@ -551,6 +569,10 @@ function remarkTypeById(id){
 function eventTypeById(id){
   for(const t of EVENT_TYPES)if(t.id===id)return t;
   return EVENT_TYPES[EVENT_TYPES.length-1];
+}
+function positionById(id){
+  for(const p of POSITIONS)if(p.id===id)return p;
+  return POSITIONS[0];
 }
 function getSubjects(cls){
   const g=parseInt(cls,10);
@@ -661,6 +683,7 @@ function migrateTeachers(){
     if(!Array.isArray(t.subjects))t.subjects=[];
     if(!Array.isArray(t.classes))t.classes=[];
     if(t.class===undefined)t.class=null;
+    if(!t.position)t.position='teacher';
   }
 }
 migrateTeachers();
@@ -682,7 +705,7 @@ function saveData(){
   saveTimer=setTimeout(async function(){
     try{
       const{db,ref,set}=window.firebaseDB;
-      const payload={
+      await set(ref(db,FB_PATH+'/main'),{
         students:data.students,absences:data.absences,teachers:data.teachers,
         periods:data.periods,currentPeriod:data.currentPeriod,schedules:data.schedules,
         homework:data.homework,questions:data.questions,announcements:data.announcements,
@@ -691,8 +714,7 @@ function saveData(){
         clubs:data.clubs,clubAttendance:data.clubAttendance,bellSchedule:data.bellSchedule,
         menu:data.menu,mealOrders:data.mealOrders,events:data.events,
         adminPasswordHash:data.adminPasswordHash
-      };
-      await set(ref(db,FB_PATH+'/main'),payload);
+      });
       firebaseConnected=true;updateStatusBadge();
     }catch(e){firebaseConnected=false;updateStatusBadge();}
   },600);
@@ -773,11 +795,17 @@ function getLessonsFor(cls,dateISO){
   return s&&s.length?s:getSubjects(cls);
 }
 
+/* Access helpers */
+function hasFullAccess(){return session&&(session.isHomeroom||session.isManager);}
+function canEditSchedule(){return session&&(session.isManager||(session.role==='teacher'&&session.isHomeroom));}
+function canManageUsers(){return session&&(session.role==='admin'||session.isDirector);}
+
 function getSessionAbsences(){
   if(!session||session.role!=='teacher')return [];
   return filterByPeriod(
     data.absences.filter(function(a){
       if(a.class!==session.class)return false;
+      if(session.isManager)return true;
       if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;
       return true;
     }),
@@ -788,6 +816,7 @@ function getSessionHomework(){
   if(!session||session.role!=='teacher')return [];
   return data.homework.filter(function(h){
     if(h.class!==session.class)return false;
+    if(session.isManager)return true;
     if(!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;
     return true;
   });
@@ -802,14 +831,13 @@ function getSessionQuestions(){
 }
 function getSessionAvailableSubjects(){
   if(!session||session.role!=='teacher')return [];
-  if(session.isHomeroom)return getSubjects(session.class);
+  if(session.isHomeroom||session.isManager)return getSubjects(session.class);
   return session.subjects;
 }
 function getClubById(id){return data.clubs.find(function(c){return c.id===id;});}
 function getEventById(id){return data.events.find(function(e){return e.id===id;});}
 function getMyClubsForStudent(name){return data.clubs.filter(function(c){return (c.enrolled||[]).indexOf(name)>=0;});}
 function getClubsForTeacher(name){return data.clubs.filter(function(c){return c.teacherName===name;});}
-function getEventParticipantsCount(ev){return (ev.participants||[]).length;}
 
 function getStudentFlags(name,cls){
   const flags=[];
@@ -817,7 +845,7 @@ function getStudentFlags(name,cls){
   const hw=data.homework.filter(function(h){
     if(h.class!==cls)return false;
     if(h.deadline&&h.deadline>todayISO())return false;
-    if(session&&session.role==='teacher'&&!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;
+    if(session&&session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(h.subject)<0)return false;
     return true;
   });
   const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
@@ -827,6 +855,23 @@ function getStudentFlags(name,cls){
   else if(notDone.length>=1)flags.push({type:'warn',text:'Долг по ДЗ: '+notDone.length});
   if(rem.length>=3)flags.push({type:'warn',text:'Замечаний: '+rem.length});
   return flags;
+}
+
+function getSchoolSummary(){
+  const rows=[];
+  let grandTotal=0,grandGood=0,grandBad=0;
+  for(const cls of CLASSES){
+    ensurePeriods(cls);
+    const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls;}),cls);
+    const good=abs.filter(function(a){return reasonById(a.reason).type==='good';}).length;
+    const bad=abs.filter(function(a){return reasonById(a.reason).type==='bad';}).length;
+    const hr=data.teachers.find(function(t){return t.class===cls;});
+    rows.push({cls:cls,total:abs.length,good:good,bad:bad,students:getStudentsOfClass(cls).length,teacher:hr?hr.name:'—'});
+    grandTotal+=abs.length;
+    grandGood+=good;
+    grandBad+=bad;
+  }
+  return {rows:rows,grandTotal:grandTotal,grandGood:grandGood,grandBad:grandBad};
 }
 
 /* ============ FIREBASE ============ */
@@ -860,11 +905,9 @@ function subscribeToFirebase(){
     if(session&&session.role==='teacher'){
       const t=findTeacher(session.name);
       if(t){
-        const allCls=buildAllClasses(t);
-        if(allCls.indexOf(session.class)<0){
-          session=buildTeacherSession(t);
-          saveSession();
-        }
+        const sess=buildTeacherSession(t,session.class);
+        if(!sess){session=null;saveSession();}
+        else session=sess;
       }
     }
     if(session)renderApp();
@@ -885,7 +928,7 @@ function updateStatusBadge(){
 async function runAutoBackup(force){
   if(!window.firebaseDB)return;
   const today=todayISO();
-  if(!force&&localStorage.getItem('last_backup_v4')===today)return;
+  if(!force&&localStorage.getItem('last_backup_v5')===today)return;
   try{
     const{db,ref,set,get,remove}=window.firebaseDB;
     const snap=await get(ref(db,BACKUP_PATH));
@@ -905,7 +948,7 @@ async function runAutoBackup(force){
         adminPasswordHash:data.adminPasswordHash
       }))
     });
-    localStorage.setItem('last_backup_v4',today);
+    localStorage.setItem('last_backup_v5',today);
   }catch(e){}
 }
 async function listBackups(){
@@ -974,10 +1017,6 @@ async function requestNotificationPermission(showToast){
     const p=await Notification.requestPermission();
     if(showToast)toast(p==='granted'?'Включены':'Отклонено',p!=='granted');
   }catch(e){}
-}
-function showNativeNotification(title,body){
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  try{new Notification(title,{body:body,tag:'school-helper'});}catch(e){}
 }
 function pushNotification(toRole,toUser,message,detail,type){
   const notif={
@@ -1140,9 +1179,18 @@ function buildAllClasses(t){
   return arr;
 }
 function buildTeacherSession(t,preferredClass){
-  const allCls=buildAllClasses(t);
+  const position=t.position||'teacher';
+  const isManager=position==='zavuch'||position==='director';
+  const isDirector=position==='director';
+  let allCls;
+  if(isManager){
+    allCls=CLASSES.slice();
+    if(t.class&&allCls.indexOf(t.class)<0)allCls.push(t.class);
+  }else{
+    allCls=buildAllClasses(t);
+  }
   if(!allCls.length)return null;
-  let current=t.class&&allCls.indexOf(t.class)>=0?t.class:allCls[0];
+  let current=(t.class&&allCls.indexOf(t.class)>=0)?t.class:allCls[0];
   if(preferredClass&&allCls.indexOf(preferredClass)>=0)current=preferredClass;
   return {
     role:'teacher',
@@ -1150,6 +1198,9 @@ function buildTeacherSession(t,preferredClass){
     class:current,
     homeroomClass:t.class||null,
     isHomeroom:current===t.class,
+    isManager:isManager,
+    isDirector:isDirector,
+    position:position,
     subjects:t.subjects||[],
     allClasses:allCls,
     expiresAt:Date.now()+SESSION_TTL_MS
@@ -1203,7 +1254,7 @@ function getNavItems(){
       {id:'clubs',icon:'🎨',label:'Кружки'},
       {id:'events',icon:'🎪',label:'Мероприятия'}
     ];
-    if(session.isHomeroom){
+    if(hasFullAccess()){
       base.push({id:'announcements',icon:'📢',label:'Объявления'});
       base.push({id:'questions',icon:'❓',label:'Вопросы'});
       base.push({id:'cafeteria',icon:'🍽',label:'Столовая'});
@@ -1216,6 +1267,9 @@ function getNavItems(){
       base.push({id:'notes',icon:'📝',label:'Заметки'});
     }
     base.push({id:'reports',icon:'📊',label:'Отчёты'});
+    if(canManageUsers()){
+      base.push({id:'users',icon:'👤',label:'Пользователи'});
+    }
     base.push({id:'settings',icon:'⚙️',label:'Настройки'});
     return base;
   }
@@ -1287,6 +1341,10 @@ function topbarHTML(title){
   const isDark=document.body.classList.contains('dark');
   let html='<div class="topbar"><h2>'+escapeHtml(title)+'</h2><div class="user-info">';
   html+='<span>'+escapeHtml(session.name)+'</span>';
+  if(session.role==='teacher'&&(session.isDirector||session.isManager)){
+    const pos=positionById(session.position);
+    html+='<span class="badge position">'+(pos.emoji||'')+' '+pos.name+'</span>';
+  }
   if(session.role==='teacher'){
     if(session.allClasses&&session.allClasses.length>1){
       html+='<select class="class-switch" id="classSwitch">';
@@ -1334,7 +1392,7 @@ function bindClassSwitch(){
     currentView='home';
     uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',cafeteriaDate:null,selectedClubId:null};
     renderApp();
-    toast('Класс: '+session.class+(session.isHomeroom?' (классрук)':' (предметник)'));
+    toast('Класс: '+session.class+(session.isHomeroom?' (классрук)':''));
   });
 }
 
@@ -1360,7 +1418,7 @@ function renderLogin(){
   let html='<div class="login-wrap"><div class="login-card">';
   html+='<h1>Классный</h1><p class="subtitle">Школьная платформа: учёба, кружки, столовая, мероприятия</p>';
   html+='<div class="role-tabs">';
-  html+='<button class="role-tab '+(loginState.role==='teacher'?'active':'')+'" data-role="teacher">Учитель</button>';
+  html+='<button class="role-tab '+(loginState.role==='teacher'?'active':'')+'" data-role="teacher">Педагог</button>';
   html+='<button class="role-tab '+(loginState.role==='student'?'active':'')+'" data-role="student">Ученик</button>';
   html+='<button class="role-tab '+(loginState.role==='parent'?'active':'')+'" data-role="parent">Родитель</button>';
   html+='<button class="role-tab '+(loginState.role==='admin'?'active':'')+'" data-role="admin">Админ</button>';
@@ -1391,7 +1449,7 @@ async function handleLogin(e){
     const pin=(document.getElementById('tPin').value||'').trim();
     if(!name||!pin)return toast('Заполните поля',true);
     const t=findTeacher(name);
-    if(!t)return toast('Учитель не найден',true);
+    if(!t)return toast('Пользователь не найден',true);
     const lk=checkLockout(t);
     if(lk.locked)return toast('Заблокировано на '+lk.seconds+'с',true);
     const ok=await verifyPin(pin,t.pin);
@@ -1399,7 +1457,7 @@ async function handleLogin(e){
     if(!t.pin.startsWith('pbkdf2')){t.pin=await setPinHash(pin);saveData();}
     resetAttempts(t);
     const sess=buildTeacherSession(t);
-    if(!sess)return toast('Учителю не назначен ни один класс',true);
+    if(!sess)return toast('Пользователю не назначен ни один класс',true);
     session=sess;
   }else if(loginState.role==='admin'){
     const pwd=document.getElementById('adminPwd').value;
@@ -1517,7 +1575,7 @@ function renderApp(){
   if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');
   else document.body.classList.remove('dark');
   if(!session){renderLogin();return;}
-  const titles={teacher:'Классный — учитель',student:'Классный — ученик',parent:'Классный — родитель',admin:'Классный — админ'};
+  const titles={teacher:'Классный — кабинет педагога',student:'Классный — ученик',parent:'Классный — родитель',admin:'Классный — администратор'};
   let body='';
   try{
     if(session.role==='teacher')body=renderTeacherView();
@@ -1539,7 +1597,11 @@ function renderApp(){
 /* ============ TEACHER ============ */
 function renderTeacherView(){
   const hrOnly=['announcements','meetings','duties','questions','cafeteria'];
-  if(hrOnly.indexOf(currentView)>=0&&!session.isHomeroom){
+  if(hrOnly.indexOf(currentView)>=0&&!hasFullAccess()){
+    currentView='home';
+    return renderTeacherHome();
+  }
+  if(currentView==='users'&&!canManageUsers()){
     currentView='home';
     return renderTeacherHome();
   }
@@ -1558,6 +1620,7 @@ function renderTeacherView(){
     meetings:renderMeetings,
     duties:renderDuties,
     reports:renderReports,
+    users:renderAdminUsers,
     settings:renderSettings
   };
   return (dispatch[currentView]||renderTeacherHome)();
@@ -1574,16 +1637,20 @@ function renderTeacherHome(){
     return hwOpen.filter(function(h){return !(h.done||[]).includes(s.name);}).length>0;
   });
   const pendingAbs=absAll.filter(function(a){return a.status==='pending';});
-  const openQ=session.isHomeroom?getSessionQuestions().filter(function(q){return !q.answered;}):[];
-  const todayDuties=session.isHomeroom?data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();}):[];
-  const upcoming=session.isHomeroom?data.meetings.filter(function(m){return m.class===cls&&m.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3):[];
+  const openQ=hasFullAccess()?getSessionQuestions().filter(function(q){return !q.answered;}):[];
+  const todayDuties=hasFullAccess()?data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();}):[];
+  const upcoming=hasFullAccess()?data.meetings.filter(function(m){return m.class===cls&&m.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3):[];
   const scheduleToday=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
   const allFlags=students.map(function(s){return {student:s,flags:getStudentFlags(s.name,cls)};}).filter(function(x){return x.flags.length>0;});
   const myClubs=getClubsForTeacher(session.name);
   const upcomingEvents=data.events.filter(function(e){return e.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3);
 
   let html='';
-  if(!session.isHomeroom){
+  if(session.isDirector){
+    html+='<div class="manager-info">🏛 Вы <b>директор школы</b>. Доступны все классы, отчёты и управление пользователями.</div>';
+  }else if(session.position==='zavuch'){
+    html+='<div class="manager-info">📋 Вы <b>завуч</b>. Доступны все классы, расписание, отчёты по всей школе.</div>';
+  }else if(!session.isHomeroom){
     html+='<div class="teacher-role-info">Вы вошли как <b>учитель-предметник</b> в '+escapeHtml(cls)+' классе. Видите только свои предметы: '+session.subjects.map(function(s){return escapeHtml(s);}).join(', ')+'</div>';
   }else if(session.homeroomClass){
     html+='<div class="teacher-role-info">Вы <b>классный руководитель</b> '+escapeHtml(cls)+' класса'+(session.subjects.length?' · также ведёте: '+session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'')+'</div>';
@@ -1613,12 +1680,33 @@ function renderTeacherHome(){
     html+='</div></div>';
   }
 
+  if(session.isManager){
+    const sum=getSchoolSummary();
+    html+='<div class="card"><h3>🏫 Общая сводка по школе</h3>';
+    html+='<div class="stats" style="margin-bottom:14px">';
+    html+='<div class="stat"><div class="num">'+sum.grandTotal+'</div><div class="lbl">Всего пропусков</div></div>';
+    html+='<div class="stat"><div class="num ok">'+sum.grandGood+'</div><div class="lbl">Уважительных</div></div>';
+    html+='<div class="stat"><div class="num warn">'+sum.grandBad+'</div><div class="lbl">Неуважительных</div></div>';
+    html+='</div>';
+    html+='<div class="school-summary-row header"><div>Класс</div><div>Классрук</div><div style="text-align:right">Всего</div><div style="text-align:right">Уваж</div><div style="text-align:right">Неув</div></div>';
+    for(const r of sum.rows){
+      html+='<div class="school-summary-row">';
+      html+='<div class="cls">'+escapeHtml(r.cls)+'</div>';
+      html+='<div style="color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(r.teacher)+'</div>';
+      html+='<div style="text-align:right;font-weight:700">'+r.total+'</div>';
+      html+='<div style="text-align:right;color:var(--success)">'+r.good+'</div>';
+      html+='<div style="text-align:right;color:var(--danger)">'+r.bad+'</div>';
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+
   html+='<div class="grid-2">';
   html+='<div class="card"><h3>📅 Расписание на сегодня</h3>';
   if(scheduleToday.length){
     for(let i=0;i<scheduleToday.length;i++){
       const subj=scheduleToday[i];
-      const hasAccess=session.isHomeroom||session.subjects.indexOf(subj)>=0;
+      const hasAccess=session.isHomeroom||session.isManager||session.subjects.indexOf(subj)>=0;
       html+='<div class="hw-card" style="'+(hasAccess?'':'opacity:.5')+'"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(subj)+'</div></div>';
     }
   }else html+='<div class="empty">Уроков нет</div>';
@@ -1758,29 +1846,23 @@ function renderHomework(){
   return html;
 }
 
-/* ============ NEW: SCHEDULE ============ */
 function renderSchedule(){
   const cls=session.class;
   ensureSchedule(cls);
   const bells=data.bellSchedule;
-  const canEditBells=session.role==='admin';
   let html='';
-  
-  // Bells card
   html+='<div class="card"><h3>🔔 Расписание звонков</h3>';
   html+='<div class="bells-grid">';
   for(const b of bells){
     html+='<div class="bell-item"><span class="bell-num">'+b.num+'</span><span class="bell-time">'+b.start+' – '+b.end+'</span></div>';
   }
   html+='</div>';
-  if(canEditBells){
+  if(canEditSchedule()){
     html+='<button class="btn btn-secondary btn-sm" id="editBellsBtn" style="margin-top:12px">✏️ Редактировать звонки</button>';
   }
   html+='</div>';
-  
-  // Schedule
   html+='<div class="card"><h3>📅 Расписание — '+escapeHtml(cls)+' класс</h3>';
-  if(session.role==='teacher'&&!session.isHomeroom){
+  if(session.role==='teacher'&&!hasFullAccess()){
     html+='<div class="teacher-role-info">Вы видите только свои уроки (полупрозрачным — предметы, которые вы не ведёте)</div>';
   }
   html+='<div class="schedule-grid-view">';
@@ -1793,7 +1875,7 @@ function renderSchedule(){
       for(let i=0;i<lessons.length;i++){
         const subj=lessons[i];
         const b=bells[i];
-        const hasAccess=session.role!=='teacher'||session.isHomeroom||session.subjects.indexOf(subj)>=0;
+        const hasAccess=session.role!=='teacher'||hasFullAccess()||session.subjects.indexOf(subj)>=0;
         html+='<div class="schedule-lesson-view" style="'+(hasAccess?'':'opacity:.4')+'">';
         if(b)html+='<span class="schedule-time">'+b.start+'–'+b.end+'</span>';
         else html+='<span class="schedule-time">—</span>';
@@ -1806,52 +1888,38 @@ function renderSchedule(){
     html+='</div>';
   }
   html+='</div>';
-  
-  if(session.role==='teacher'&&session.isHomeroom){
+  if(canEditSchedule()){
     html+='<button class="btn" id="editScheduleBtn" style="margin-top:14px">✏️ Редактировать расписание</button>';
   }
   html+='</div>';
   return html;
 }
 
-/* ============ NEW: CLUBS ============ */
 function renderClubs(){
-  const cls=session.class;
   const role=session.role;
-  
-  // Filters for student/parent view
   const allClubs=data.clubs;
   let myClubs=[];
   if(role==='student')myClubs=getMyClubsForStudent(session.name);
   else if(role==='parent')myClubs=getMyClubsForStudent(session.name);
   else if(role==='teacher')myClubs=getClubsForTeacher(session.name);
-  
   let html='';
-  
-  // My clubs section (for student/parent/teacher)
   if(role!=='admin'&&myClubs.length){
     html+='<div class="card"><h3>⭐ Мои кружки ('+myClubs.length+')</h3><div class="clubs-grid">';
-    for(const club of myClubs){
-      html+=renderClubCard(club,true);
-    }
+    for(const club of myClubs)html+=renderClubCard(club);
     html+='</div></div>';
   }
-  
-  // Catalog
   if(role==='student'||role==='parent'){
     html+='<div class="card"><h3>🎨 Каталог кружков и секций</h3>';
     if(allClubs.length){
       html+='<div class="clubs-grid">';
       for(const club of allClubs){
         if(myClubs.some(function(c){return c.id===club.id;}))continue;
-        html+=renderClubCard(club,false);
+        html+=renderClubCard(club);
       }
       html+='</div>';
     }else html+='<div class="empty">Кружков пока нет</div>';
     html+='</div>';
   }
-  
-  // Teacher view: attendance for own clubs
   if(role==='teacher'){
     if(myClubs.length){
       html+='<div class="card"><h3>🎨 Мои кружки — учёт посещаемости</h3>';
@@ -1865,17 +1933,14 @@ function renderClubs(){
         html+='<input type="date" id="clubAttDate-'+club.id+'" value="'+todayISO()+'" style="flex:1;max-width:200px">';
         html+='<button class="btn btn-sm" data-club-attendance="'+club.id+'">Отметить</button>';
         html+='<button class="btn btn-secondary btn-sm" data-club-attendance-view="'+club.id+'">История</button>';
-        html+='</div>';
-        html+='</div>';
+        html+='</div></div>';
       }
       html+='</div>';
     }else{
-      html+='<div class="card"><div class="empty">У вас пока нет своих кружков. Обратитесь к администратору.</div></div>';
+      html+='<div class="card"><div class="empty">У вас пока нет своих кружков.</div></div>';
     }
   }
-  
-  // Admin: full management
-  if(role==='admin'){
+  if(role==='admin'||session.isManager){
     html+='<div class="card"><h3>➕ Создать кружок</h3><form id="clubForm">';
     html+='<div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="clubName" placeholder="Шахматный клуб"></div>';
@@ -1884,24 +1949,15 @@ function renderClubs(){
     html+='<div><label>Время</label><input type="text" id="clubTime" placeholder="15:00" value="15:00"></div>';
     html+='<div><label>Кабинет</label><input type="text" id="clubRoom" placeholder="201"></div>';
     html+='<div><label>Макс. мест</label><input type="number" id="clubMax" value="15" min="1" max="100"></div>';
-    html+='<div class="full"><label>Описание</label><textarea id="clubDesc" rows="2" placeholder="Краткое описание"></textarea></div>';
+    html+='<div class="full"><label>Описание</label><textarea id="clubDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:12px">Создать</button></form></div>';
-    
     html+='<div class="card"><h3>🎨 Все кружки ('+allClubs.length+')</h3>';
     if(allClubs.length){
       html+='<div class="clubs-grid">';
       for(const club of allClubs){
         html+='<div class="club-card">';
         html+='<div class="club-title">'+escapeHtml(club.name)+'</div>';
-        html+='<div class="club-meta"><b>Рук.:</b> '+escapeHtml(club.teacherName||'—')+'<br>';
-        html+='<b>Время:</b> '+escapeHtml(club.day)+' '+escapeHtml(club.time)+' · <b>Каб.:</b> '+escapeHtml(club.room||'—')+'<br>';
-        html+='<b>Записано:</b> '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div>';
-        if((club.enrolled||[]).length){
-          html+='<details style="font-size:11.5px"><summary style="cursor:pointer;color:var(--text-dim)">Список</summary>';
-          html+='<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">';
-          for(const n of club.enrolled)html+='<span class="tag neutral">'+escapeHtml(n)+'</span>';
-          html+='</div></details>';
-        }
+        html+='<div class="club-meta"><b>Рук.:</b> '+escapeHtml(club.teacherName||'—')+'<br><b>Время:</b> '+escapeHtml(club.day)+' '+escapeHtml(club.time)+' · <b>Каб.:</b> '+escapeHtml(club.room||'—')+'<br><b>Записано:</b> '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div>';
         html+='<div class="club-actions"><button class="btn btn-danger btn-sm" data-club-del="'+club.id+'">Удалить</button></div>';
         html+='</div>';
       }
@@ -1909,51 +1965,38 @@ function renderClubs(){
     }else html+='<div class="empty">Кружков нет</div>';
     html+='</div>';
   }
-  
   return html;
 }
-
-function renderClubCard(club,isEnrolled){
+function renderClubCard(club){
   const enrolled=club.enrolled||[];
   const isFull=club.maxStudents&&enrolled.length>=club.maxStudents;
   const canToggle=session.role==='student'||session.role==='parent';
-  const myName=session.role==='student'||session.role==='parent'?session.name:null;
+  const myName=(session.role==='student'||session.role==='parent')?session.name:null;
   const imEnrolled=myName&&enrolled.indexOf(myName)>=0;
-  
   let html='<div class="club-card'+(isFull&&!imEnrolled?' full':'')+'">';
   if(imEnrolled)html+='<span class="enroll-badge">✓ Вы записаны</span>';
   html+='<div class="club-title">'+escapeHtml(club.name)+'</div>';
-  html+='<div class="club-meta"><b>👤</b> '+escapeHtml(club.teacherName||'—')+'<br>';
-  html+='<b>📅</b> '+escapeHtml(club.day)+' в '+escapeHtml(club.time)+'<br>';
+  html+='<div class="club-meta"><b>👤</b> '+escapeHtml(club.teacherName||'—')+'<br><b>📅</b> '+escapeHtml(club.day)+' в '+escapeHtml(club.time)+'<br>';
   if(club.room)html+='<b>📍</b> Кабинет '+escapeHtml(club.room)+'<br>';
   html+='<b>👥</b> '+enrolled.length+'/'+(club.maxStudents||'∞')+' мест</div>';
   if(club.description)html+='<div style="font-size:12px;color:var(--text-mid);margin-top:4px">'+escapeHtml(club.description)+'</div>';
-  
   if(canToggle){
     html+='<div class="club-actions">';
-    if(imEnrolled){
-      html+='<button class="btn btn-danger btn-sm" data-club-leave="'+club.id+'">Отписаться</button>';
-    }else if(isFull){
-      html+='<button class="btn btn-secondary btn-sm" disabled>Мест нет</button>';
-    }else{
-      html+='<button class="btn btn-success btn-sm" data-club-join="'+club.id+'">Записаться</button>';
-    }
+    if(imEnrolled)html+='<button class="btn btn-danger btn-sm" data-club-leave="'+club.id+'">Отписаться</button>';
+    else if(isFull)html+='<button class="btn btn-secondary btn-sm" disabled>Мест нет</button>';
+    else html+='<button class="btn btn-success btn-sm" data-club-join="'+club.id+'">Записаться</button>';
     html+='</div>';
   }
   html+='</div>';
   return html;
 }
 
-/* ============ NEW: EVENTS ============ */
 function renderEvents(){
   const role=session.role;
   const allEvents=data.events.slice();
   allEvents.sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
-  
   let html='';
-  
-  // Admin: create form
-  if(role==='admin'){
+  if(role==='admin'||session.isManager){
     html+='<div class="card"><h3>➕ Создать мероприятие</h3><form id="eventForm">';
     html+='<div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="evTitle" placeholder="Школьная олимпиада по математике"></div>';
@@ -1963,12 +2006,10 @@ function renderEvents(){
     html+='<div class="full"><label>Описание</label><textarea id="evDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:12px">Создать</button></form></div>';
   }
-  
   html+='<div class="card"><h3>🎪 Мероприятия и олимпиады ('+allEvents.length+')</h3>';
   if(allEvents.length){
     const future=allEvents.filter(function(e){return e.date>=todayISO();});
     const past=allEvents.filter(function(e){return e.date<todayISO();});
-    
     if(future.length){
       html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">📅 Предстоящие</div>';
       for(const ev of future)html+=renderEventCard(ev,true);
@@ -1979,59 +2020,40 @@ function renderEvents(){
     }
   }else html+='<div class="empty">Мероприятий нет</div>';
   html+='</div>';
-  
   return html;
 }
-
 function renderEventCard(ev,isFuture){
   const t=eventTypeById(ev.type);
   const participants=ev.participants||[];
   const canRegister=session.role==='student'||session.role==='parent'||session.role==='teacher';
-  const myName=session.role==='teacher'?session.name:session.name;
+  const myName=session.name;
   const imIn=participants.indexOf(myName)>=0;
-  
   let html='<div class="event-card">';
   html+='<span class="event-type '+t.cls+'">'+t.name+'</span>';
   html+='<div class="event-title">'+escapeHtml(ev.title)+'</div>';
   html+='<div class="event-meta">📅 '+formatDate(ev.date)+(ev.place?' · 📍 '+escapeHtml(ev.place):'')+'</div>';
   if(ev.description)html+='<div style="font-size:12.5px;color:var(--text-mid);margin-bottom:8px">'+escapeHtml(ev.description)+'</div>';
   html+='<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">👥 Участников: '+participants.length+'</div>';
-  
   if(canRegister&&isFuture){
-    if(imIn){
-      html+='<button class="btn btn-secondary btn-sm" data-event-leave="'+ev.id+'">Отменить участие</button>';
-    }else{
-      html+='<button class="btn btn-success btn-sm" data-event-join="'+ev.id+'">Участвовать</button>';
-    }
+    if(imIn)html+='<button class="btn btn-secondary btn-sm" data-event-leave="'+ev.id+'">Отменить участие</button>';
+    else html+='<button class="btn btn-success btn-sm" data-event-join="'+ev.id+'">Участвовать</button>';
   }
-  if(session.role==='admin'){
+  if(session.role==='admin'||session.isManager){
     html+=' <button class="btn btn-danger btn-sm" data-event-del="'+ev.id+'">Удалить</button>';
-    if(participants.length){
-      html+='<details style="margin-top:8px"><summary style="cursor:pointer;font-size:11.5px;color:var(--text-dim)">Участники ('+participants.length+')</summary>';
-      html+='<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">';
-      for(const n of participants)html+='<span class="tag neutral">'+escapeHtml(n)+'</span>';
-      html+='</div></details>';
-    }
   }
   html+='</div>';
   return html;
 }
 
-/* ============ NEW: CAFETERIA ============ */
 function renderCafeteria(){
   const role=session.role;
   const today=todayISO();
   const selectedDate=uiState.cafeteriaDate||today;
-  
-  // Generate 7 days from today
   const dates=[];
   for(let i=0;i<7;i++)dates.push(addDays(today,i));
-  
   let html='';
-  
-  // Admin: menu editor + orders summary
-  if(role==='admin'||role==='teacher'){
-    if(role==='admin'){
+  if(role==='admin'||hasFullAccess()){
+    if(role==='admin'||session.isManager){
       html+='<div class="card"><h3>🍽 Добавить блюдо в меню</h3><form id="menuForm">';
       html+='<div class="grid-2">';
       html+='<div><label>Дата</label><input type="date" id="menuDate" value="'+today+'"></div>';
@@ -2041,8 +2063,6 @@ function renderCafeteria(){
       html+='<div class="full"><label>Аллергены</label><input type="text" id="menuAllergens" placeholder="молоко, глютен"></div>';
       html+='</div><button type="submit" class="btn" style="margin-top:12px">Добавить</button></form></div>';
     }
-    
-    // Orders summary for admin/teacher
     const ordersForDate=data.mealOrders.filter(function(o){return o.date===selectedDate;});
     html+='<div class="card"><h3>📊 Заказы на '+formatDate(selectedDate)+'</h3>';
     html+='<div class="menu-date-tabs">';
@@ -2061,17 +2081,13 @@ function renderCafeteria(){
       html+='<details><summary style="cursor:pointer;font-size:13px;color:var(--text-mid)">Список заказов</summary>';
       html+='<div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Завтрак</th><th>Обед</th></tr></thead><tbody>';
       for(const o of ordersForDate){
-        html+='<tr><td data-label="Ученик">'+escapeHtml(o.studentName)+'</td>';
-        html+='<td data-label="Класс">'+escapeHtml(o.class)+'</td>';
-        html+='<td data-label="Завтрак">'+(o.breakfast?'✅':'—')+'</td>';
-        html+='<td data-label="Обед">'+(o.lunch?'✅':'—')+'</td></tr>';
+        html+='<tr><td data-label="Ученик">'+escapeHtml(o.studentName)+'</td><td data-label="Класс">'+escapeHtml(o.class)+'</td>';
+        html+='<td data-label="Завтрак">'+(o.breakfast?'✅':'—')+'</td><td data-label="Обед">'+(o.lunch?'✅':'—')+'</td></tr>';
       }
       html+='</tbody></table></div></details>';
     }else html+='<div class="empty">Заказов нет</div>';
     html+='</div>';
-    
-    // Menu view for admin
-    if(role==='admin'){
+    if(role==='admin'||session.isManager){
       const menuForDate=data.menu.filter(function(m){return m.date===selectedDate;});
       html+='<div class="card"><h3>📋 Меню на '+formatDate(selectedDate)+'</h3>';
       if(menuForDate.length){
@@ -2089,11 +2105,8 @@ function renderCafeteria(){
     }
     return html;
   }
-  
-  // Student/Parent: menu + pre-order
   const menuForDate=data.menu.filter(function(m){return m.date===selectedDate;});
   const myOrder=data.mealOrders.find(function(o){return o.date===selectedDate&&o.studentName===session.name;});
-  
   html+='<div class="card"><h3>🍽 Меню на неделю</h3>';
   html+='<div class="menu-date-tabs">';
   for(const d of dates){
@@ -2101,7 +2114,6 @@ function renderCafeteria(){
     html+='<button class="menu-date-tab'+active+'" data-cafeteria-date="'+d+'">'+formatDate(d)+'</button>';
   }
   html+='</div>';
-  
   if(menuForDate.length){
     for(const m of menuForDate){
       const ordered=m.meal==='breakfast'?(myOrder&&myOrder.breakfast):(myOrder&&myOrder.lunch);
@@ -2113,12 +2125,8 @@ function renderCafeteria(){
       html+='<button class="btn '+(ordered?'btn-secondary':'btn-success')+' btn-sm" data-meal-order="'+m.id+'" style="margin-top:6px">'+(ordered?'✓ Заказано — отменить':'Заказать')+'</button>';
       html+='</div>';
     }
-  }else{
-    html+='<div class="empty">На этот день меню ещё не опубликовано</div>';
-  }
+  }else html+='<div class="empty">На этот день меню ещё не опубликовано</div>';
   html+='</div>';
-  
-  // My orders summary
   const myOrders=data.mealOrders.filter(function(o){return o.studentName===session.name&&o.date>=today;}).sort(function(a,b){return a.date.localeCompare(b.date);});
   if(myOrders.length){
     html+='<div class="card"><h3>📋 Мои заказы</h3>';
@@ -2130,7 +2138,6 @@ function renderCafeteria(){
     }
     html+='</tbody></table></div></div>';
   }
-  
   return html;
 }
 
@@ -2293,13 +2300,18 @@ function renderDuties(){
 
 function renderReports(){
   let html='<div class="card"><h3>📊 Отчёты</h3>';
-  if(!session.isHomeroom)html+='<div class="teacher-role-info" style="margin-bottom:14px">Отчёт только по вашим предметам: '+session.subjects.map(function(s){return escapeHtml(s);}).join(', ')+'</div>';
+  if(!hasFullAccess()){
+    html+='<div class="teacher-role-info" style="margin-bottom:14px">Отчёт только по вашим предметам: '+session.subjects.map(function(s){return escapeHtml(s);}).join(', ')+'</div>';
+  }
   html+='<p style="color:var(--text-dim);margin-bottom:14px;font-size:13px">Экспорт данных класса.</p>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
   html+='<button class="btn" id="expAbsences">CSV: Пропуски</button>';
   html+='<button class="btn" id="expHw">CSV: ДЗ</button>';
   html+='<button class="btn" id="expRemarks">CSV: Замечания</button>';
   html+='</div></div>';
+  if(session.isManager){
+    html+='<div class="card"><h3>🏫 Сводка по школе</h3><button class="btn" id="expSchoolSummary">CSV: Все классы</button></div>';
+  }
   html+='<div class="card"><h3>📈 Динамика посещаемости</h3><div class="chart-wrap"><canvas id="attChart"></canvas></div></div>';
   html+='<div class="card"><h3>📉 Долги по ДЗ</h3><div class="chart-wrap"><canvas id="hwChart"></canvas></div></div>';
   return html;
@@ -2345,9 +2357,15 @@ function drawReportsCharts(){
 }
 
 function renderSettings(){
-  const cls=session.class;
   let html='<div class="card"><h3>⚙️ Настройки</h3>';
   html+='<div class="teacher-role-info">';
+  if(session.isDirector){
+    html+='<b>Должность:</b> Директор<br>';
+  }else if(session.position==='zavuch'){
+    html+='<b>Должность:</b> Завуч<br>';
+  }else{
+    html+='<b>Должность:</b> Учитель<br>';
+  }
   html+='<b>Классное руководство:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br>';
   html+='<b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—')+'<br>';
   html+='<b>Классы:</b> '+(session.allClasses.length?session.allClasses.map(function(c){return escapeHtml(c);}).join(', '):'—');
@@ -2374,7 +2392,6 @@ function renderStudentView(){
   };
   return (dispatch[currentView]||renderStudentHome)();
 }
-
 function renderStudentHome(){
   const cls=session.class;
   const name=session.name;
@@ -2386,7 +2403,6 @@ function renderStudentHome(){
   const schedule=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
   const myClubs=getMyClubsForStudent(name);
   const myEvents=data.events.filter(function(e){return (e.participants||[]).indexOf(name)>=0&&e.date>=todayISO();});
-  
   let html='<div class="stats">';
   html+='<div class="stat"><div class="num'+(pending.length>0?' warn':' ok')+'">'+pending.length+'</div><div class="lbl">Долгов ДЗ</div></div>';
   html+='<div class="stat"><div class="num">'+abs.length+'</div><div class="lbl">Пропусков</div></div>';
@@ -2417,7 +2433,6 @@ function renderStudentHome(){
   html+='</div>';
   return html;
 }
-
 function renderStudentHomework(){
   const cls=session.class;
   const name=session.name;
@@ -2437,7 +2452,6 @@ function renderStudentHomework(){
   html+='</div>';
   return html;
 }
-
 function renderStudentAbsences(){
   const cls=session.class;
   const name=session.name;
@@ -2451,8 +2465,7 @@ function renderStudentAbsences(){
       const r=reasonById(a.reason);
       const st=a.status||'approved';
       const stIcon=st==='pending'?'🟡':st==='rejected'?'🔴':'🟢';
-      html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td>';
-      html+='<td data-label="Предмет">'+escapeHtml(a.subject)+'</td>';
+      html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td><td data-label="Предмет">'+escapeHtml(a.subject)+'</td>';
       html+='<td data-label="Причина"><span class="tag '+r.type+'">'+escapeHtml(r.name)+'</span></td>';
       html+='<td data-label="Статус">'+stIcon+'</td></tr>';
     }
@@ -2461,7 +2474,6 @@ function renderStudentAbsences(){
   html+='</div>';
   return html;
 }
-
 function renderStudentAnnouncements(){
   const cls=session.class;
   const ann=data.announcements.filter(function(a){return a.class===cls;});
@@ -2473,7 +2485,6 @@ function renderStudentAnnouncements(){
   html+='</div>';
   return html;
 }
-
 function renderStudentQuestions(){
   const cls=session.class;
   const name=session.name;
@@ -2509,7 +2520,6 @@ function renderParentView(){
   };
   return (dispatch[currentView]||renderParentHome)();
 }
-
 function renderParentHome(){
   const cls=session.class;
   const name=session.name;
@@ -2530,7 +2540,6 @@ function renderParentHome(){
   }
   return html;
 }
-
 function renderParentAbsences(){
   const cls=session.class;
   const name=session.name;
@@ -2544,8 +2553,7 @@ function renderParentAbsences(){
       const r=reasonById(a.reason);
       const st=a.status||'approved';
       const stIcon=st==='pending'?'🟡':st==='rejected'?'🔴':'🟢';
-      html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td>';
-      html+='<td data-label="Предмет">'+escapeHtml(a.subject)+'</td>';
+      html+='<tr><td data-label="Дата">'+formatDate(a.date)+'</td><td data-label="Предмет">'+escapeHtml(a.subject)+'</td>';
       html+='<td data-label="Причина"><span class="tag '+r.type+'">'+escapeHtml(r.name)+'</span></td>';
       html+='<td data-label="Статус">'+stIcon+'</td></tr>';
     }
@@ -2554,9 +2562,7 @@ function renderParentAbsences(){
   html+='</div>';
   return html;
 }
-
 function renderParentMessages(){
-  const cls=session.class;
   const name=session.name;
   const msgs=data.contacts.filter(function(c){return c.studentName===name;});
   msgs.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
@@ -2573,9 +2579,7 @@ function renderParentMessages(){
   html+='</div>';
   return html;
 }
-
 function renderParentNotes(){
-  const cls=session.class;
   const name=session.name;
   const list=data.parentNotes.filter(function(n){return n.studentName===name;});
   list.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
@@ -2613,10 +2617,8 @@ function renderAdminView(){
   };
   return (dispatch[currentView]||renderAdminUsers)();
 }
-
 function renderAdminBells(){
-  let html='<div class="card"><h3>🔔 Расписание звонков</h3>';
-  html+='<form id="bellsForm">';
+  let html='<div class="card"><h3>🔔 Расписание звонков</h3><form id="bellsForm">';
   for(let i=0;i<data.bellSchedule.length;i++){
     const b=data.bellSchedule[i];
     html+='<div style="display:grid;grid-template-columns:40px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px">';
@@ -2628,13 +2630,17 @@ function renderAdminBells(){
   html+='<button type="submit" class="btn" style="margin-top:10px">Сохранить</button></form></div>';
   return html;
 }
-
 function renderAdminUsers(){
   const teachers=data.teachers.slice();
   teachers.sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
-  let html='<div class="card"><h3>➕ Добавить учителя</h3><form id="addTeacherForm">';
-  html+='<label>ФИО</label><input type="text" id="ntName" placeholder="Иванова Ирина Ивановна">';
-  html+='<label>Классное руководство (если есть)</label><select id="ntHrClass"><option value="">— нет —</option>'+optionsHTML(CLASSES,'')+'</select>';
+  const canEditPosition=session&&(session.role==='admin'||session.isDirector);
+  let html='<div class="card"><h3>➕ Добавить пользователя</h3><form id="addTeacherForm">';
+  html+='<div class="grid-2">';
+  html+='<div><label>ФИО</label><input type="text" id="ntName" placeholder="Иванова Ирина Ивановна"></div>';
+  html+='<div><label>Должность</label><select id="ntPosition">'+optionsHTML(POSITIONS,'teacher','id')+'</select></div>';
+  html+='<div><label>Классное руководство (если есть)</label><select id="ntHrClass"><option value="">— нет —</option>'+optionsHTML(CLASSES,'')+'</select></div>';
+  html+='<div><label>PIN (пусто = 1234)</label><input type="text" id="ntPin" maxlength="8"></div>';
+  html+='</div>';
   html+='<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13px">Предметы (если ведёт)</summary>';
   html+='<div class="checkbox-group" style="margin-top:8px">';
   for(const s of ALL_SUBJECTS){
@@ -2647,28 +2653,34 @@ function renderAdminUsers(){
     html+='<label><input type="checkbox" class="nt-class" value="'+escapeHtml(c)+'"><span>'+escapeHtml(c)+'</span></label>';
   }
   html+='</div></details>';
-  html+='<label>PIN (пусто = 1234)</label><input type="text" id="ntPin" maxlength="8">';
+  html+='<div style="background:var(--bg-subtle);padding:10px 12px;border-radius:10px;margin-top:14px;font-size:12px;color:var(--text-dim);line-height:1.5">';
+  html+='<b>Учитель</b> — нужен класс или предметы+классы.<br>';
+  html+='<b>Завуч</b> — видит все классы, расписание, звонки, отчёты по всей школе.<br>';
+  html+='<b>Директор</b> — всё то же + управление пользователями.';
+  html+='</div>';
   html+='<button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
-  html+='<div class="card"><h3>Учителя ('+teachers.length+')</h3>';
+  html+='<div class="card"><h3>Пользователи ('+teachers.length+')</h3>';
   if(teachers.length){
-    html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Роль</th><th>PIN</th><th></th></tr></thead><tbody>';
+    html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Должность</th><th>Роль</th><th>PIN</th><th></th></tr></thead><tbody>';
     for(const t of teachers){
+      const pos=positionById(t.position);
       let role='';
       if(t.class)role+='<span class="tag good">Классрук '+escapeHtml(t.class)+'</span> ';
       if(t.subjects&&t.subjects.length)role+='<span class="tag" style="margin-top:4px;display:inline-block">'+t.subjects.length+' предм.</span> ';
       if(t.classes&&t.classes.length)role+='<span class="tag neutral">'+t.classes.length+' кл.</span>';
       if(!role)role='<span style="color:var(--text-dim)">—</span>';
+      const posBadge='<span class="tag position">'+(pos.emoji||'')+' '+escapeHtml(pos.name)+'</span>';
       html+='<tr><td data-label="ФИО"><b>'+escapeHtml(t.name)+'</b></td>';
+      html+='<td data-label="Должность">'+(canEditPosition?'<select data-tposition="'+escapeHtml(t.name)+'" style="padding:5px 24px 5px 7px;font-size:12px">'+optionsHTML(POSITIONS,t.position,'id')+'</select>':posBadge)+'</td>';
       html+='<td data-label="Роль">'+role+'</td>';
       html+='<td data-label="PIN"><button class="btn btn-secondary btn-sm" data-treset="'+escapeHtml(t.name)+'">Сброс 1234</button></td>';
       html+='<td><button class="btn btn-danger btn-sm" data-tdel="'+escapeHtml(t.name)+'">Удалить</button></td></tr>';
     }
     html+='</tbody></table></div>';
-  }else html+='<div class="empty">Нет учителей</div>';
+  }else html+='<div class="empty">Нет пользователей</div>';
   html+='</div>';
   return html;
 }
-
 function renderAdminBackups(){
   return '<div class="card"><h3>💾 Резервные копии</h3>'+
     '<p style="color:var(--text-dim);margin-bottom:12px;font-size:13px">Хранятся '+BACKUP_KEEP_DAYS+' дней.</p>'+
@@ -2677,7 +2689,6 @@ function renderAdminBackups(){
     '<button class="btn btn-secondary" id="refreshBackupsBtn">Обновить</button></div>'+
     '<div id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';
 }
-
 function renderAdminLog(){
   const log=data.log.slice();
   log.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
@@ -2703,14 +2714,14 @@ function openStudentProfile(name){
   if(!st)return toast('Не найден',true);
   const abs=filterByPeriod(data.absences.filter(function(a){
     if(a.class!==cls||a.studentName!==name)return false;
-    if(session.role==='teacher'&&!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;
+    if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(a.subject)<0)return false;
     return true;
   }),cls);
   abs.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   const hw=data.homework.filter(function(h){
     if(h.class!==cls)return false;
     if(h.deadline&&h.deadline>todayISO())return false;
-    if(session.role==='teacher'&&!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;
+    if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(h.subject)<0)return false;
     return true;
   });
   const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
@@ -2737,10 +2748,6 @@ function openStudentProfile(name){
   if(notDone.length){
     for(const h of notDone.slice(0,10))html+='<div style="padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--border)">'+escapeHtml(h.subject)+' · '+formatDate(h.date)+'</div>';
   }else html+='<div style="color:var(--text-dim);font-size:12.5px">Нет</div>';
-  if(myClubs.length){
-    html+='<h4 style="margin:14px 0 6px;font-size:13px">🎨 Кружки ('+myClubs.length+')</h4>';
-    for(const c of myClubs)html+='<div style="padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--border)">'+escapeHtml(c.name)+' · '+escapeHtml(c.day)+' '+escapeHtml(c.time)+'</div>';
-  }
   html+='</div>';
   html+='<div class="modal-footer"><button class="btn btn-secondary" id="prClose2">Закрыть</button></div></div>';
   o.innerHTML=html;
@@ -2751,7 +2758,7 @@ function openStudentProfile(name){
   o.addEventListener('click',function(e){if(e.target===o)close();});
 }
 
-/* ============ МОДАЛКА: ДОБАВИТЬ ПРОПУСК ============ */
+/* ============ МОДАЛКИ ПРОПУСКОВ ============ */
 function openAddAbsenceModal(){
   const cls=session.class;
   const o=document.createElement('div');
@@ -2789,8 +2796,6 @@ function openAddAbsenceModal(){
     saveData();toast('Отправлено');close();renderApp();
   });
 }
-
-/* ============ МОДАЛКА: ЗАПИСКА РОДИТЕЛЯ ============ */
 function openAddParentNote(){
   const cls=session.class;
   const name=session.name;
@@ -2822,7 +2827,7 @@ function openAddParentNote(){
   });
 }
 
-/* ============ МОДАЛКА: РЕДАКТОР РАСПИСАНИЯ ============ */
+/* ============ РЕДАКТОРЫ ============ */
 function openScheduleEditor(){
   const cls=session.class;
   ensureSchedule(cls);
@@ -2874,8 +2879,6 @@ function openScheduleEditor(){
     });
   });
 }
-
-/* ============ МОДАЛКА: РЕДАКТОР ЗВОНКОВ ============ */
 function openBellsEditor(){
   const o=document.createElement('div');
   o.className='modal-overlay';o.id='bellsEditorOverlay';
@@ -2907,8 +2910,6 @@ function openBellsEditor(){
   });
   o.addEventListener('click',function(e){if(e.target===o)close();});
 }
-
-/* ============ МОДАЛКА: ПОСЕЩАЕМОСТЬ КРУЖКА ============ */
 function openClubAttendance(clubId){
   const club=getClubById(clubId);
   if(!club)return toast('Кружок не найден',true);
@@ -2917,7 +2918,6 @@ function openClubAttendance(clubId){
   if(!date)return toast('Выберите дату',true);
   const existing=data.clubAttendance.find(function(a){return a.clubId===clubId&&a.date===date;});
   const present=existing?(existing.present||[]):[];
-  
   const o=document.createElement('div');
   o.className='modal-overlay';o.id='clubAttOverlay';
   let html='<div class="modal" style="max-width:520px">';
@@ -2927,7 +2927,6 @@ function openClubAttendance(clubId){
   if(!enrolled.length){
     html+='<div class="empty">На кружок никто не записан</div>';
   }else{
-    html+='<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:8px">Нажмите на кнопку, чтобы переключить</div>';
     html+='<div class="attendance-grid">';
     for(const name of enrolled){
       const isPresent=present.indexOf(name)>=0;
@@ -2937,8 +2936,7 @@ function openClubAttendance(clubId){
       html+='</div>';
     }
     html+='</div>';
-    const count=present.length;
-    html+='<div style="margin-top:14px;text-align:center;font-size:14px"><b>Было: '+count+' из '+enrolled.length+'</b></div>';
+    html+='<div style="margin-top:14px;text-align:center;font-size:14px"><b>Было: '+present.length+' из '+enrolled.length+'</b></div>';
   }
   html+='</div>';
   html+='<div class="modal-footer"><button class="btn btn-secondary" id="caClose2">Закрыть</button></div></div>';
@@ -2948,27 +2946,18 @@ function openClubAttendance(clubId){
   document.getElementById('caClose').addEventListener('click',close);
   document.getElementById('caClose2').addEventListener('click',close);
   o.addEventListener('click',function(e){if(e.target===o)close();});
-  
   o.querySelectorAll('[data-club-att-toggle]').forEach(function(b){
     b.addEventListener('click',function(){
       const parts=b.dataset.clubAttToggle.split('|');
-      const cid=parts[0];
-      const name=parts[1];
-      const d=parts[2];
+      const cid=parts[0],name=parts[1],d=parts[2];
       let rec=data.clubAttendance.find(function(a){return a.clubId===cid&&a.date===d;});
-      if(!rec){
-        rec={id:uid(),clubId:cid,date:d,present:[]};
-        data.clubAttendance.push(rec);
-      }
+      if(!rec){rec={id:uid(),clubId:cid,date:d,present:[]};data.clubAttendance.push(rec);}
       const idx=rec.present.indexOf(name);
-      if(idx>=0)rec.present.splice(idx,1);
-      else rec.present.push(name);
-      saveData();
-      close();openClubAttendance(cid);
+      if(idx>=0)rec.present.splice(idx,1);else rec.present.push(name);
+      saveData();close();openClubAttendance(cid);
     });
   });
 }
-
 function openClubHistory(clubId){
   const club=getClubById(clubId);
   if(!club)return;
@@ -2981,19 +2970,11 @@ function openClubHistory(clubId){
   if(!records.length){
     html+='<div class="empty">Нет записей</div>';
   }else{
-    const totalEnrolled=(club.enrolled||[]).length;
-    const byStudent={};
-    for(const r of records){
-      for(const n of (r.present||[])){
-        byStudent[n]=(byStudent[n]||0)+1;
-      }
-    }
     html+='<div style="margin-bottom:14px"><b>Всего занятий:</b> '+records.length+'</div>';
-    html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Присутствовало</th><th>Из</th></tr></thead><tbody>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Присутствовало</th></tr></thead><tbody>';
     for(const r of records){
       html+='<tr><td data-label="Дата">'+formatDate(r.date)+'</td>';
-      html+='<td data-label="Присутствовало">'+((r.present||[]).length)+'</td>';
-      html+='<td data-label="Из">'+totalEnrolled+'</td></tr>';
+      html+='<td data-label="Присутствовало">'+((r.present||[]).length)+'</td></tr>';
     }
     html+='</tbody></table></div>';
   }
@@ -3018,10 +2999,7 @@ function bindAllEvents(){
       openStudentProfile(el.dataset.openStudent);
     });
   });
-  
-  /* Attendance */
-  const attForm=document.getElementById('attForm');
-  if(attForm)attForm.addEventListener('submit',function(e){
+  document.getElementById('attForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('attDate').value;
     const sn=document.getElementById('attStudent').value;
@@ -3032,7 +3010,7 @@ function bindAllEvents(){
     if(!isValidAbsenceDate(date))return toast('Неверная дата',true);
     data.absences.push({id:uid(),date:date,class:session.class,studentName:sn,subject:subj,reason:r,note:note,addedBy:session.name,addedByRole:'teacher',status:'approved'});
     const hr=data.teachers.find(function(t){return t.class===session.class;});
-    if(hr&&hr.name!==session.name)pushNotification('teacher',hr.name,'Пропуск в вашем классе',sn+' · '+formatDate(date)+' · '+subj,'absence');
+    if(hr&&hr.name!==session.name)pushNotification('teacher',hr.name,'Пропуск в вашем классе',sn+' · '+formatDate(date),'absence');
     pushNotification('parent',sn,'Учитель внёс пропуск',formatDate(date),'absence');
     saveData();toast('Добавлено');renderApp();
   });
@@ -3042,8 +3020,7 @@ function bindAllEvents(){
   if(fR)fR.addEventListener('change',function(e){uiState.filterReason=e.target.value;renderApp();});
   const fD=document.getElementById('fDate');
   if(fD)fD.addEventListener('change',function(e){uiState.filterDate=e.target.value;renderApp();});
-  const cf=document.getElementById('clearFilters');
-  if(cf)cf.addEventListener('click',function(){uiState.filterReason='';uiState.filterStudent='';uiState.filterDate='';renderApp();});
+  document.getElementById('clearFilters')?.addEventListener('click',function(){uiState.filterReason='';uiState.filterStudent='';uiState.filterDate='';renderApp();});
   document.querySelectorAll('[data-approve]').forEach(function(b){
     b.addEventListener('click',function(){
       const a=data.absences.find(function(x){return x.id===b.dataset.approve;});
@@ -3069,10 +3046,7 @@ function bindAllEvents(){
       saveData();toast('Удалено');renderApp();
     });
   });
-  
-  /* Homework */
-  const hwForm=document.getElementById('hwForm');
-  if(hwForm)hwForm.addEventListener('submit',function(e){
+  document.getElementById('hwForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('hwDate').value;
     const subj=document.getElementById('hwSubject').value;
@@ -3081,8 +3055,7 @@ function bindAllEvents(){
     if(!date||!subj||!text)return toast('Заполните',true);
     const newHw={id:uid(),date:date,class:session.class,subject:subj,text:text,deadline:deadline||date,done:[],addedBy:session.name};
     data.homework.push(newHw);
-    const students=getStudentsOfClass(session.class);
-    for(const s of students)pushNotification('student',s.name,'Новое ДЗ: '+subj,formatDate(newHw.deadline)+' — '+text,'homework');
+    getStudentsOfClass(session.class).forEach(function(s){pushNotification('student',s.name,'Новое ДЗ: '+subj,formatDate(newHw.deadline)+' — '+text,'homework');});
     saveData();toast('Задано');renderApp();
   });
   document.querySelectorAll('[data-del-hw]').forEach(function(b){
@@ -3136,17 +3109,12 @@ function bindAllEvents(){
       if(!h)return;
       if(!h.done)h.done=[];
       const idx=h.done.indexOf(session.name);
-      if(idx>=0)h.done.splice(idx,1);
-      else h.done.push(session.name);
+      if(idx>=0)h.done.splice(idx,1);else h.done.push(session.name);
       saveData();toast('Сохранено');renderApp();
     });
   });
-  
-  /* Schedule editor */
   document.getElementById('editScheduleBtn')?.addEventListener('click',openScheduleEditor);
   document.getElementById('editBellsBtn')?.addEventListener('click',openBellsEditor);
-  
-  /* Clubs */
   document.getElementById('clubForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const name=document.getElementById('clubName').value.trim();
@@ -3199,8 +3167,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-club-attendance-view]').forEach(function(b){
     b.addEventListener('click',function(){openClubHistory(b.dataset.clubAttendanceView);});
   });
-  
-  /* Events */
   document.getElementById('eventForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('evTitle').value.trim();
@@ -3237,8 +3203,6 @@ function bindAllEvents(){
       saveData();toast('Удалено');renderApp();
     });
   });
-  
-  /* Cafeteria */
   document.getElementById('menuForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('menuDate').value;
@@ -3258,10 +3222,7 @@ function bindAllEvents(){
     });
   });
   document.querySelectorAll('[data-cafeteria-date]').forEach(function(b){
-    b.addEventListener('click',function(){
-      uiState.cafeteriaDate=b.dataset.cafeteriaDate;
-      renderApp();
-    });
+    b.addEventListener('click',function(){uiState.cafeteriaDate=b.dataset.cafeteriaDate;renderApp();});
   });
   document.querySelectorAll('[data-meal-order]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -3280,8 +3241,6 @@ function bindAllEvents(){
       saveData();toast('Сохранено');renderApp();
     });
   });
-  
-  /* Bells admin form */
   document.getElementById('bellsForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     document.querySelectorAll('[data-bell-num]').forEach(function(inp){
@@ -3292,8 +3251,6 @@ function bindAllEvents(){
     });
     saveData();toast('Сохранено');renderApp();
   });
-  
-  /* Announcements */
   document.getElementById('annForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const text=document.getElementById('annText').value.trim();
@@ -3309,8 +3266,6 @@ function bindAllEvents(){
       saveData();renderApp();
     });
   });
-  
-  /* Questions */
   document.querySelectorAll('[data-ans-q]').forEach(function(b){
     b.addEventListener('click',function(){
       const id=b.dataset.ansQ;
@@ -3342,8 +3297,6 @@ function bindAllEvents(){
     pushNotification('teacher',recipient,'Вопрос от '+session.name,text,'question');
     saveData();toast('Отправлено');renderApp();
   });
-  
-  /* Students */
   const addStuForm=document.getElementById('addStudentForm');
   if(addStuForm)addStuForm.addEventListener('submit',async function(e){
     e.preventDefault();
@@ -3353,8 +3306,7 @@ function bindAllEvents(){
     data.students.push({id:uid(),class:session.class,name:name,pin:await setPinHash('1234'),attempts:0,blockedUntil:null});
     saveData();toast('Добавлен');renderApp();
   });
-  const nsInput=document.getElementById('newStudentName');
-  if(nsInput)nsInput.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
+  document.getElementById('newStudentName')?.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
   document.querySelectorAll('[data-del-student]').forEach(function(b){
     b.addEventListener('click',function(e){
       e.stopPropagation();
@@ -3365,8 +3317,6 @@ function bindAllEvents(){
       saveData();toast('Удалён');renderApp();
     });
   });
-  
-  /* Notes/todos */
   document.getElementById('todoForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const t=document.getElementById('todoText').value.trim();
@@ -3400,8 +3350,6 @@ function bindAllEvents(){
       saveData();renderApp();
     });
   });
-  
-  /* Meetings */
   document.getElementById('meetForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('meetDate').value;
@@ -3418,8 +3366,6 @@ function bindAllEvents(){
       saveData();renderApp();
     });
   });
-  
-  /* Duties */
   document.getElementById('dutyForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('dutyDate').value;
@@ -3434,13 +3380,10 @@ function bindAllEvents(){
       saveData();renderApp();
     });
   });
-  
-  /* Reports */
   document.getElementById('expAbsences')?.addEventListener('click',function(){exportCSV('absences');});
   document.getElementById('expHw')?.addEventListener('click',function(){exportCSV('homework');});
   document.getElementById('expRemarks')?.addEventListener('click',function(){exportCSV('remarks');});
-  
-  /* Settings */
+  document.getElementById('expSchoolSummary')?.addEventListener('click',function(){exportCSV('school');});
   document.getElementById('changePinBtn')?.addEventListener('click',function(){
     const t=findTeacher(session.name);
     if(!t)return;
@@ -3454,8 +3397,6 @@ function bindAllEvents(){
     });
   });
   document.getElementById('notifyPermBtn')?.addEventListener('click',function(){requestNotificationPermission(true);});
-  
-  /* Absence modals */
   document.getElementById('addMyAbsBtn')?.addEventListener('click',openAddAbsenceModal);
   document.getElementById('addParentNoteBtn')?.addEventListener('click',openAddParentNote);
   document.getElementById('parentMsgForm')?.addEventListener('submit',function(e){
@@ -3478,22 +3419,35 @@ function bindAllEvents(){
     if(teacher)pushNotification('teacher',teacher.name,'Записка от родителя',session.name+' · '+formatDate(date),'absence');
     saveData();toast('Отправлено');renderApp();
   });
-  
-  /* Admin */
   document.getElementById('addTeacherForm')?.addEventListener('submit',async function(e){
     e.preventDefault();
     const name=document.getElementById('ntName').value.trim();
     const hrClass=document.getElementById('ntHrClass').value||null;
+    const position=document.getElementById('ntPosition').value;
     const subjects=Array.from(document.querySelectorAll('.nt-subject:checked')).map(function(i){return i.value;});
     const classes=Array.from(document.querySelectorAll('.nt-class:checked')).map(function(i){return i.value;});
     const pinRaw=document.getElementById('ntPin').value.trim();
     if(!name)return toast('Введите ФИО',true);
     if(findTeacher(name))return toast('Уже есть',true);
-    if(!hrClass&&(!subjects.length||!classes.length))return toast('Укажите классное руководство или предметы+классы',true);
+    if(position==='teacher'&&!hrClass&&(!subjects.length||!classes.length)){
+      return toast('Учителю нужен класс или предметы+классы',true);
+    }
     const pin=pinRaw||'1234';
     if(!/^\d{4,8}$/.test(pin))return toast('PIN 4-8 цифр',true);
-    data.teachers.push({name:name,class:hrClass,subjects:subjects,classes:classes,pin:await setPinHash(pin),createdAt:new Date().toISOString(),attempts:0,blockedUntil:null});
+    data.teachers.push({
+      name:name,class:hrClass,position:position,subjects:subjects,classes:classes,
+      pin:await setPinHash(pin),createdAt:new Date().toISOString(),attempts:0,blockedUntil:null
+    });
     saveData();toast('Добавлен');renderApp();
+  });
+  document.querySelectorAll('[data-tposition]').forEach(function(s){
+    s.addEventListener('change',function(e){
+      const t=findTeacher(s.dataset.tposition);
+      if(!t)return;
+      t.position=e.target.value;
+      logAction('upd','Должность '+t.name+' → '+e.target.value);
+      saveData();toast('Изменено');
+    });
   });
   document.querySelectorAll('[data-treset]').forEach(function(b){
     b.addEventListener('click',async function(){
@@ -3539,10 +3493,18 @@ function exportCSV(type){
     name='замечания';
     rows.push(['Дата','ФИО','Тип','Текст']);
     let list=data.remarks.filter(function(r){return r.class===cls;});
-    if(!session.isHomeroom)list=list.filter(function(r){return session.subjects.indexOf(r.subject)>=0;});
+    if(!session.isHomeroom&&!session.isManager)list=list.filter(function(r){return session.subjects.indexOf(r.subject)>=0;});
     for(const r of list){
       rows.push([r.date,r.studentName,remarkTypeById(r.type).name,r.text||'']);
     }
+  }else if(type==='school'){
+    name='школа_сводка';
+    rows.push(['Класс','Классрук','Учеников','Всего пропусков','Уважительных','Неуважительных']);
+    const sum=getSchoolSummary();
+    for(const r of sum.rows){
+      rows.push([r.cls,r.teacher,r.students,r.total,r.good,r.bad]);
+    }
+    rows.push(['ИТОГО','', '',sum.grandTotal,sum.grandGood,sum.grandBad]);
   }
   const lines=[];
   for(const row of rows)lines.push(row.join(';'));
