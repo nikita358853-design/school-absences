@@ -1454,7 +1454,8 @@ function exportCSV(type){
   if(type==='absences'){name='пропуски';rows=[['Дата','ФИО','Класс','Предмет','Причина','Статус','Примечание']];
     filterByPeriod(data.absences.filter(a=>a.class===cls),cls).forEach(a=>rows.push([a.date,a.studentName,a.class,a.subject,reasonById(a.reason).name,a.status||'approved',a.note||'']));}
   if(type==='homework'){name='ДЗ';rows=[['Дата','Предмет','Текст','Сдать до','Сдали']];
-    data.homework.filter(h=>h.class===cls).forEach(h=>rows.push([h.date,h.subject,h.text,h.deadline||'','"'+(h.done||[]).join(', ')+'"'])));}
+    data.homework.filter(h=>h.class===cls).forEach(h=>rows.push([h.date,h.subject,h.text,h.deadline||'','"'+(h.done||[]).join(', ')+'"']);
+    });
   if(type==='remarks'){name='замечания';rows=[['Дата','ФИО','Тип','Текст']];
     data.remarks.filter(r=>r.class===cls).forEach(r=>rows.push([r.date,r.studentName,remarkTypeById(r.type).name,r.text||''])));}
   const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\n');
