@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+  import { getDatabase, ref, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
   const firebaseConfig = {
     apiKey: "AIzaSyApvOfvU5bgp_olxbuiG_nYvxdnVG_H4Fg",
     authDomain: "school-absences-71570.firebaseapp.com",
@@ -21,8 +21,13 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    window.firebaseDB = { db, ref, set, onValue, get, remove };
-  } catch (e) { window.firebaseDB = null; }
+    window.firebaseDB = { db, ref, set, onValue, get, remove, update };
+    window.firebaseReady = true;
+  } catch (e) {
+    console.error('Firebase init error:', e);
+    window.firebaseDB = null;
+    window.firebaseReady = false;
+  }
 </script>
 <style>
 :root{
@@ -93,8 +98,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 select{cursor:pointer;appearance:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238275a3' stroke-width='2.5' stroke-linecap='round'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
-select option{background:#fff;color:#1a0b3d}
-body.dark select option{background:#161028;color:#f1ecff}
+select option{background:#ffffff !important;color:#1a0b3d !important}
+body.dark select option{background:#161028 !important;color:#f1ecff !important}
 input[type="password"]{letter-spacing:6px;text-align:center;font-family:monospace;font-size:16px}
 input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;
@@ -136,6 +141,9 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
 .topbar .badge.position.cafe{background:linear-gradient(135deg,rgba(236,72,153,.35),rgba(236,72,153,.2));border-color:rgba(236,72,153,.5);color:#fbcfe8}
 .topbar .badge.position.vospit{background:linear-gradient(135deg,rgba(59,130,246,.35),rgba(59,130,246,.2));border-color:rgba(59,130,246,.5);color:#bfdbfe}
 .topbar .badge.school{background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(16,185,129,.15));border-color:rgba(16,185,129,.5);color:#6ee7b7}
+.topbar .badge.sync-ok{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.4);color:#6ee7b7}
+.topbar .badge.sync-wait{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.4);color:#fcd34d}
+.topbar .badge.sync-off{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5}
 .topbar .btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);box-shadow:none;padding:9px 16px;font-size:13px}
 .topbar .btn-secondary:hover{background:rgba(255,255,255,.2)}
 .topbar select.class-switch{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
@@ -669,10 +677,7 @@ let schoolsRegistry = [];
 let currentSchoolId = 'school1';
 
 function loadSchoolsRegistry(){
-  try{
-    const raw = localStorage.getItem(SCHOOLS_REG_KEY);
-    if(raw) schoolsRegistry = JSON.parse(raw);
-  }catch(e){ schoolsRegistry = []; }
+  try{const raw = localStorage.getItem(SCHOOLS_REG_KEY);if(raw) schoolsRegistry = JSON.parse(raw);}catch(e){ schoolsRegistry = []; }
   if(!Array.isArray(schoolsRegistry) || !schoolsRegistry.length){
     schoolsRegistry = [{id:'school1', name:'Школа №1', createdAt:new Date().toISOString()}];
     saveSchoolsRegistry();
@@ -685,7 +690,7 @@ function loadSchoolsRegistry(){
 }
 function saveSchoolsRegistry(){
   localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
-  if(firebaseReady && window.firebaseDB){
+  if(window.firebaseDB){
     try{
       const{db,ref,set}=window.firebaseDB;
       set(ref(db,FB_PATH+'/registry/schools'),schoolsRegistry).catch(function(){});
@@ -763,30 +768,60 @@ function normalizeData(){
 }
 function migrateTeachers(){if(!Array.isArray(data.teachers))data.teachers=[];for(const t of data.teachers){if(!Array.isArray(t.subjects))t.subjects=[];if(!Array.isArray(t.classes))t.classes=[];if(t.class===undefined)t.class=null;if(!t.position)t.position='teacher';}}
 
-let session=null,firebaseReady=false,firebaseConnected=false;
+let session=null,firebaseReady=false,firebaseConnected=false,fbReadyPromise=null;
 let fbListeners=[];
+let _lastAppliedSignature=null;
 let _seenNotifIds=new Set(),_sessionStartTime=Date.now(),_notifFilter='all';
 let saveTimer=null,saveLogTimer=null,saveNotifTimer=null;
 let _openDetails={};
 
 function saveData(){
-  localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));
-  if(!firebaseReady||!window.firebaseDB)return;
+  try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
+  if(!window.firebaseDB)return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async function(){
     try{
+      if(!firebaseReady && fbReadyPromise) await fbReadyPromise;
+      if(!window.firebaseDB) return;
       const{db,ref,set}=window.firebaseDB;
       const payload={};
       for(const f of LIST_FIELDS)payload[f]=data[f];
       payload.periods=data.periods;payload.currentPeriod=data.currentPeriod;payload.schedules=data.schedules;
       payload.bellSchedule=data.bellSchedule;payload.adminPasswordHash=data.adminPasswordHash;
+      const rev = Date.now()+'_'+Math.random().toString(36).slice(2,8);
+      payload._rev = rev;
+      _lastAppliedSignature = rev;
       await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/main'),payload);
       firebaseConnected=true;updateStatusBadge();
-    }catch(e){firebaseConnected=false;updateStatusBadge();}
-  },600);
+    }catch(e){console.error('saveData error:',e);firebaseConnected=false;updateStatusBadge();}
+  },400);
 }
-function saveLog(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveLogTimer);saveLogTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/log'),data.log||[]);}catch(e){}},2000);}
-function saveNotifications(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveNotifTimer);saveNotifTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/notifications'),data.notifications||[]);}catch(e){}},1000);}
+function saveLog(){
+  if(!window.firebaseDB)return;
+  clearTimeout(saveLogTimer);
+  saveLogTimer=setTimeout(async function(){
+    try{
+      if(!firebaseReady && fbReadyPromise) await fbReadyPromise;
+      if(!window.firebaseDB)return;
+      const{db,ref,set}=window.firebaseDB;
+      await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/log'),data.log||[]);
+      firebaseConnected=true;
+    }catch(e){firebaseConnected=false;updateStatusBadge();}
+  },1500);
+}
+function saveNotifications(){
+  if(!window.firebaseDB)return;
+  clearTimeout(saveNotifTimer);
+  saveNotifTimer=setTimeout(async function(){
+    try{
+      if(!firebaseReady && fbReadyPromise) await fbReadyPromise;
+      if(!window.firebaseDB)return;
+      const{db,ref,set}=window.firebaseDB;
+      await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/notifications'),data.notifications||[]);
+      firebaseConnected=true;
+    }catch(e){firebaseConnected=false;updateStatusBadge();}
+  },800);
+}
 function logAction(action,details){data.log.push({time:new Date().toISOString(),user:session?session.name:'—',role:session?session.role:'—',action:action,details:details||''});if(data.log.length>300)data.log=data.log.slice(-300);saveLog();}
 
 /* ============ ПОМОЩНИКИ ============ */
@@ -804,17 +839,14 @@ function canManageMenu(){return session&&(session.role==='admin'||(session.role=
 function canPostTeacherAnn(){return session&&(session.role==='admin'||session.isManager||session.isVospit);}
 function canEditSchoolWeek(week){if(!session)return false;if(session.role==='admin'||session.isManager)return true;if(session.role==='teacher'&&session.isHomeroom&&session.homeroomClass===week.class)return true;return false;}
 function canManageSubstitutions(){return session&&(session.role==='admin'||session.isManager);}
-function canCreateTrips(){return session&&(session.role==='admin'||session.isVospit||(session.role==='teacher'&&session.isHomeroom&&!session.isManager&&!session.isVospit));}
 function canProcessRequests(){return session&&(session.role==='admin'||session.isDirector);}
 
-/* Менеджмент активностей — только Vospit и admin */
 function canManageActivities(){return session&&(session.role==='admin'||session.isVospit);}
 function canManageClubs(){return canManageActivities();}
 function canManageEvents(){return canManageActivities();}
 function canManageTrips(){return canManageActivities()||(session&&session.role==='teacher'&&session.isHomeroom&&!session.isManager&&!session.isVospit);}
 function canManageConsents(){return session&&(session.role==='admin'||session.isVospit||(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician));}
 
-/* Возможности добавления */
 function canAddAbsences(){return session&&session.role==='teacher'&&!session.isManager&&!session.isDirector&&!session.isVospit&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician;}
 function canAddLates(){return canAddAbsences();}
 function canAddHomework(){
@@ -822,18 +854,16 @@ function canAddHomework(){
 }
 function canAddDiscipline(){return session&&session.role==='teacher'&&(session.isHomeroom||session.isManager);}
 
-/* Предметы для ДЗ — только те, что ведёт учитель + только те классы, где ведёт */
 function getHomeworkSubjects(){
   if(!canAddHomework())return[];
   const t = findTeacher(session.name);
   if(!t) return [];
   const subjects = (t.subjects||[]).slice();
   if(!subjects.length) return [];
-  const teachesThisClass = ((t.classes||[]).indexOf(session.class) >= 0);
+  const teachesThisClass = ((t.classes||[]).indexOf(session.class) >= 0) || (t.class === session.class);
   if(!teachesThisClass) return [];
   return subjects;
 }
-/* Предметы для посещаемости — классрук может любые в своём классе */
 function getAttendanceSubjects(){
   if(!session||session.role!=='teacher'||!session.class)return[];
   if(session.isManager||session.isVospit||session.isCafeteria||session.isZavhoz||session.isTechnician)return[];
@@ -843,13 +873,12 @@ function getAttendanceSubjects(){
   if((t.classes||[]).indexOf(session.class) < 0) return [];
   return t.subjects||[];
 }
-/* Предметы для опозданий — только свои */
 function getLatesSubjects(){
   if(!session||session.role!=='teacher'||!session.class)return[];
   if(session.isManager||session.isVospit||session.isCafeteria||session.isZavhoz||session.isTechnician)return[];
   const t = findTeacher(session.name);
   if(!t) return [];
-  if(session.isHomeroom && t.class===session.class) return t.subjects||[]; // классрук — свои предметы
+  if(session.isHomeroom && t.class===session.class) return t.subjects||[];
   if((t.classes||[]).indexOf(session.class) < 0) return [];
   return t.subjects||[];
 }
@@ -964,22 +993,33 @@ function createMenuForYear(template,overwrite){
 }
 
 /* ============ FIREBASE ============ */
-function subscribeToFirebase(){
-  if(!window.firebaseDB)return;
+function unsubscribeFirebase(){
   for(const u of fbListeners){try{u();}catch(e){}}
   fbListeners=[];
+}
+function subscribeToFirebase(){
+  if(!window.firebaseDB)return;
+  unsubscribeFirebase();
   const{db,ref,onValue,set}=window.firebaseDB;
   const schoolPath = FB_PATH+'/schools/'+currentSchoolId;
+
   fbListeners.push(onValue(ref(db,schoolPath+'/main'),function(snap){
     const inc=snap.val();
-    if(!inc){const seed=emptyDB();set(ref(db,schoolPath+'/main'),Object.assign({},seed,{adminPasswordHash:null}));return;}
+    if(!inc){
+      const seed=emptyDB();
+      set(ref(db,schoolPath+'/main'),Object.assign({},seed,{adminPasswordHash:null}));
+      return;
+    }
+    const sig = inc._rev || null;
+    if(sig && sig===_lastAppliedSignature) return;
+
     for(const f of LIST_FIELDS)data[f]=inc[f]||[];
     data.periods=inc.periods||{};data.currentPeriod=inc.currentPeriod||{};data.schedules=inc.schedules||{};
     if(!Array.isArray(inc.bellSchedule)||!inc.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();else data.bellSchedule=inc.bellSchedule;
     if(!Array.isArray(inc.schoolPosts)||!inc.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();else data.schoolPosts=inc.schoolPosts;
     data.adminPasswordHash=inc.adminPasswordHash||null;
     migrateTeachers();
-    localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));
+    try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
     firebaseConnected=true;updateStatusBadge();
     if(session&&session.role==='teacher'){
       const t=findTeacher(session.name);
@@ -987,10 +1027,29 @@ function subscribeToFirebase(){
     }
     if(session)renderApp();
   }));
+
   fbListeners.push(onValue(ref(db,schoolPath+'/log'),function(s){data.log=s.val()||[];}));
   fbListeners.push(onValue(ref(db,schoolPath+'/notifications'),function(s){data.notifications=s.val()||[];if(session)processIncomingNotifications();}));
 }
-function updateStatusBadge(){const b=document.getElementById('syncStatus');if(!b)return;if(!firebaseReady)b.innerHTML='<span style="color:#ef4444">●</span> Локально';else if(firebaseConnected)b.innerHTML='<span style="color:#10b981">●</span> Синхронизировано';else b.innerHTML='<span style="color:#f59e0b">●</span> Офлайн';}
+function updateStatusBadge(){
+  const b=document.getElementById('syncStatus');
+  if(!b)return;
+  if(!window.firebaseDB){
+    b.innerHTML='<span style="color:#ef4444">●</span> Локально';
+  }else if(!firebaseReady){
+    b.innerHTML='<span style="color:#f59e0b">●</span> Подключение...';
+  }else if(firebaseConnected){
+    b.innerHTML='<span style="color:#10b981">●</span> Синхронизировано';
+  }else{
+    b.innerHTML='<span style="color:#f59e0b">●</span> Офлайн';
+  }
+}
+function topbarSyncBadge(){
+  if(!window.firebaseDB) return '<span class="badge sync-off">● офлайн</span>';
+  if(!firebaseReady) return '<span class="badge sync-wait">● подключение</span>';
+  if(firebaseConnected) return '<span class="badge sync-ok">● онлайн</span>';
+  return '<span class="badge sync-wait">● офлайн</span>';
+}
 async function runAutoBackup(force){
   if(!window.firebaseDB)return;
   const today=todayISO();
@@ -1391,6 +1450,7 @@ function topbarHTML(title){
   html+='<h2>'+escapeHtml(title)+'</h2></div>';
   html+='<div class="user-info"><span>'+escapeHtml(session.name)+'</span>';
   html+='<span class="badge school">🏫 '+escapeHtml(getSchoolName(currentSchoolId))+'</span>';
+  html+=topbarSyncBadge();
   if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria||session.isZavhoz||session.isTechnician||session.isVospit)){
     const pos=positionById(session.position);
     let extraCls='';
@@ -1490,11 +1550,11 @@ async function handleLogin(e){
   saveSession();_sessionStartTime=Date.now();_seenNotifIds.clear();
   if(session.isCafeteria)currentView='cafeteria';
   else if(session.isZavhoz||session.isTechnician)currentView='maintenance';
-  else if(session.isVospit)currentView='home';
   else currentView='home';
   uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',cafeteriaDate:null,selectedClubId:null,menuManageDate:null};
   _openDetails={};
   logAction('login',session.role+' вошёл');
+  if(window.firebaseDB) subscribeToFirebase();
   renderApp();runAutoBackup(false);
 }
 
@@ -2252,7 +2312,6 @@ function renderEventCard(ev,isFuture){
 }
 
 function renderCafeteria(){
-  /* Только зав. столовой и админ управляют меню. Все остальные — заказывают */
   if(session.role==='admin')return renderCafeteriaAdmin();
   if(session.role==='teacher'&&session.isCafeteria)return renderCafeteriaAdmin();
   return renderCafeteriaUser();
@@ -2487,7 +2546,11 @@ function renderSettings(){
   if(!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician&&!session.isVospit){
     html+='<b>Класс. рук.:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br><b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—');
   }
-  html+='</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"><button class="btn" id="changePinBtn">Сменить PIN</button><button class="btn btn-secondary" id="notifyPermBtn">Уведомления</button></div></div>';
+  html+='</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"><button class="btn" id="changePinBtn">Сменить PIN</button><button class="btn btn-secondary" id="notifyPermBtn">Уведомления</button></div>';
+  if(window.firebaseDB){
+    html+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-secondary" id="forceSyncBtn">🔄 Пересинхронизировать</button><span style="font-size:12px;color:var(--text-dim)">Статус: '+(firebaseConnected?'<span style="color:var(--success)">онлайн</span>':'<span style="color:var(--warn)">офлайн</span>')+'</span></div>';
+  }
+  html+='</div>';
   return html;
 }
 
@@ -2731,7 +2794,7 @@ function renderSchools(){
   let html='<div class="card"><h3>Добавить школу</h3><form id="schoolForm" style="display:flex;gap:10px;flex-wrap:wrap">';
   html+='<input type="text" id="schoolName" placeholder="Название (например, МАОУ СОШ №5)" style="flex:1;min-width:200px">';
   html+='<button type="submit" class="btn">Создать</button></form>';
-  html+='<div class="edit-info" style="margin-top:10px">Новая школа начнётся с пустым набором данных. Можно будет добавлять учеников и сотрудников через раздел «Пользователи», а также переключиться на неё.</div></div>';
+  html+='<div class="edit-info" style="margin-top:10px">Новая школа начнётся с пустым набором данных.</div></div>';
   html+='<div class="card"><h3>Школы ('+schoolsRegistry.length+')</h3>';
   for(const s of schoolsRegistry){
     const isActive = s.id===currentSchoolId;
@@ -3146,15 +3209,17 @@ function bindAllEvents(){
     toast('Школа создана');
     renderApp();
   });
-  document.querySelectorAll('[data-school-switch]').forEach(function(b){b.addEventListener('click',function(){
+  document.querySelectorAll('[data-school-switch]').forEach(function(b){b.addEventListener('click',async function(){
+    unsubscribeFirebase();
     currentSchoolId = b.dataset.schoolSwitch;
     localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
     data = loadDataForSchool(currentSchoolId);
     normalizeData();
     session=null;saveSession();
     toast('Школа: '+getSchoolName(currentSchoolId));
+    if(fbReadyPromise) await fbReadyPromise;
+    if(window.firebaseDB) subscribeToFirebase();
     renderApp();
-    subscribeToFirebase();
   });});
   document.querySelectorAll('[data-school-del]').forEach(function(b){b.addEventListener('click',function(){
     if(!confirm('Удалить школу и все её данные?'))return;
@@ -3418,6 +3483,30 @@ function bindAllEvents(){
   /* ===== НАСТРОЙКИ ===== */
   document.getElementById('changePinBtn')?.addEventListener('click',function(){const t=findTeacher(session.name);if(!t)return;openChangePinModal({onSave:async function(old,newP){if(!await verifyPin(old,t.pin))return {ok:false,error:'Неверный PIN'};t.pin=await setPinHash(newP);t.attempts=0;t.blockedUntil=null;saveData();return {ok:true};}});});
   document.getElementById('notifyPermBtn')?.addEventListener('click',function(){if(!('Notification' in window))return toast('Не поддерживается',true);if(Notification.permission==='default')Notification.requestPermission();});
+  document.getElementById('forceSyncBtn')?.addEventListener('click',async function(){
+    if(!window.firebaseDB)return toast('Firebase не загружен',true);
+    unsubscribeFirebase();
+    try{
+      const{db,ref,get}=window.firebaseDB;
+      const schoolPath = FB_PATH+'/schools/'+currentSchoolId;
+      const snap = await get(ref(db,schoolPath+'/main'));
+      if(snap.exists()){
+        const inc = snap.val();
+        for(const f of LIST_FIELDS)data[f]=inc[f]||[];
+        data.periods=inc.periods||{};data.currentPeriod=inc.currentPeriod||{};data.schedules=inc.schedules||{};
+        if(Array.isArray(inc.bellSchedule)&&inc.bellSchedule.length)data.bellSchedule=inc.bellSchedule;
+        if(Array.isArray(inc.schoolPosts)&&inc.schoolPosts.length)data.schoolPosts=inc.schoolPosts;
+        data.adminPasswordHash=inc.adminPasswordHash||null;
+        normalizeData();
+        try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
+        firebaseConnected=true;
+      }
+    }catch(e){firebaseConnected=false;}
+    subscribeToFirebase();
+    updateStatusBadge();
+    toast('Синхронизировано');
+    renderApp();
+  });
 
   /* ===== СТУДЕНТ / РОДИТЕЛЬ ===== */
   document.getElementById('addMyAbsBtn')?.addEventListener('click',openAddAbsenceModal);
@@ -3613,21 +3702,31 @@ document.addEventListener('keydown',function(e){
   else if(session&&(session.isZavhoz||session.isTechnician))currentView='maintenance';
   else if(session&&session.role==='admin')currentView='schools';
   renderApp();
-  setTimeout(async function(){
+
+  fbReadyPromise = new Promise(function(resolve){
     const t0=Date.now();
-    await new Promise(function(resolve){
-      function check(){
-        if(window.firebaseDB!==undefined)return resolve();
-        if(Date.now()-t0>3000)return resolve();
-        setTimeout(check,50);
+    function check(){
+      if(window.firebaseDB){
+        firebaseReady=true;
+        updateStatusBadge();
+        return resolve(true);
       }
-      check();
-    });
-    firebaseReady=true;
+      if(Date.now()-t0>8000){
+        firebaseReady=true;
+        updateStatusBadge();
+        return resolve(false);
+      }
+      setTimeout(check,80);
+    }
+    check();
+  });
+
+  await fbReadyPromise;
+  if(window.firebaseDB){
     subscribeToFirebase();
     updateStatusBadge();
-    setTimeout(function(){runAutoBackup(false);},5000);
-  },100);
+    setTimeout(function(){runAutoBackup(false);},2000);
+  }
 })();
 </script>
 </body>
