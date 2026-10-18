@@ -7,27 +7,34 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%237c3aed%22/><stop offset=%221%22 stop-color=%22%23ec4899%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22url(%23g)%22/><path d=%22M20 30h24v44H20zM56 30h24v44H56zM20 36h24M56 36h24M20 44h24M56 44h24M20 52h24M56 52h24M20 60h24M56 60h24%22 stroke=%22white%22 stroke-width=%224%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyApvOfvU5bgp_olxbuiG_nYvxdnVG_H4Fg",
-    authDomain: "school-absences-71570.firebaseapp.com",
-    databaseURL: "https://school-absences-71570-default-rtdb.firebaseio.com",
-    projectId: "school-absences-71570",
-    storageBucket: "school-absences-71570.firebasestorage.app",
-    messagingSenderId: "126572050967",
-    appId: "1:126572050967:web:77c24adfee0ad3786a7a52"
-  };
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    window.firebaseDB = { db, ref, set, onValue, get, remove, update };
-    window.firebaseReady = true;
-  } catch (e) {
-    console.error('Firebase init error:', e);
-    window.firebaseDB = null;
-    window.firebaseReady = false;
-  }
+  window.firebaseDB = null;
+  window.firebaseReady = false;
+  window.firebaseError = null;
+  (async function initFirebase(){
+    try{
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js");
+      const { getDatabase, ref, set, onValue, get, remove, update } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js");
+      const firebaseConfig = {
+        apiKey: "AIzaSyApvOfvU5bgp_olxbuiG_nYvxdnVG_H4Fg",
+        authDomain: "school-absences-71570.firebaseapp.com",
+        databaseURL: "https://school-absences-71570-default-rtdb.firebaseio.com",
+        projectId: "school-absences-71570",
+        storageBucket: "school-absences-71570.firebasestorage.app",
+        messagingSenderId: "126572050967",
+        appId: "1:126572050967:web:77c24adfee0ad3786a7a52"
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      window.firebaseDB = { db, ref, set, onValue, get, remove, update };
+      window.firebaseReady = true;
+      console.log('[firebase] initialized successfully');
+    }catch(e){
+      console.error('[firebase] init failed:', e);
+      window.firebaseDB = null;
+      window.firebaseReady = false;
+      window.firebaseError = e.message || String(e);
+    }
+  })();
 </script>
 <style>
 :root{
@@ -776,25 +783,30 @@ let saveTimer=null,saveLogTimer=null,saveNotifTimer=null;
 let _openDetails={};
 
 function saveData(){
-  try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
-  if(!window.firebaseDB)return;
+  try{ localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data)); }catch(e){}
+  if(!window.firebaseDB) return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async function(){
     try{
       if(!firebaseReady && fbReadyPromise) await fbReadyPromise;
       if(!window.firebaseDB) return;
-      const{db,ref,set}=window.firebaseDB;
-      const payload={};
-      for(const f of LIST_FIELDS)payload[f]=data[f];
-      payload.periods=data.periods;payload.currentPeriod=data.currentPeriod;payload.schedules=data.schedules;
-      payload.bellSchedule=data.bellSchedule;payload.adminPasswordHash=data.adminPasswordHash;
+      const {db,ref,set} = window.firebaseDB;
+      const payload = {};
+      for(const f of LIST_FIELDS) payload[f]=data[f];
+      payload.periods=data.periods; payload.currentPeriod=data.currentPeriod; payload.schedules=data.schedules;
+      payload.bellSchedule=data.bellSchedule; payload.adminPasswordHash=data.adminPasswordHash;
       const rev = Date.now()+'_'+Math.random().toString(36).slice(2,8);
       payload._rev = rev;
       _lastAppliedSignature = rev;
-      await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/main'),payload);
-      firebaseConnected=true;updateStatusBadge();
-    }catch(e){console.error('saveData error:',e);firebaseConnected=false;updateStatusBadge();}
-  },400);
+      await set(ref(db, FB_PATH+'/schools/'+currentSchoolId+'/main'), payload);
+      console.log('[sync] saved to cloud');
+      firebaseConnected=true; updateStatusBadge();
+    }catch(e){
+      console.error('[sync] saveData failed:', e);
+      firebaseConnected=false; updateStatusBadge();
+      if(e && e.code==='PERMISSION_DENIED') toast('Firebase Rules запрещают запись', true);
+    }
+  }, 400);
 }
 function saveLog(){
   if(!window.firebaseDB)return;
@@ -998,54 +1010,71 @@ function unsubscribeFirebase(){
   fbListeners=[];
 }
 function subscribeToFirebase(){
-  if(!window.firebaseDB)return;
+  if(!window.firebaseDB){
+    console.warn('[sync] firebaseDB не готов, синхронизация недоступна');
+    return;
+  }
   unsubscribeFirebase();
-  const{db,ref,onValue,set}=window.firebaseDB;
+  const {db,ref,onValue,set} = window.firebaseDB;
   const schoolPath = FB_PATH+'/schools/'+currentSchoolId;
+  console.log('[sync] subscribe to', schoolPath);
 
-  fbListeners.push(onValue(ref(db,schoolPath+'/main'),function(snap){
-    const inc=snap.val();
+  fbListeners.push(onValue(ref(db,schoolPath+'/main'), function(snap){
+    const inc = snap.val();
+    console.log('[sync] onValue received:', inc ? 'data' : 'null');
     if(!inc){
-      const seed=emptyDB();
-      set(ref(db,schoolPath+'/main'),Object.assign({},seed,{adminPasswordHash:null}));
+      const seed = emptyDB();
+      set(ref(db,schoolPath+'/main'), Object.assign({}, seed, {adminPasswordHash:null}))
+        .then(function(){ console.log('[sync] seeded new school data'); })
+        .catch(function(err){ console.error('[sync] seed failed:', err); firebaseConnected=false; updateStatusBadge(); });
       return;
     }
     const sig = inc._rev || null;
     if(sig && sig===_lastAppliedSignature) return;
 
-    for(const f of LIST_FIELDS)data[f]=inc[f]||[];
-    data.periods=inc.periods||{};data.currentPeriod=inc.currentPeriod||{};data.schedules=inc.schedules||{};
-    if(!Array.isArray(inc.bellSchedule)||!inc.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();else data.bellSchedule=inc.bellSchedule;
-    if(!Array.isArray(inc.schoolPosts)||!inc.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();else data.schoolPosts=inc.schoolPosts;
+    for(const f of LIST_FIELDS) data[f]=inc[f]||[];
+    data.periods=inc.periods||{}; data.currentPeriod=inc.currentPeriod||{}; data.schedules=inc.schedules||{};
+    if(!Array.isArray(inc.bellSchedule)||!inc.bellSchedule.length) data.bellSchedule=DEFAULT_BELLS.slice(); else data.bellSchedule=inc.bellSchedule;
+    if(!Array.isArray(inc.schoolPosts)||!inc.schoolPosts.length) data.schoolPosts=DEFAULT_POSTS.slice(); else data.schoolPosts=inc.schoolPosts;
     data.adminPasswordHash=inc.adminPasswordHash||null;
     migrateTeachers();
-    try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
-    firebaseConnected=true;updateStatusBadge();
+    try{ localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data)); }catch(e){}
+    firebaseConnected=true; updateStatusBadge();
     if(session&&session.role==='teacher'){
       const t=findTeacher(session.name);
-      if(t){const sess=buildTeacherSession(t,session.class);if(!sess){session=null;saveSession();}else session=sess;}
+      if(t){const sess=buildTeacherSession(t,session.class); if(!sess){session=null;saveSession();} else session=sess;}
     }
-    if(session)renderApp();
+    if(session) renderApp();
+  }, function(error){
+    console.error('[sync] onValue error:', error);
+    firebaseConnected = false;
+    updateStatusBadge();
+    if(error && error.code==='PERMISSION_DENIED'){
+      toast('Нет доступа к Firebase. Проверьте Rules в консоли Firebase', true);
+    }
   }));
 
-  fbListeners.push(onValue(ref(db,schoolPath+'/log'),function(s){data.log=s.val()||[];}));
-  fbListeners.push(onValue(ref(db,schoolPath+'/notifications'),function(s){data.notifications=s.val()||[];if(session)processIncomingNotifications();}));
+  fbListeners.push(onValue(ref(db,schoolPath+'/log'), function(s){ data.log=s.val()||[]; }));
+  fbListeners.push(onValue(ref(db,schoolPath+'/notifications'), function(s){
+    data.notifications=s.val()||[];
+    if(session) processIncomingNotifications();
+  }));
 }
 function updateStatusBadge(){
-  const b=document.getElementById('syncStatus');
-  if(!b)return;
+  const b = document.getElementById('syncStatus');
+  if(!b) return;
   if(!window.firebaseDB){
-    b.innerHTML='<span style="color:#ef4444">●</span> Локально';
-  }else if(!firebaseReady){
-    b.innerHTML='<span style="color:#f59e0b">●</span> Подключение...';
-  }else if(firebaseConnected){
-    b.innerHTML='<span style="color:#10b981">●</span> Синхронизировано';
-  }else{
-    b.innerHTML='<span style="color:#f59e0b">●</span> Офлайн';
+    b.innerHTML = '<span style="color:#ef4444">●</span> Firebase не загружен' + (window.firebaseError ? ': '+escapeHtml(String(window.firebaseError).slice(0,60)) : '');
+  } else if(!firebaseReady){
+    b.innerHTML = '<span style="color:#f59e0b">●</span> Подключение...';
+  } else if(firebaseConnected){
+    b.innerHTML = '<span style="color:#10b981">●</span> Синхронизировано';
+  } else {
+    b.innerHTML = '<span style="color:#f59e0b">●</span> Офлайн — данные только локально';
   }
 }
 function topbarSyncBadge(){
-  if(!window.firebaseDB) return '<span class="badge sync-off">● офлайн</span>';
+  if(!window.firebaseDB) return '<span class="badge sync-off" title="'+(window.firebaseError||'Firebase не загружен')+'">● нет связи</span>';
   if(!firebaseReady) return '<span class="badge sync-wait">● подключение</span>';
   if(firebaseConnected) return '<span class="badge sync-ok">● онлайн</span>';
   return '<span class="badge sync-wait">● офлайн</span>';
@@ -2547,9 +2576,11 @@ function renderSettings(){
     html+='<b>Класс. рук.:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br><b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—');
   }
   html+='</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"><button class="btn" id="changePinBtn">Сменить PIN</button><button class="btn btn-secondary" id="notifyPermBtn">Уведомления</button></div>';
-  if(window.firebaseDB){
-    html+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-secondary" id="forceSyncBtn">🔄 Пересинхронизировать</button><span style="font-size:12px;color:var(--text-dim)">Статус: '+(firebaseConnected?'<span style="color:var(--success)">онлайн</span>':'<span style="color:var(--warn)">офлайн</span>')+'</span></div>';
-  }
+  html+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">';
+  html+='<button class="btn btn-secondary" id="forceSyncBtn">🔄 Пересинхронизировать</button>';
+  html+='<button class="btn btn-secondary" id="diagFirebaseBtn">🔍 Диагностика Firebase</button>';
+  html+='<span style="font-size:12px;color:var(--text-dim)">Статус: '+(firebaseConnected?'<span style="color:var(--success)">онлайн</span>':(window.firebaseDB?'<span style="color:var(--warn)">офлайн</span>':'<span style="color:var(--danger)">не подключен</span>'))+'</span></div>';
+  html+='<div id="diagResult" style="display:none;margin-top:14px;padding:14px;background:var(--bg-subtle);border-radius:10px;border:1px solid var(--border)"></div>';
   html+='</div>';
   return html;
 }
@@ -3199,7 +3230,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-open-student]').forEach(function(el){el.addEventListener('click',function(e){if(e.target.closest('button'))return;openStudentProfile(el.dataset.openStudent);});});
   document.querySelectorAll('[data-view]').forEach(function(el){if(el.tagName==='A'){el.addEventListener('click',function(e){e.preventDefault();currentView=el.dataset.view;renderApp();window.scrollTo({top:0,behavior:'smooth'});});}});
 
-  /* ===== ШКОЛЫ ===== */
   document.getElementById('schoolForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const name=document.getElementById('schoolName').value.trim();
@@ -3227,7 +3257,6 @@ function bindAllEvents(){
     else toast('Нельзя удалить последнюю',true);
   });});
 
-  /* ===== ПОСЕЩАЕМОСТЬ ===== */
   document.getElementById('attForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('attDate').value,sn=document.getElementById('attStudent').value,subj=document.getElementById('attSubject').value,r=document.getElementById('attReason').value,note=document.getElementById('attNote').value.trim();
@@ -3255,7 +3284,6 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-late]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.lates=data.lates.filter(function(l){return l.id!==b.dataset.delLate;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== СПРАВКИ ===== */
   document.getElementById('reqForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const type=document.getElementById('reqType').value;
@@ -3290,7 +3318,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-req-reject]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReject;});if(!r||!confirm('Отклонить?'))return;const note=prompt('Причина:','')||'';r.status='rejected';r.note=note;saveData();toast('Отклонено',true);renderApp();});});
   document.querySelectorAll('[data-req-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.requests=data.requests.filter(function(r){return r.id!==b.dataset.reqDel;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== ЭКСКУРСИИ ===== */
   document.getElementById('tripForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('tripTitle').value.trim();
@@ -3335,7 +3362,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-trip-leave]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripLeave);if(!t)return;if(!confirm('Отменить?'))return;t.participants=(t.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-trip-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.trips=data.trips.filter(function(t){return t.id!==b.dataset.tripDel;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== ЗАМЕНЫ ===== */
   document.getElementById('subClass')?.addEventListener('change',function(e){document.getElementById('subSubject').innerHTML=optionsHTML(getSubjects(e.target.value),'');});
   document.getElementById('substForm')?.addEventListener('submit',function(e){
     e.preventDefault();
@@ -3353,7 +3379,6 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-subst]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.substitutions=data.substitutions.filter(function(s){return s.id!==b.dataset.delSubst;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== ДЗ ===== */
   document.getElementById('hwForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('hwDate').value,subj=document.getElementById('hwSubject').value,text=document.getElementById('hwText').value.trim(),deadline=document.getElementById('hwDeadline').value;
@@ -3370,12 +3395,10 @@ function bindAllEvents(){
   document.querySelectorAll('[data-hw-all-clear]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.hwAllClear;});if(!h||!confirm('Сбросить?'))return;h.done=[];saveData();toast('Сброшено');renderApp();});});
   document.querySelectorAll('[data-toggle-done]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.toggleDone;});if(!h)return;if(!h.done)h.done=[];const idx=h.done.indexOf(session.name);if(idx>=0)h.done.splice(idx,1);else h.done.push(session.name);saveData();toast('Сохранено');renderApp();});});
 
-  /* ===== РАСПИСАНИЕ / ЗВОНКИ ===== */
   document.getElementById('editScheduleBtn')?.addEventListener('click',openScheduleEditor);
   document.getElementById('editBellsBtn')?.addEventListener('click',openBellsEditor);
   document.getElementById('bellsForm')?.addEventListener('submit',function(e){e.preventDefault();document.querySelectorAll('[data-bell-num]').forEach(function(inp){const n=parseInt(inp.dataset.bellNum,10);const f=inp.dataset.bellField;const b=data.bellSchedule.find(function(x){return x.num===n;});if(b)b[f]=inp.value;});saveData();toast('Сохранено');renderApp();});
 
-  /* ===== КРУЖКИ ===== */
   document.getElementById('clubForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const name=document.getElementById('clubName').value.trim();
@@ -3389,7 +3412,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-club-attendance]').forEach(function(b){b.addEventListener('click',function(){openClubAttendance(b.dataset.clubAttendance);});});
   document.querySelectorAll('[data-club-attendance-view]').forEach(function(b){b.addEventListener('click',function(){openClubHistory(b.dataset.clubAttendanceView);});});
 
-  /* ===== МЕРОПРИЯТИЯ ===== */
   document.getElementById('eventForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('evTitle').value.trim();
@@ -3402,7 +3424,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-event-leave]').forEach(function(b){b.addEventListener('click',function(){const ev=getEventById(b.dataset.eventLeave);if(!ev)return;ev.participants=(ev.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-event-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.events=data.events.filter(function(e){return e.id!==b.dataset.eventDel;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== СТОЛОВАЯ ===== */
   document.getElementById('menuForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('menuDate').value,dish=document.getElementById('menuDish').value.trim();
@@ -3438,33 +3459,27 @@ function bindAllEvents(){
   document.getElementById('yearOrderBtn')?.addEventListener('click',openMealYearOrderModal);
   document.getElementById('clearAllOrdersBtn')?.addEventListener('click',clearMyMealOrders);
 
-  /* ===== ОБЪЯВЛЕНИЯ ===== */
   document.getElementById('annForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('annText').value.trim();if(!text)return;data.announcements.push({id:uid(),class:session.class,text:text,time:new Date().toISOString(),from:session.name});getStudentsOfClass(session.class).forEach(function(s){pushNotification('student',s.name,'Объявление',text,'message');});saveData();toast('Отправлено');renderApp();});
   document.querySelectorAll('[data-del-ann]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.announcements=data.announcements.filter(function(a){return a.id!==b.dataset.delAnn;});saveData();renderApp();});});
   document.getElementById('taForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('taText').value.trim();if(!text)return;data.teacherAnnouncements.push({id:uid(),text:text,time:new Date().toISOString(),from:session.name,fromPosition:session.position||'teacher'});for(const t of data.teachers){if(t.name!==session.name)pushNotification('teacher',t.name,'Объявление учителям',text,'info');}saveData();toast('Опубликовано');renderApp();});
   document.querySelectorAll('[data-del-ta]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.teacherAnnouncements=data.teacherAnnouncements.filter(function(a){return a.id!==b.dataset.delTa;});saveData();renderApp();});});
 
-  /* ===== ВОПРОСЫ ===== */
   document.querySelectorAll('[data-ans-q]').forEach(function(b){b.addEventListener('click',function(){const id=b.dataset.ansQ;const el=document.getElementById('ans-'+id);const ans=el?el.value.trim():'';if(!ans)return toast('Введите ответ',true);const q=data.questions.find(function(x){return x.id===id;});if(!q)return;q.answered=true;q.answer=ans;saveData();toast('Отвечено');renderApp();});});
   document.getElementById('qForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('qText').value.trim();if(!text)return;let recipient=null;const hr=data.teachers.find(function(t){return t.class===session.class;});if(hr)recipient=hr.name;if(!recipient)return toast('Нет учителя',true);data.questions.push({id:uid(),class:session.class,from:session.name,to:recipient,text:text,time:new Date().toISOString(),answered:false});pushNotification('teacher',recipient,'Вопрос',text,'question');saveData();toast('Отправлено');renderApp();});
 
-  /* ===== УЧЕНИКИ ===== */
   document.getElementById('addStudentForm')?.addEventListener('submit',async function(e){e.preventDefault();const name=(document.getElementById('newStudentName').value||'').trim();if(!name)return;if(data.students.some(function(s){return s.class===session.class&&s.name.toLowerCase()===name.toLowerCase();}))return toast('Уже есть',true);data.students.push({id:uid(),class:session.class,name:name,pin:await setPinHash('1234'),attempts:0,blockedUntil:null});saveData();toast('Добавлен');renderApp();});
   document.getElementById('newStudentName')?.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
   document.querySelectorAll('[data-del-student]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();const st=data.students.find(function(s){return s.id===b.dataset.delStudent;});if(!st||!confirm('Удалить?'))return;data.students=data.students.filter(function(s){return s.id!==st.id;});data.absences=data.absences.filter(function(a){return !(a.class===st.class&&a.studentName===st.name);});saveData();toast('Удалён');renderApp();});});
 
-  /* ===== ЗАМЕТКИ ===== */
   document.getElementById('todoForm')?.addEventListener('submit',function(e){e.preventDefault();const t=document.getElementById('todoText').value.trim();if(!t)return;data.todos.push({id:uid(),teacherName:session.name,text:t,done:false,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-toggle-todo]').forEach(function(b){b.addEventListener('click',function(){const t=data.todos.find(function(x){return x.id===b.dataset.toggleTodo;});if(t){t.done=!t.done;saveData();renderApp();}});});
   document.querySelectorAll('[data-del-todo]').forEach(function(b){b.addEventListener('click',function(){data.todos=data.todos.filter(function(t){return t.id!==b.dataset.delTodo;});saveData();renderApp();});});
   document.getElementById('noteForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('noteText').value.trim();const sn=document.getElementById('noteStudent').value;if(!text)return;data.notes.push({id:uid(),teacherName:session.name,studentName:sn,text:text,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-del-note]').forEach(function(b){b.addEventListener('click',function(){data.notes=data.notes.filter(function(n){return n.id!==b.dataset.delNote;});saveData();renderApp();});});
 
-  /* ===== ДЕЖУРСТВА ===== */
   document.getElementById('dutyForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('dutyDate').value,sn=document.getElementById('dutyStudent').value;if(!date||!sn)return;data.duties.push({id:uid(),class:session.class,date:date,studentName:sn});saveData();toast('Назначено');renderApp();});
   document.querySelectorAll('[data-del-duty]').forEach(function(b){b.addEventListener('click',function(){data.duties=data.duties.filter(function(d){return d.id!==b.dataset.delDuty;});saveData();renderApp();});});
 
-  /* ===== ШКОЛЬНОЕ ДЕЖУРСТВО ===== */
   document.getElementById('addPostForm')?.addEventListener('submit',function(e){e.preventDefault();const n=document.getElementById('newPostName').value.trim();if(!n)return;data.schoolPosts.push({id:uid(),name:n});saveData();toast('Добавлено');renderApp();});
   document.querySelectorAll('[data-del-post]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolPosts=data.schoolPosts.filter(function(p){return p.id!==b.dataset.delPost;});saveData();renderApp();});});
   document.getElementById('createWeekForm')?.addEventListener('submit',function(e){e.preventDefault();const cls=document.getElementById('weekClass').value,start=document.getElementById('weekStart').value;if(!cls||!start)return toast('Заполните',true);if(!DUTY_CLASSES.includes(cls))return toast('Только 6-11',true);if(data.schoolDutyWeeks.some(function(w){return w.startDate===start&&!w.transferred;}))return toast('Уже есть',true);createSchoolDutyWeek(cls,start);toast('Создано');renderApp();});
@@ -3474,47 +3489,90 @@ function bindAllEvents(){
   document.querySelectorAll('[data-transfer-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Передать?'))return;transferSchoolDuty(b.dataset.transferWeek);});});
   document.querySelectorAll('[data-del-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolDutyWeeks=data.schoolDutyWeeks.filter(function(w){return w.id!==b.dataset.delWeek;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== ОТЧЁТЫ ===== */
   document.getElementById('expAbsences')?.addEventListener('click',function(){exportCSV('absences');});
   document.getElementById('expHw')?.addEventListener('click',function(){exportCSV('homework');});
   document.getElementById('expLates')?.addEventListener('click',function(){exportCSV('lates');});
   document.getElementById('expSchoolSummary')?.addEventListener('click',function(){exportCSV('school');});
 
-  /* ===== НАСТРОЙКИ ===== */
   document.getElementById('changePinBtn')?.addEventListener('click',function(){const t=findTeacher(session.name);if(!t)return;openChangePinModal({onSave:async function(old,newP){if(!await verifyPin(old,t.pin))return {ok:false,error:'Неверный PIN'};t.pin=await setPinHash(newP);t.attempts=0;t.blockedUntil=null;saveData();return {ok:true};}});});
   document.getElementById('notifyPermBtn')?.addEventListener('click',function(){if(!('Notification' in window))return toast('Не поддерживается',true);if(Notification.permission==='default')Notification.requestPermission();});
-  document.getElementById('forceSyncBtn')?.addEventListener('click',async function(){
-    if(!window.firebaseDB)return toast('Firebase не загружен',true);
+
+  document.getElementById('diagFirebaseBtn')?.addEventListener('click', async function(){
+    const out = document.getElementById('diagResult');
+    if(!out) return;
+    out.style.display='block';
+    out.innerHTML='Проверка...';
+    let log = [];
+    log.push('1. window.firebaseDB: ' + (window.firebaseDB ? '✓ есть' : '✗ нет'));
+    log.push('2. window.firebaseReady: ' + (window.firebaseReady ? '✓ да' : '✗ нет'));
+    log.push('3. window.firebaseError: ' + (window.firebaseError || '—'));
+    log.push('4. firebaseConnected: ' + (firebaseConnected ? '✓ да' : '✗ нет'));
+    log.push('5. currentSchoolId: ' + currentSchoolId);
+    if(window.firebaseDB){
+      try{
+        const {db,ref,get,set} = window.firebaseDB;
+        const testPath = FB_PATH+'/schools/'+currentSchoolId+'/main';
+        log.push('6. Пробую прочитать: ' + testPath);
+        const snap = await get(ref(db, testPath));
+        log.push('7. Чтение: ' + (snap.exists() ? '✓ данные есть ('+Object.keys(snap.val()).length+' полей)' : '⚠ данных нет'));
+        try{
+          const pingRef = ref(db, FB_PATH+'/schools/'+currentSchoolId+'/_ping');
+          await set(pingRef, {time: Date.now()});
+          log.push('8. Запись: ✓ разрешена');
+        }catch(wErr){
+          log.push('8. Запись: ✗ ОШИБКА — ' + (wErr.code || wErr.message));
+          log.push('   → Скорее всего Firebase Rules закрыты.');
+          log.push('   → Откройте Firebase Console → Realtime Database → Rules');
+          log.push('   → Установите: { "rules": { ".read": true, ".write": true } }');
+        }
+      }catch(rErr){
+        log.push('6-7. ОШИБКА чтения: ' + (rErr.code || rErr.message));
+        log.push('   → Firebase Rules закрыты или неверный databaseURL');
+      }
+    } else {
+      log.push('');
+      log.push('❌ Firebase модуль не загрузился.');
+      log.push('Причины: блокировщик, нет интернета, firewall');
+    }
+    out.innerHTML = log.map(function(l){return '<div style="font-family:monospace;font-size:12px;margin-bottom:3px">'+escapeHtml(l)+'</div>';}).join('');
+  });
+
+  document.getElementById('forceSyncBtn')?.addEventListener('click', async function(){
+    if(!window.firebaseDB) return toast('Firebase не загружен', true);
     unsubscribeFirebase();
     try{
-      const{db,ref,get}=window.firebaseDB;
+      const {db,ref,get} = window.firebaseDB;
       const schoolPath = FB_PATH+'/schools/'+currentSchoolId;
       const snap = await get(ref(db,schoolPath+'/main'));
       if(snap.exists()){
         const inc = snap.val();
-        for(const f of LIST_FIELDS)data[f]=inc[f]||[];
-        data.periods=inc.periods||{};data.currentPeriod=inc.currentPeriod||{};data.schedules=inc.schedules||{};
-        if(Array.isArray(inc.bellSchedule)&&inc.bellSchedule.length)data.bellSchedule=inc.bellSchedule;
-        if(Array.isArray(inc.schoolPosts)&&inc.schoolPosts.length)data.schoolPosts=inc.schoolPosts;
+        for(const f of LIST_FIELDS) data[f]=inc[f]||[];
+        data.periods=inc.periods||{}; data.currentPeriod=inc.currentPeriod||{}; data.schedules=inc.schedules||{};
+        if(Array.isArray(inc.bellSchedule)&&inc.bellSchedule.length) data.bellSchedule=inc.bellSchedule;
+        if(Array.isArray(inc.schoolPosts)&&inc.schoolPosts.length) data.schoolPosts=inc.schoolPosts;
         data.adminPasswordHash=inc.adminPasswordHash||null;
         normalizeData();
-        try{localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));}catch(e){}
-        firebaseConnected=true;
+        try{ localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data)); }catch(e){}
+        firebaseConnected = true;
+        toast('Загружено с сервера: ' + (data.students.length) + ' учеников');
+      } else {
+        saveData();
+        toast('Локальные данные отправлены на сервер');
       }
-    }catch(e){firebaseConnected=false;}
+    }catch(e){
+      console.error('[sync] forceSync failed:', e);
+      toast('Ошибка: ' + (e.code || e.message), true);
+    }
     subscribeToFirebase();
     updateStatusBadge();
-    toast('Синхронизировано');
     renderApp();
   });
 
-  /* ===== СТУДЕНТ / РОДИТЕЛЬ ===== */
   document.getElementById('addMyAbsBtn')?.addEventListener('click',openAddAbsenceModal);
   document.getElementById('addParentNoteBtn')?.addEventListener('click',openAddParentNote);
   document.getElementById('parentMsgForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('pmText').value.trim();if(!text)return;const teacher=data.teachers.find(function(t){return t.class===session.class;});data.contacts.push({id:uid(),class:session.class,studentName:session.name,from:session.name,fromRole:'parent',to:teacher?teacher.name:'—',text:text,time:new Date().toISOString(),read:false});if(teacher)pushNotification('teacher',teacher.name,'Сообщение от '+session.name,text,'message');saveData();toast('Отправлено');renderApp();});
   document.getElementById('noteParentForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('pnDate').value,reason=document.getElementById('pnReason').value,text=document.getElementById('pnText').value.trim();if(!date||!reason||!text)return toast('Заполните',true);data.parentNotes.push({id:uid(),date:date,class:session.class,studentName:session.name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});const teacher=data.teachers.find(function(t){return t.class===session.class;});if(teacher)pushNotification('teacher',teacher.name,'Записка',session.name+' · '+formatDate(date),'absence');saveData();toast('Отправлено');renderApp();});
 
-  /* ===== ДИСЦИПЛИНА ===== */
   document.getElementById('discForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('discDate').value;
@@ -3529,7 +3587,6 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-disc]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.discipline=data.discipline.filter(function(d){return d.id!==b.dataset.delDisc;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== БАЛАНС ===== */
   document.getElementById('topupForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const amount=parseInt(document.getElementById('tuAmount').value,10)||0;
@@ -3555,7 +3612,6 @@ function bindAllEvents(){
     saveData();toast('Сохранено');renderApp();
   });});
 
-  /* ===== ЗАЯВКИ НА РЕМОНТ ===== */
   document.getElementById('maintForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('mtTitle').value.trim();
@@ -3593,7 +3649,6 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-tech-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.technicians=data.technicians.filter(function(t){return t.id!==b.dataset.techDel;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== СОГЛАСИЯ ===== */
   document.getElementById('consentForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('consTitle').value.trim();
@@ -3611,7 +3666,6 @@ function bindAllEvents(){
   document.querySelectorAll('[data-consent-decline]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Отказаться?'))return;signConsent(b.dataset.consentDecline,false);toast('Отказано',true);renderApp();});});
   document.querySelectorAll('[data-consent-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.consents=data.consents.filter(function(c){return c.id!==b.dataset.consentDel;});saveData();toast('Удалено');renderApp();});});
 
-  /* ===== УЧЁТНЫЕ ЗАПИСИ ===== */
   document.getElementById('addTeacherForm')?.addEventListener('submit',async function(e){
     e.preventDefault();
     const name=document.getElementById('ntName').value.trim();
@@ -3687,36 +3741,39 @@ document.addEventListener('keydown',function(e){
 
 /* ============ START ============ */
 (async function startApp(){
-  if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');
+  if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
   loadSchoolsRegistry();
   data = loadDataForSchool(currentSchoolId);
   normalizeData();
-  session=loadSession();
-  if(session&&session.schoolId && session.schoolId!==currentSchoolId){
+  session = loadSession();
+  if(session && session.schoolId && session.schoolId!==currentSchoolId){
     currentSchoolId = session.schoolId;
-    localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
+    localStorage.setItem(CURRENT_SCHOOL_KEY, currentSchoolId);
     data = loadDataForSchool(currentSchoolId);
     normalizeData();
   }
-  if(session&&session.isCafeteria)currentView='cafeteria';
-  else if(session&&(session.isZavhoz||session.isTechnician))currentView='maintenance';
-  else if(session&&session.role==='admin')currentView='schools';
+  if(session && session.isCafeteria) currentView='cafeteria';
+  else if(session && (session.isZavhoz || session.isTechnician)) currentView='maintenance';
+  else if(session && session.role==='admin') currentView='schools';
   renderApp();
 
   fbReadyPromise = new Promise(function(resolve){
-    const t0=Date.now();
+    const t0 = Date.now();
     function check(){
       if(window.firebaseDB){
-        firebaseReady=true;
+        firebaseReady = true;
+        console.log('[sync] firebase ready in', Date.now()-t0, 'ms');
         updateStatusBadge();
         return resolve(true);
       }
-      if(Date.now()-t0>8000){
-        firebaseReady=true;
+      if(Date.now()-t0 > 8000){
+        firebaseReady = true;
+        console.warn('[sync] firebase timeout after 8s. Error:', window.firebaseError);
         updateStatusBadge();
+        toast('Firebase не загрузился — синхронизация недоступна', true);
         return resolve(false);
       }
-      setTimeout(check,80);
+      setTimeout(check, 80);
     }
     check();
   });
@@ -3725,7 +3782,7 @@ document.addEventListener('keydown',function(e){
   if(window.firebaseDB){
     subscribeToFirebase();
     updateStatusBadge();
-    setTimeout(function(){runAutoBackup(false);},2000);
+    setTimeout(function(){ runAutoBackup(false); }, 2000);
   }
 })();
 </script>
