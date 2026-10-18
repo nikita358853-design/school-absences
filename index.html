@@ -93,6 +93,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 select{cursor:pointer;appearance:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238275a3' stroke-width='2.5' stroke-linecap='round'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+select option{background:#fff;color:#1a0b3d}
+body.dark select option{background:#161028;color:#f1ecff}
 input[type="password"]{letter-spacing:6px;text-align:center;font-family:monospace;font-size:16px}
 input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;
@@ -132,35 +134,25 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
   padding:5px 12px;border-radius:var(--radius-full);font-size:12px;font-weight:700;color:#f1ecff}
 .topbar .badge.position{background:linear-gradient(135deg,rgba(245,158,11,.35),rgba(245,158,11,.2));border-color:rgba(245,158,11,.5);color:#fcd34d}
 .topbar .badge.position.cafe{background:linear-gradient(135deg,rgba(236,72,153,.35),rgba(236,72,153,.2));border-color:rgba(236,72,153,.5);color:#fbcfe8}
+.topbar .badge.position.vospit{background:linear-gradient(135deg,rgba(59,130,246,.35),rgba(59,130,246,.2));border-color:rgba(59,130,246,.5);color:#bfdbfe}
+.topbar .badge.school{background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(16,185,129,.15));border-color:rgba(16,185,129,.5);color:#6ee7b7}
 .topbar .btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);box-shadow:none;padding:9px 16px;font-size:13px}
 .topbar .btn-secondary:hover{background:rgba(255,255,255,.2)}
 .topbar select.class-switch{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
   color:#fff;padding:8px 30px 8px 12px;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;
   appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 10px center;width:auto;min-width:100px}
+.topbar select.class-switch option{background:#ffffff !important;color:#1a0b3d !important;font-weight:600}
+body.dark .topbar select.class-switch option{background:#161028 !important;color:#f1ecff !important}
 .icon-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;
   font-size:17px;cursor:pointer;padding:8px 13px;border-radius:11px;transition:all .2s;font-family:inherit;
   line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px}
 .icon-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
 .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.side-menu{
-  position:fixed;
-  top:72px;
-  left:16px;
-  width:290px;
-  max-height:calc(100vh - 92px);
-  overflow-y:auto;
-  background:var(--bg-card);
-  border-radius:20px;
-  box-shadow:var(--shadow-lg);
-  border:1px solid var(--border);
-  z-index:250;
-  padding:10px;
-  opacity:0;
-  transform:translateY(-8px) scale(.98);
-  pointer-events:none;
-  transition:opacity .2s, transform .2s;
-}
+.side-menu{position:fixed;top:72px;left:16px;width:290px;max-height:calc(100vh - 92px);
+  overflow-y:auto;background:var(--bg-card);border-radius:20px;box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);z-index:250;padding:10px;opacity:0;transform:translateY(-8px) scale(.98);
+  pointer-events:none;transition:opacity .2s, transform .2s;}
 .side-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 .side-menu-header{display:flex;justify-content:space-between;align-items:center;
   padding:6px 12px 12px;font-weight:800;font-size:12px;color:var(--text-dim);
@@ -220,10 +212,6 @@ body.dark .tag.good{color:#6ee7b7}
 .tag.warn{background:var(--warn-soft);color:#92400e;border-color:rgba(217,119,6,.25)}
 body.dark .tag.warn{color:#fcd34d}
 .tag.neutral{background:var(--bg-subtle);color:var(--text-mid);border-color:var(--border)}
-.tag.position{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.08));color:#92400e;border-color:rgba(245,158,11,.35)}
-body.dark .tag.position{color:#fcd34d}
-.tag.position.cafe{background:linear-gradient(135deg,rgba(236,72,153,.18),rgba(236,72,153,.08));color:#db2777;border-color:rgba(236,72,153,.35)}
-body.dark .tag.position.cafe{color:#fbcfe8}
 .empty{text-align:center;color:var(--text-dim);padding:36px 20px;font-size:14px;background:var(--bg-subtle);border-radius:var(--radius);border:1px dashed var(--border-strong)}
 .warning-banner{background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(220,38,38,.03));border-left:4px solid var(--danger);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm)}
 .warning-banner .warn-icon{font-size:26px}
@@ -371,6 +359,9 @@ body.dark .teacher-role-info{color:var(--primary-light)}
 .manager-info{padding:14px 16px;background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));
   border:1px solid rgba(245,158,11,.35);border-radius:12px;font-size:13px;color:#92400e;margin-bottom:14px;line-height:1.55;font-weight:500}
 body.dark .manager-info{color:#fcd34d}
+.vospit-info{padding:14px 16px;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(59,130,246,.05));
+  border:1px solid rgba(59,130,246,.35);border-radius:12px;font-size:13px;color:#1e40af;margin-bottom:14px;line-height:1.55;font-weight:500}
+body.dark .vospit-info{color:#bfdbfe}
 .cafe-info{padding:14px 16px;background:linear-gradient(135deg,rgba(236,72,153,.15),rgba(236,72,153,.05));
   border:1px solid rgba(236,72,153,.35);border-radius:12px;font-size:13px;color:#db2777;margin-bottom:14px;line-height:1.55;font-weight:500}
 body.dark .cafe-info{color:#fbcfe8}
@@ -555,8 +546,9 @@ body.dark .trip-price{color:var(--primary-light)}
 /* ============ КОНСТАНТЫ ============ */
 const STORAGE_KEY='school_helper_v10';
 const SESSION_KEY='school_helper_session_v10';
+const SCHOOLS_REG_KEY='schools_registry_v10';
+const CURRENT_SCHOOL_KEY='current_school_id_v10';
 const FB_PATH='schoolData';
-const BACKUP_PATH='backups';
 const BACKUP_KEEP_DAYS=30;
 const DAYS_OF_WEEK=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const MAX_PIN_ATTEMPTS=5;
@@ -565,7 +557,7 @@ const SESSION_TTL_MS=30*24*60*60*1000;
 const CLASSES=(function(){const arr=[];for(let g=1;g<=9;g++)for(const l of ['А','Б','В'])arr.push(g+l);arr.push('10','11');return arr;})();
 const DUTY_CLASSES=CLASSES.filter(function(c){const g=parseInt(c,10);return g>=6;});
 const SUBJECTS_JUNIOR=['Русский язык','Литературное чтение','Иностранный язык','Математика','Окружающий мир','Основы религиозных культур и светской этики','Изобразительное искусство','Музыка','Труд (технология)','Физическая культура'];
-const SUBJECTS_MIDDLE=['Русский язык','Литература','Иностранный язык','Математика','Информатика','История','Обществознание (с 2026 года — с 9 класса)','География','Физика','Химия','Биология','Изобразительное искусство','Музыка','Труд (технология)','Физическая культура','Основы безопасности и защиты Родины'];
+const SUBJECTS_MIDDLE=['Русский язык','Литература','Иностранный язык','Математика','Информатика','История','Обществознание','География','Физика','Химия','Биология','Изобразительное искусство','Музыка','Труд (технология)','Физическая культура','Основы безопасности и защиты Родины'];
 const SUBJECTS_SENIOR=['Русский язык','Литература','Иностранный язык','Математика','Информатика','История','Обществознание','Правовая культура','Экономика','География','Физика','Химия','Биология','Физическая культура','Основы безопасности и защиты Родины'];
 const ALL_SUBJECTS=(function(){const s=new Set();for(const x of SUBJECTS_JUNIOR)s.add(x);for(const x of SUBJECTS_MIDDLE)s.add(x);for(const x of SUBJECTS_SENIOR)s.add(x);return Array.from(s).sort(function(a,b){return a.localeCompare(b,'ru');});})();
 const REASONS=[
@@ -586,6 +578,7 @@ const POSITIONS=[
   {id:'teacher',name:'Учитель',emoji:''},
   {id:'zavuch',name:'Завуч',emoji:'📋'},
   {id:'director',name:'Директор',emoji:'🏛'},
+  {id:'vospit',name:'Завуч по ВР',emoji:'🎭'},
   {id:'cafeteria',name:'Зав. столовой',emoji:'🍽'},
   {id:'zavhoz',name:'Завхоз',emoji:'🔧'},
   {id:'technician',name:'Техник',emoji:'🛠'}
@@ -671,6 +664,57 @@ function registerFailure(u){if(!u)return;u.attempts=(u.attempts||0)+1;if(u.attem
 function resetAttempts(u){if(!u)return;if(u.attempts||u.blockedUntil){u.attempts=0;u.blockedUntil=null;saveData();}}
 function isValidAbsenceDate(s){if(!s||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00');if(isNaN(d.getTime()))return false;const today=new Date();today.setHours(23,59,59,999);if(d>today)return false;const five=new Date();five.setFullYear(five.getFullYear()-5);if(d<five)return false;return true;}
 
+/* ============ МУЛЬТИ-ШКОЛЫ ============ */
+let schoolsRegistry = [];
+let currentSchoolId = 'school1';
+
+function loadSchoolsRegistry(){
+  try{
+    const raw = localStorage.getItem(SCHOOLS_REG_KEY);
+    if(raw) schoolsRegistry = JSON.parse(raw);
+  }catch(e){ schoolsRegistry = []; }
+  if(!Array.isArray(schoolsRegistry) || !schoolsRegistry.length){
+    schoolsRegistry = [{id:'school1', name:'Школа №1', createdAt:new Date().toISOString()}];
+    saveSchoolsRegistry();
+  }
+  currentSchoolId = localStorage.getItem(CURRENT_SCHOOL_KEY) || schoolsRegistry[0].id;
+  if(!schoolsRegistry.find(function(s){return s.id===currentSchoolId;})){
+    currentSchoolId = schoolsRegistry[0].id;
+    localStorage.setItem(CURRENT_SCHOOL_KEY, currentSchoolId);
+  }
+}
+function saveSchoolsRegistry(){
+  localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
+  if(firebaseReady && window.firebaseDB){
+    try{
+      const{db,ref,set}=window.firebaseDB;
+      set(ref(db,FB_PATH+'/registry/schools'),schoolsRegistry).catch(function(){});
+    }catch(e){}
+  }
+}
+function getSchoolName(id){
+  const s = schoolsRegistry.find(function(x){return x.id===id;});
+  return s ? s.name : 'Школа';
+}
+function addSchool(name){
+  const s = {id:'school_'+uid(), name:name, createdAt:new Date().toISOString()};
+  schoolsRegistry.push(s);
+  saveSchoolsRegistry();
+  return s;
+}
+function deleteSchool(id){
+  if(schoolsRegistry.length<=1)return false;
+  schoolsRegistry = schoolsRegistry.filter(function(s){return s.id!==id;});
+  try{ localStorage.removeItem(getDataKey(id)); }catch(e){}
+  saveSchoolsRegistry();
+  if(currentSchoolId===id){
+    currentSchoolId = schoolsRegistry[0].id;
+    localStorage.setItem(CURRENT_SCHOOL_KEY, currentSchoolId);
+    data = loadDataForSchool(currentSchoolId);
+  }
+  return true;
+}
+
 /* ============ ХРАНИЛИЩЕ ============ */
 function emptyDB(){
   return {
@@ -684,6 +728,7 @@ function emptyDB(){
     lates:[],requests:[],trips:[],substitutions:[],
     discipline:[],mealAccounts:[],mealTransactions:[],
     maintenanceRequests:[],technicians:[],consents:[],
+    customRequestTypes:[],
     adminPasswordHash:null
   };
 }
@@ -693,24 +738,39 @@ function buildSeedData(){
   for(const c of CLASSES){for(const n of names){students.push({id:uid(),class:c,name:n,pin:simpleHash('1234'),attempts:0,blockedUntil:null});}}
   return Object.assign(emptyDB(),{students});
 }
-function loadLocalData(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return Object.assign(emptyDB(),JSON.parse(raw));}catch(e){}return buildSeedData();}
-let data=loadLocalData();
-const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDutyWeeks','teacherAnnouncements','lates','requests','trips','substitutions','discipline','mealAccounts','mealTransactions','maintenanceRequests','technicians','consents'];
-for(const f of LIST_FIELDS){if(!Array.isArray(data[f]))data[f]=[];}
-if(!data.periods)data.periods={};if(!data.currentPeriod)data.currentPeriod={};if(!data.schedules)data.schedules={};
-if(!Array.isArray(data.bellSchedule)||!data.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();
-if(!Array.isArray(data.schoolPosts)||!data.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();
-if(data.adminPasswordHash===undefined)data.adminPasswordHash=null;
+function getDataKey(schoolId){return STORAGE_KEY+'_'+schoolId;}
+function loadDataForSchool(schoolId){
+  try{
+    const raw = localStorage.getItem(getDataKey(schoolId));
+    if(raw) return Object.assign(emptyDB(), JSON.parse(raw));
+  }catch(e){}
+  const isFirstEver = !localStorage.getItem('school_helper_v10_initialized');
+  if(isFirstEver){
+    localStorage.setItem('school_helper_v10_initialized','1');
+    return buildSeedData();
+  }
+  return emptyDB();
+}
+let data = emptyDB();
+const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDutyWeeks','teacherAnnouncements','lates','requests','trips','substitutions','discipline','mealAccounts','mealTransactions','maintenanceRequests','technicians','consents','customRequestTypes'];
+function normalizeData(){
+  for(const f of LIST_FIELDS){if(!Array.isArray(data[f]))data[f]=[];}
+  if(!data.periods)data.periods={};if(!data.currentPeriod)data.currentPeriod={};if(!data.schedules)data.schedules={};
+  if(!Array.isArray(data.bellSchedule)||!data.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();
+  if(!Array.isArray(data.schoolPosts)||!data.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();
+  if(data.adminPasswordHash===undefined)data.adminPasswordHash=null;
+  migrateTeachers();
+}
 function migrateTeachers(){if(!Array.isArray(data.teachers))data.teachers=[];for(const t of data.teachers){if(!Array.isArray(t.subjects))t.subjects=[];if(!Array.isArray(t.classes))t.classes=[];if(t.class===undefined)t.class=null;if(!t.position)t.position='teacher';}}
-migrateTeachers();
 
 let session=null,firebaseReady=false,firebaseConnected=false;
+let fbListeners=[];
 let _seenNotifIds=new Set(),_sessionStartTime=Date.now(),_notifFilter='all';
 let saveTimer=null,saveLogTimer=null,saveNotifTimer=null;
 let _openDetails={};
 
 function saveData(){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));
   if(!firebaseReady||!window.firebaseDB)return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async function(){
@@ -720,13 +780,13 @@ function saveData(){
       for(const f of LIST_FIELDS)payload[f]=data[f];
       payload.periods=data.periods;payload.currentPeriod=data.currentPeriod;payload.schedules=data.schedules;
       payload.bellSchedule=data.bellSchedule;payload.adminPasswordHash=data.adminPasswordHash;
-      await set(ref(db,FB_PATH+'/main'),payload);
+      await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/main'),payload);
       firebaseConnected=true;updateStatusBadge();
     }catch(e){firebaseConnected=false;updateStatusBadge();}
   },600);
 }
-function saveLog(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveLogTimer);saveLogTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/log'),data.log||[]);}catch(e){}},2000);}
-function saveNotifications(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveNotifTimer);saveNotifTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/notifications'),data.notifications||[]);}catch(e){}},1000);}
+function saveLog(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveLogTimer);saveLogTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/log'),data.log||[]);}catch(e){}},2000);}
+function saveNotifications(){if(!firebaseReady||!window.firebaseDB)return;clearTimeout(saveNotifTimer);saveNotifTimer=setTimeout(async function(){try{const{db,ref,set}=window.firebaseDB;await set(ref(db,FB_PATH+'/schools/'+currentSchoolId+'/notifications'),data.notifications||[]);}catch(e){}},1000);}
 function logAction(action,details){data.log.push({time:new Date().toISOString(),user:session?session.name:'—',role:session?session.role:'—',action:action,details:details||''});if(data.log.length>300)data.log=data.log.slice(-300);saveLog();}
 
 /* ============ ПОМОЩНИКИ ============ */
@@ -737,21 +797,68 @@ function getCurrentPeriod(cls){ensurePeriods(cls);if(!data.periods[cls])return n
 function filterByPeriod(rows,cls){const p=getCurrentPeriod(cls);if(!p)return rows;return rows.filter(function(a){return a.date>=p.start&&a.date<=p.end;});}
 function ensureSchedule(cls){if(!cls)return;if(!data.schedules[cls]){const e={};for(const d of DAYS_OF_WEEK)e[d]=[];data.schedules[cls]=e;saveData();}}
 function getLessonsFor(cls,dateISO){const day=dayOfWeekName(dateISO);if(!day)return getSubjects(cls);ensureSchedule(cls);const s=data.schedules[cls][day];return s&&s.length?s:getSubjects(cls);}
-function hasFullAccess(){return session&&(session.isHomeroom||session.isManager);}
-function canEditSchedule(){return session&&(session.isManager||(session.role==='teacher'&&session.isHomeroom));}
+function hasFullAccess(){return session&&(session.isHomeroom||session.isManager||session.isVospit);}
+function canEditSchedule(){return session&&session.role==='teacher'&&session.isHomeroom&&!session.isManager&&!session.isVospit;}
 function canManageUsers(){return session&&(session.role==='admin'||session.isDirector);}
 function canManageMenu(){return session&&(session.role==='admin'||(session.role==='teacher'&&session.position==='cafeteria'));}
-function canPostTeacherAnn(){return session&&(session.role==='admin'||session.isManager);}
+function canPostTeacherAnn(){return session&&(session.role==='admin'||session.isManager||session.isVospit);}
 function canEditSchoolWeek(week){if(!session)return false;if(session.role==='admin'||session.isManager)return true;if(session.role==='teacher'&&session.isHomeroom&&session.homeroomClass===week.class)return true;return false;}
 function canManageSubstitutions(){return session&&(session.role==='admin'||session.isManager);}
-function canCreateTrips(){return session&&(session.role==='teacher'||session.role==='admin');}
+function canCreateTrips(){return session&&(session.role==='admin'||session.isVospit||(session.role==='teacher'&&session.isHomeroom&&!session.isManager&&!session.isVospit));}
 function canProcessRequests(){return session&&(session.role==='admin'||session.isDirector);}
 
-function getSessionAbsences(){if(!session||session.role!=='teacher'||!session.class)return[];return filterByPeriod(data.absences.filter(function(a){if(a.class!==session.class)return false;if(session.isManager)return true;if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;return true;}),session.class);}
-function getSessionLates(){if(!session||session.role!=='teacher'||!session.class)return[];return filterByPeriod(data.lates.filter(function(a){if(a.class!==session.class)return false;if(session.isManager)return true;if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;return true;}),session.class);}
-function getSessionHomework(){if(!session||session.role!=='teacher'||!session.class)return[];return data.homework.filter(function(h){if(h.class!==session.class)return false;if(session.isManager)return true;if(!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;return true;});}
+/* Менеджмент активностей — только Vospit и admin */
+function canManageActivities(){return session&&(session.role==='admin'||session.isVospit);}
+function canManageClubs(){return canManageActivities();}
+function canManageEvents(){return canManageActivities();}
+function canManageTrips(){return canManageActivities()||(session&&session.role==='teacher'&&session.isHomeroom&&!session.isManager&&!session.isVospit);}
+function canManageConsents(){return session&&(session.role==='admin'||session.isVospit||(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician));}
+
+/* Возможности добавления */
+function canAddAbsences(){return session&&session.role==='teacher'&&!session.isManager&&!session.isDirector&&!session.isVospit&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician;}
+function canAddLates(){return canAddAbsences();}
+function canAddHomework(){
+  return session&&session.role==='teacher'&&!session.isManager&&!session.isDirector&&!session.isVospit&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician;
+}
+function canAddDiscipline(){return session&&session.role==='teacher'&&(session.isHomeroom||session.isManager);}
+
+/* Предметы для ДЗ — только те, что ведёт учитель + только те классы, где ведёт */
+function getHomeworkSubjects(){
+  if(!canAddHomework())return[];
+  const t = findTeacher(session.name);
+  if(!t) return [];
+  const subjects = (t.subjects||[]).slice();
+  if(!subjects.length) return [];
+  const teachesThisClass = ((t.classes||[]).indexOf(session.class) >= 0);
+  if(!teachesThisClass) return [];
+  return subjects;
+}
+/* Предметы для посещаемости — классрук может любые в своём классе */
+function getAttendanceSubjects(){
+  if(!session||session.role!=='teacher'||!session.class)return[];
+  if(session.isManager||session.isVospit||session.isCafeteria||session.isZavhoz||session.isTechnician)return[];
+  if(session.isHomeroom)return getSubjects(session.class);
+  const t = findTeacher(session.name);
+  if(!t) return [];
+  if((t.classes||[]).indexOf(session.class) < 0) return [];
+  return t.subjects||[];
+}
+/* Предметы для опозданий — только свои */
+function getLatesSubjects(){
+  if(!session||session.role!=='teacher'||!session.class)return[];
+  if(session.isManager||session.isVospit||session.isCafeteria||session.isZavhoz||session.isTechnician)return[];
+  const t = findTeacher(session.name);
+  if(!t) return [];
+  if(session.isHomeroom && t.class===session.class) return t.subjects||[]; // классрук — свои предметы
+  if((t.classes||[]).indexOf(session.class) < 0) return [];
+  return t.subjects||[];
+}
+
+function getSessionAbsences(){if(!session||session.role!=='teacher'||!session.class)return[];return filterByPeriod(data.absences.filter(function(a){if(a.class!==session.class)return false;if(session.isManager||session.isVospit)return true;if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;return true;}),session.class);}
+function getSessionLates(){if(!session||session.role!=='teacher'||!session.class)return[];return filterByPeriod(data.lates.filter(function(a){if(a.class!==session.class)return false;if(session.isManager||session.isVospit)return true;if(!session.isHomeroom&&session.subjects.indexOf(a.subject)<0)return false;return true;}),session.class);}
+function getSessionHomework(){if(!session||session.role!=='teacher'||!session.class)return[];return data.homework.filter(function(h){if(h.class!==session.class)return false;if(session.isManager||session.isVospit)return true;if(!session.isHomeroom&&session.subjects.indexOf(h.subject)<0)return false;return true;});}
 function getSessionQuestions(){if(!session||session.role!=='teacher'||!session.class)return[];return data.questions.filter(function(q){if(q.class!==session.class)return false;if(q.to!==session.name)return false;return true;});}
-function getSessionAvailableSubjects(){if(!session||session.role!=='teacher')return[];if(session.isHomeroom||session.isManager)return getSubjects(session.class);return session.subjects;}
+function getSessionAvailableSubjects(){return getAttendanceSubjects();}
 function getClubById(id){return data.clubs.find(function(c){return c.id===id;});}
 function getEventById(id){return data.events.find(function(e){return e.id===id;});}
 function getTripById(id){return data.trips.find(function(t){return t.id===id;});}
@@ -760,11 +867,12 @@ function getClubsForTeacher(name){return data.clubs.filter(function(c){return c.
 function getActiveSchoolWeek(){const today=todayISO();return data.schoolDutyWeeks.find(function(w){return w.startDate<=today&&today<=w.endDate;});}
 function getStudentLatesThisWeek(name,cls){const today=todayISO();const weekAgo=addDays(today,-7);return data.lates.filter(function(l){return l.class===cls&&l.studentName===name&&l.date>=weekAgo&&l.date<=today;}).length;}
 function getMealAccount(studentName,cls){let acc=data.mealAccounts.find(function(a){return a.studentName===studentName&&a.class===cls;});if(!acc){acc={id:uid(),studentName:studentName,class:cls,balance:0,createdAt:new Date().toISOString()};data.mealAccounts.push(acc);}return acc;}
+function getStaffClassName(){return session&&session.class?session.class:'Сотрудники';}
 
 function getStudentFlags(name,cls){
   const flags=[];
   const abs=filterByPeriod(data.absences.filter(function(a){return a.class===cls&&a.studentName===name;}),cls);
-  const hw=data.homework.filter(function(h){if(h.class!==cls)return false;if(h.deadline&&h.deadline>todayISO())return false;if(session&&session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(h.subject)<0)return false;return true;});
+  const hw=data.homework.filter(function(h){if(h.class!==cls)return false;if(h.deadline&&h.deadline>todayISO())return false;if(session&&session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&!session.isVospit&&session.subjects.indexOf(h.subject)<0)return false;return true;});
   const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
   const latesWeek=getStudentLatesThisWeek(name,cls);
   if(abs.length>=3)flags.push({type:'danger',text:'Пропусков: '+abs.length});
@@ -858,47 +966,52 @@ function createMenuForYear(template,overwrite){
 /* ============ FIREBASE ============ */
 function subscribeToFirebase(){
   if(!window.firebaseDB)return;
+  for(const u of fbListeners){try{u();}catch(e){}}
+  fbListeners=[];
   const{db,ref,onValue,set}=window.firebaseDB;
-  onValue(ref(db,FB_PATH+'/main'),function(snap){
+  const schoolPath = FB_PATH+'/schools/'+currentSchoolId;
+  fbListeners.push(onValue(ref(db,schoolPath+'/main'),function(snap){
     const inc=snap.val();
-    if(!inc){const seed=buildSeedData();set(ref(db,FB_PATH+'/main'),Object.assign({},seed,{adminPasswordHash:null}));return;}
+    if(!inc){const seed=emptyDB();set(ref(db,schoolPath+'/main'),Object.assign({},seed,{adminPasswordHash:null}));return;}
     for(const f of LIST_FIELDS)data[f]=inc[f]||[];
     data.periods=inc.periods||{};data.currentPeriod=inc.currentPeriod||{};data.schedules=inc.schedules||{};
     if(!Array.isArray(inc.bellSchedule)||!inc.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();else data.bellSchedule=inc.bellSchedule;
     if(!Array.isArray(inc.schoolPosts)||!inc.schoolPosts.length)data.schoolPosts=DEFAULT_POSTS.slice();else data.schoolPosts=inc.schoolPosts;
     data.adminPasswordHash=inc.adminPasswordHash||null;
     migrateTeachers();
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));
     firebaseConnected=true;updateStatusBadge();
     if(session&&session.role==='teacher'){
       const t=findTeacher(session.name);
       if(t){const sess=buildTeacherSession(t,session.class);if(!sess){session=null;saveSession();}else session=sess;}
     }
     if(session)renderApp();
-  });
-  onValue(ref(db,FB_PATH+'/log'),function(s){data.log=s.val()||[];});
-  onValue(ref(db,FB_PATH+'/notifications'),function(s){data.notifications=s.val()||[];if(session)processIncomingNotifications();});
+  }));
+  fbListeners.push(onValue(ref(db,schoolPath+'/log'),function(s){data.log=s.val()||[];}));
+  fbListeners.push(onValue(ref(db,schoolPath+'/notifications'),function(s){data.notifications=s.val()||[];if(session)processIncomingNotifications();}));
 }
 function updateStatusBadge(){const b=document.getElementById('syncStatus');if(!b)return;if(!firebaseReady)b.innerHTML='<span style="color:#ef4444">●</span> Локально';else if(firebaseConnected)b.innerHTML='<span style="color:#10b981">●</span> Синхронизировано';else b.innerHTML='<span style="color:#f59e0b">●</span> Офлайн';}
 async function runAutoBackup(force){
   if(!window.firebaseDB)return;
   const today=todayISO();
-  if(!force&&localStorage.getItem('last_backup_v10')===today)return;
+  const backupKey='last_backup_v10_'+currentSchoolId;
+  if(!force&&localStorage.getItem(backupKey)===today)return;
   try{
     const{db,ref,set,get,remove}=window.firebaseDB;
-    const snap=await get(ref(db,BACKUP_PATH));const ex=snap.val()||{};const keys=Object.keys(ex).sort();
-    while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,BACKUP_PATH+'/'+keys.shift()));}catch(e){}}
-    await set(ref(db,BACKUP_PATH+'/'+today),{time:new Date().toISOString(),data:JSON.parse(JSON.stringify(data))});
-    localStorage.setItem('last_backup_v10',today);
+    const backupPath = FB_PATH+'/backups/'+currentSchoolId;
+    const snap=await get(ref(db,backupPath));const ex=snap.val()||{};const keys=Object.keys(ex).sort();
+    while(keys.length>=BACKUP_KEEP_DAYS){try{await remove(ref(db,backupPath+'/'+keys.shift()));}catch(e){}}
+    await set(ref(db,backupPath+'/'+today),{time:new Date().toISOString(),data:JSON.parse(JSON.stringify(data))});
+    localStorage.setItem(backupKey,today);
   }catch(e){}
 }
 async function listBackups(){
   if(!window.firebaseDB)return[];
-  try{const{db,ref,get}=window.firebaseDB;const snap=await get(ref(db,BACKUP_PATH));const v=snap.val()||{};return Object.keys(v).map(function(d){return{date:d,time:v[d].time};}).sort(function(a,b){return b.date.localeCompare(a.date);});}catch(e){return[];}
+  try{const{db,ref,get}=window.firebaseDB;const snap=await get(ref(db,FB_PATH+'/backups/'+currentSchoolId));const v=snap.val()||{};return Object.keys(v).map(function(d){return{date:d,time:v[d].time};}).sort(function(a,b){return b.date.localeCompare(a.date);});}catch(e){return[];}
 }
 async function restoreBackup(date){
   if(!window.firebaseDB)return false;
-  try{const{db,ref,get}=window.firebaseDB;const snap=await get(ref(db,BACKUP_PATH+'/'+date));const v=snap.val();if(!v||!v.data)return false;Object.assign(data,v.data);migrateTeachers();localStorage.setItem(STORAGE_KEY,JSON.stringify(data));saveData();return true;}catch(e){return false;}
+  try{const{db,ref,get}=window.firebaseDB;const snap=await get(ref(db,FB_PATH+'/backups/'+currentSchoolId+'/'+date));const v=snap.val();if(!v||!v.data)return false;Object.assign(data,v.data);normalizeData();localStorage.setItem(getDataKey(currentSchoolId),JSON.stringify(data));saveData();return true;}catch(e){return false;}
 }
 
 /* ============ УВЕДОМЛЕНИЯ ============ */
@@ -958,20 +1071,23 @@ function buildTeacherSession(t,preferred){
   const isCafeteria=position==='cafeteria';
   const isZavhoz=position==='zavhoz';
   const isTechnician=position==='technician';
-  if(isCafeteria)return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:false,isDirector:false,isCafeteria:true,isZavhoz:false,isTechnician:false,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
-  if(isZavhoz||isTechnician)return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:false,isDirector:false,isCafeteria:false,isZavhoz:isZavhoz,isTechnician:isTechnician,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
+  const isVospit=position==='vospit';
+  if(isCafeteria||isZavhoz||isTechnician||isVospit){
+    return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:isManager,isDirector:isDirector,isCafeteria:isCafeteria,isZavhoz:isZavhoz,isTechnician:isTechnician,isVospit:isVospit,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
+  }
   let allCls;
   if(isManager){allCls=CLASSES.slice();if(t.class&&allCls.indexOf(t.class)<0)allCls.push(t.class);}
   else{allCls=buildAllClasses(t);}
   if(!allCls.length)return null;
   let current=(t.class&&allCls.indexOf(t.class)>=0)?t.class:allCls[0];
   if(preferred&&allCls.indexOf(preferred)>=0)current=preferred;
-  return {role:'teacher',name:t.name,class:current,homeroomClass:t.class||null,isHomeroom:current===t.class,isManager:isManager,isDirector:isDirector,isCafeteria:false,isZavhoz:false,isTechnician:false,position:position,subjects:t.subjects||[],allClasses:allCls,expiresAt:Date.now()+SESSION_TTL_MS};
+  return {role:'teacher',name:t.name,class:current,homeroomClass:t.class||null,isHomeroom:current===t.class,isManager:isManager,isDirector:isDirector,isCafeteria:false,isZavhoz:false,isTechnician:false,isVospit:false,position:position,subjects:t.subjects||[],allClasses:allCls,expiresAt:Date.now()+SESSION_TTL_MS};
 }
 function saveSession(){if(session){if(!session.expiresAt)session.expiresAt=Date.now()+SESSION_TTL_MS;localStorage.setItem(SESSION_KEY,JSON.stringify(session));}else localStorage.removeItem(SESSION_KEY);}
 function loadSession(){
   try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return null;const s=JSON.parse(raw);if(s.expiresAt&&Date.now()>s.expiresAt){localStorage.removeItem(SESSION_KEY);return null;}
-    if(s.role==='teacher'){const t=findTeacher(s.name);if(!t)return null;return buildTeacherSession(t,s.class);}
+    if(s.schoolId && s.schoolId!==currentSchoolId){return null;}
+    if(s.role==='teacher'){const t=findTeacher(s.name);if(!t)return null;const sess=buildTeacherSession(t,s.class);if(sess)sess.schoolId=s.schoolId;return sess;}
     if(s.role==='student'||s.role==='parent'){const st=data.students.find(function(x){return x.class===s.class&&x.name===s.name;});if(!st)return null;return s;}
     return s;
   }catch(e){return null;}
@@ -1000,6 +1116,18 @@ function getNavItems(){
     ];
     if(session.isTechnician)return[
       {id:'maintenance',icon:'🔧',label:'Мои заявки'},
+      {id:'settings',icon:'⚙',label:'Настройки'}
+    ];
+    if(session.isVospit)return[
+      {id:'home',icon:'◈',label:'Сводка'},
+      {id:'clubs',icon:'◉',label:'Кружки'},
+      {id:'events',icon:'★',label:'Мероприятия'},
+      {id:'trips',icon:'➤',label:'Экскурсии'},
+      {id:'announcements',icon:'◬',label:'Объявления'},
+      {id:'teacherAnn',icon:'⚑',label:'Учителям'},
+      {id:'consents',icon:'✓',label:'Согласия'},
+      {id:'maintenance',icon:'🔧',label:'Заявки'},
+      {id:'cafeteria',icon:'◐',label:'Столовая'},
       {id:'settings',icon:'⚙',label:'Настройки'}
     ];
     if(session.isManager){
@@ -1065,7 +1193,9 @@ function getNavItems(){
       {id:'teacherAnn',icon:'⚑',label:'Учителям'},
       {id:'students',icon:'◍',label:'Ученики'},
       {id:'notes',icon:'✎',label:'Заметки'},
+      {id:'cafeteria',icon:'◐',label:'Столовая'},
       {id:'maintenance',icon:'🔧',label:'Заявки'},
+      {id:'consents',icon:'✓',label:'Согласия'},
       {id:'reports',icon:'▥',label:'Отчёты'},
       {id:'settings',icon:'⚙',label:'Настройки'}
     ];
@@ -1093,6 +1223,7 @@ function getNavItems(){
     {id:'messages',icon:'✉',label:'Учителю'},{id:'notes',icon:'✎',label:'Записки'}
   ];
   return[
+    {id:'schools',icon:'🏫',label:'Школы'},
     {id:'users',icon:'⚇',label:'Пользователи'},{id:'technicians',icon:'🛠',label:'Техники'},
     {id:'maintenance',icon:'🔧',label:'Заявки'},{id:'consents',icon:'✓',label:'Согласия'},
     {id:'allclubs',icon:'◉',label:'Кружки'},
@@ -1113,13 +1244,21 @@ function getNavGroups(nav){
     defs=[{title:'Обслуживание',ids:['maintenance','technicians']},{title:'Управление',ids:['settings']}];
   }else if(session.isTechnician){
     defs=[{title:'Мои заявки',ids:['maintenance']},{title:'Управление',ids:['settings']}];
+  }else if(session.isVospit){
+    defs=[
+      {title:'Основное',ids:['home']},
+      {title:'Активности',ids:['clubs','events','trips','announcements','teacherAnn']},
+      {title:'Документы',ids:['consents']},
+      {title:'Прочее',ids:['cafeteria','maintenance']},
+      {title:'Управление',ids:['settings']}
+    ];
   }else if(role==='teacher'&&session.isManager){
     defs=[
       {title:'Основное',ids:['home']},
-      {title:'Посещаемость',ids:['attendance','lates']},
+      {title:'Просмотр',ids:['attendance','lates']},
       {title:'Учёба',ids:['schedule','substitutions']},
-      {title:'Активности',ids:['clubs','events','trips']},
-      {title:'Коммуникация',ids:['announcements','teacherAnn','questions']},
+      {title:'Активности (просмотр)',ids:['clubs','events','trips','announcements']},
+      {title:'Коммуникация',ids:['teacherAnn','questions']},
       {title:'Столовая',ids:['cafeteria']},
       {title:'Ученики',ids:['students','notes','discipline']},
       {title:'Дежурства',ids:['duties']},
@@ -1148,9 +1287,10 @@ function getNavGroups(nav){
       {title:'Учёба',ids:['homework','schedule']},
       {title:'Активности',ids:['clubs','events','trips']},
       {title:'Коммуникация',ids:['teacherAnn']},
+      {title:'Столовая',ids:['cafeteria']},
       {title:'Ученики',ids:['students','notes']},
       {title:'Обслуживание',ids:['maintenance']},
-      {title:'Документы',ids:['reports']},
+      {title:'Документы',ids:['consents','reports']},
       {title:'Управление',ids:['settings']}
     ];
   }else if(role==='student'){
@@ -1177,7 +1317,7 @@ function getNavGroups(nav){
     ];
   }else{
     defs=[
-      {title:'Управление',ids:['users','technicians']},
+      {title:'Управление',ids:['schools','users','technicians']},
       {title:'Обслуживание',ids:['maintenance']},
       {title:'Контент',ids:['allclubs','allevents','menuadmin','belladmin','consents']},
       {title:'Система',ids:['backups','log']}
@@ -1190,10 +1330,11 @@ function getNavGroups(nav){
 
 function getNavCounts(){
   const cnt={};
-  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
+  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician&&!session.isVospit){
     cnt.questions=getSessionQuestions().filter(function(q){return !q.answered;}).length;
     cnt.attendance=getSessionAbsences().filter(function(a){return a.status==='pending';}).length;
     cnt.requests=data.requests.filter(function(r){return r.status==='pending'&&canProcessRequests();}).length;
+    cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.createdBy===session.name&&r.status==='in_progress';}).length;
     const aw=getActiveSchoolWeek();
     if(aw){const notDone=aw.posts.filter(function(p){return !p.done;}).length;if(notDone>0)cnt.duties=notDone;}
   }
@@ -1209,7 +1350,7 @@ function getNavCounts(){
       return !sig;
     }).length;
   }
-  if(session.role==='admin'||session.isManager)cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.status==='new';}).length;
+  if(session.role==='admin'||session.isManager)cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.status==='new'&&r.createdBy===session.name;}).length;
   return cnt;
 }
 
@@ -1218,7 +1359,7 @@ function renderMenu(){
   const cnt=getNavCounts();
   const groups=getNavGroups(nav);
   let html='<div class="side-menu" id="sideMenu">';
-  html+='<div class="side-menu-header"><span>Меню</span><button class="side-menu-close" id="sideMenuClose" title="Закрыть">×</button></div>';
+  html+='<div class="side-menu-header"><span>'+escapeHtml(getSchoolName(currentSchoolId))+'</span><button class="side-menu-close" id="sideMenuClose" title="Закрыть">×</button></div>';
   for(const g of groups){
     html+='<div class="side-menu-group"><div class="side-menu-group-title">'+escapeHtml(g.title)+'</div>';
     for(const item of g.items){
@@ -1249,12 +1390,15 @@ function topbarHTML(title){
   html+='<button class="menu-toggle" id="menuToggle" title="Меню"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>';
   html+='<h2>'+escapeHtml(title)+'</h2></div>';
   html+='<div class="user-info"><span>'+escapeHtml(session.name)+'</span>';
-  if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria||session.isZavhoz||session.isTechnician)){
+  html+='<span class="badge school">🏫 '+escapeHtml(getSchoolName(currentSchoolId))+'</span>';
+  if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria||session.isZavhoz||session.isTechnician||session.isVospit)){
     const pos=positionById(session.position);
-    const extraCls=session.isCafeteria?' cafe':'';
+    let extraCls='';
+    if(session.isCafeteria)extraCls=' cafe';
+    else if(session.isVospit)extraCls=' vospit';
     html+='<span class="badge position'+extraCls+'">'+(pos.emoji||'')+' '+pos.name+'</span>';
   }
-  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
+  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician&&!session.isVospit){
     if(session.allClasses&&session.allClasses.length>1){
       html+='<select class="class-switch" id="classSwitch">';
       for(const c of session.allClasses){const isHr=c===session.homeroomClass;html+='<option value="'+escapeHtml(c)+'"'+(c===session.class?' selected':'')+'>'+escapeHtml(c)+(isHr?' ★':'')+'</option>';}
@@ -1286,7 +1430,9 @@ function renderLogin(){
     if(studentNames.length)formHTML+=optionsHTML(studentNames,loginState.studentName);else formHTML+='<option>— нет —</option>';
     formHTML+='</select><label>PIN</label><input type="password" id="sPin" maxlength="8" autocomplete="off">';
   }
-  let html='<div class="login-wrap"><div class="login-card"><h1>Классный</h1><p class="subtitle">Школьная платформа: учёба, кружки, столовая, мероприятия</p><div class="role-tabs">';
+  let html='<div class="login-wrap"><div class="login-card"><h1>Классный</h1><p class="subtitle">Школьная платформа: учёба, кружки, столовая, мероприятия</p>';
+  html+='<label>Школа</label><select id="loginSchoolSelect">'+schoolsRegistry.map(function(s){return '<option value="'+escapeHtml(s.id)+'"'+(s.id===currentSchoolId?' selected':'')+'>'+escapeHtml(s.name)+'</option>';}).join('')+'</select>';
+  html+='<div class="role-tabs" style="margin-top:16px">';
   html+='<button class="role-tab '+(loginState.role==='teacher'?'active':'')+'" data-role="teacher">Педагог</button>';
   html+='<button class="role-tab '+(loginState.role==='student'?'active':'')+'" data-role="student">Ученик</button>';
   html+='<button class="role-tab '+(loginState.role==='parent'?'active':'')+'" data-role="parent">Родитель</button>';
@@ -1296,6 +1442,13 @@ function renderLogin(){
   html+='<div style="text-align:center;margin-top:10px;font-size:11.5px;color:var(--text-dim)" id="syncStatus"></div></form></div></div>';
   app.innerHTML=html;
   updateStatusBadge();
+  document.getElementById('loginSchoolSelect').addEventListener('change',function(e){
+    currentSchoolId = e.target.value;
+    localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
+    data = loadDataForSchool(currentSchoolId);
+    normalizeData();
+    renderLogin();
+  });
   document.querySelectorAll('.role-tab').forEach(function(t){t.addEventListener('click',function(){loginState.role=t.dataset.role;renderLogin();});});
   const tName=document.getElementById('tName'),sClass=document.getElementById('sClass'),sName=document.getElementById('sName');
   if(tName)tName.addEventListener('input',function(){loginState.teacherName=tName.value;});
@@ -1310,17 +1463,18 @@ async function handleLogin(e){
     const name=(document.getElementById('tName').value||'').trim();
     const pin=(document.getElementById('tPin').value||'').trim();
     if(!name||!pin)return toast('Заполните поля',true);
-    const t=findTeacher(name);if(!t)return toast('Пользователь не найден',true);
+    const t=findTeacher(name);if(!t)return toast('Пользователь не найден в этой школе',true);
     const lk=checkLockout(t);if(lk.locked)return toast('Заблокировано на '+lk.seconds+'с',true);
     const ok=await verifyPin(pin,t.pin);if(!ok){registerFailure(t);document.getElementById('tPin').value='';return toast('Неверный PIN',true);}
     if(!t.pin.startsWith('pbkdf2')){t.pin=await setPinHash(pin);saveData();}
     resetAttempts(t);
     const sess=buildTeacherSession(t);if(!sess)return toast('Не назначен ни один класс',true);
+    sess.schoolId = currentSchoolId;
     session=sess;
   }else if(loginState.role==='admin'){
     const pwd=document.getElementById('adminPwd').value;
     const ok=await isAdminPassword(pwd);if(!ok)return toast('Неверный пароль',true);
-    session={role:'admin',name:'Администратор',expiresAt:Date.now()+SESSION_TTL_MS};
+    session={role:'admin',name:'Администратор',schoolId:currentSchoolId,expiresAt:Date.now()+SESSION_TTL_MS};
   }else{
     if(!loginState.studentName)return toast('Выберите ученика',true);
     const st=data.students.find(function(s){return s.class===loginState.studentClass&&s.name===loginState.studentName;});
@@ -1330,12 +1484,13 @@ async function handleLogin(e){
     const ok=await verifyPin(pv,st.pin);if(!ok){registerFailure(st);document.getElementById('sPin').value='';return toast('Неверный PIN',true);}
     if(!st.pin.startsWith('pbkdf2')){st.pin=await setPinHash(pv);saveData();}
     resetAttempts(st);
-    session={role:loginState.role,name:loginState.studentName,class:loginState.studentClass,expiresAt:Date.now()+SESSION_TTL_MS};
+    session={role:loginState.role,name:loginState.studentName,class:loginState.studentClass,schoolId:currentSchoolId,expiresAt:Date.now()+SESSION_TTL_MS};
   }
   if(session.class)ensurePeriods(session.class);
   saveSession();_sessionStartTime=Date.now();_seenNotifIds.clear();
   if(session.isCafeteria)currentView='cafeteria';
   else if(session.isZavhoz||session.isTechnician)currentView='maintenance';
+  else if(session.isVospit)currentView='home';
   else currentView='home';
   uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',cafeteriaDate:null,selectedClubId:null,menuManageDate:null};
   _openDetails={};
@@ -1402,7 +1557,7 @@ function openEditTeacherModal(name){
   html+='<details style="margin-top:14px" open><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">Предметы</summary><div class="checkbox-group">';
   for(const s of ALL_SUBJECTS){const checked=(t.subjects||[]).indexOf(s)>=0?' checked':'';html+='<label><input type="checkbox" class="et-subject" value="'+escapeHtml(s)+'"'+checked+'><span>'+escapeHtml(s)+'</span></label>';}
   html+='</div></details>';
-  html+='<details style="margin-top:14px" open><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">Классы</summary><div class="checkbox-group">';
+  html+='<details style="margin-top:14px" open><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">Классы, в которых ведёт</summary><div class="checkbox-group">';
   for(const c of CLASSES){const checked=(t.classes||[]).indexOf(c)>=0?' checked':'';html+='<label><input type="checkbox" class="et-class" value="'+escapeHtml(c)+'"'+checked+'><span>'+escapeHtml(c)+'</span></label>';}
   html+='</div></details>';
   html+='</div><div class="modal-footer"><button class="btn btn-secondary" id="etCancel">Отмена</button><button class="btn" id="etSave">Сохранить</button></div></div>';
@@ -1543,6 +1698,16 @@ function renderTeacherView(){
     if(currentView==='settings')return renderSettings();
     return renderMaintenance();
   }
+  if(session.isVospit){
+    if(currentView==='settings')return renderSettings();
+    const vospitDispatch={
+      home:renderTeacherHome,
+      clubs:renderClubs,events:renderEvents,trips:renderTrips,
+      announcements:renderAnnouncements,teacherAnn:renderTeacherAnnouncements,
+      consents:renderConsents,maintenance:renderMaintenance,cafeteria:renderCafeteria
+    };
+    return (vospitDispatch[currentView]||renderTeacherHome)();
+  }
   if(currentView==='homework'&&session.isManager){currentView='home';return renderTeacherHome();}
   if(currentView==='users'&&!canManageUsers()){currentView='home';return renderTeacherHome();}
   const dispatch={
@@ -1559,39 +1724,43 @@ function renderTeacherView(){
 
 function renderTeacherHome(){
   const cls=session.class;
-  const students=getStudentsOfClass(cls);
-  const absAll=getSessionAbsences();
-  const latesAll=getSessionLates();
-  const hwAll=getSessionHomework();
+  const students=cls?getStudentsOfClass(cls):[];
+  const absAll=cls?getSessionAbsences():[];
+  const latesAll=cls?getSessionLates():[];
+  const hwAll=cls?getSessionHomework():[];
   const todayAbs=absAll.filter(function(a){return a.date===todayISO();});
   const todayLates=latesAll.filter(function(a){return a.date===todayISO();});
   const hwOpen=hwAll.filter(function(h){return h.deadline&&h.deadline<=todayISO();});
   const debtors=students.filter(function(s){return hwOpen.filter(function(h){return !(h.done||[]).includes(s.name);}).length>0;});
   const pendingAbs=absAll.filter(function(a){return a.status==='pending';});
   const openQ=hasFullAccess()?getSessionQuestions().filter(function(q){return !q.answered;}):[];
-  const todayDuties=hasFullAccess()?data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();}):[];
+  const todayDuties=cls&&hasFullAccess()?data.duties.filter(function(d){return d.class===cls&&d.date===todayISO();}):[];
   const activeWeek=getActiveSchoolWeek();
   const pendingReqs=canProcessRequests()?data.requests.filter(function(r){return r.status==='pending';}):[];
   const upcomingTrips=data.trips.filter(function(t){return t.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,2);
   const todaySubs=data.substitutions.filter(function(s){return s.date===todayISO();});
-  const scheduleToday=(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[];
+  const scheduleToday=cls?(data.schedules[cls]&&data.schedules[cls][dayOfWeekName(todayISO())])||[]:[];
   const allFlags=students.map(function(s){return {student:s,flags:getStudentFlags(s.name,cls)};}).filter(function(x){return x.flags.length>0;});
   const upcomingEvents=data.events.filter(function(e){return e.date>=todayISO();}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,3);
   let html='';
-  if(session.isDirector)html+='<div class="manager-info">Вы <b>директор школы</b>.</div>';
-  else if(session.position==='zavuch')html+='<div class="manager-info">Вы <b>завуч</b>.</div>';
+  if(session.isDirector)html+='<div class="manager-info">Вы <b>директор школы</b>. Активностями руководит завуч по ВР. Вы можете просматривать.</div>';
+  else if(session.position==='zavuch')html+='<div class="manager-info">Вы <b>завуч</b>. Активностями руководит завуч по ВР. Вы можете просматривать.</div>';
+  else if(session.isVospit)html+='<div class="vospit-info">Вы <b>завуч по воспитательной работе</b>. Управляйте активностями: кружки, мероприятия, экскурсии, объявления.</div>';
+  else if(session.isCafeteria)html+='<div class="cafe-info">Вы <b>заведующий столовой</b>.</div>';
+  else if(session.isZavhoz)html+='<div class="manager-info">Вы <b>завхоз</b>. Управляйте заявками и техниками.</div>';
+  else if(session.isTechnician)html+='<div class="manager-info">Вы <b>техник</b>. Выполняйте назначенные заявки.</div>';
   else if(!session.isHomeroom)html+='<div class="teacher-role-info">Вы вошли как <b>учитель-предметник</b> в '+escapeHtml(cls)+' классе.</div>';
   else if(session.homeroomClass)html+='<div class="teacher-role-info">Вы <b>классный руководитель</b> '+escapeHtml(cls)+' класса.</div>';
   html+='<div class="stats">';
   html+='<div class="stat"><div class="num">'+students.length+'</div><div class="lbl">Учеников</div></div>';
   html+='<div class="stat"><div class="num'+(todayAbs.length>0?' warn':'')+'">'+todayAbs.length+'</div><div class="lbl">Отсутствуют</div></div>';
   html+='<div class="stat"><div class="num'+(todayLates.length>0?' warn':'')+'">'+todayLates.length+'</div><div class="lbl">Опоздали</div></div>';
-  if(!session.isManager)html+='<div class="stat"><div class="num'+(debtors.length>0?' warn':' ok')+'">'+debtors.length+'</div><div class="lbl">Должников</div></div>';
+  if(!session.isManager&&!session.isVospit)html+='<div class="stat"><div class="num'+(debtors.length>0?' warn':' ok')+'">'+debtors.length+'</div><div class="lbl">Должников</div></div>';
   else html+='<div class="stat"><div class="num">'+pendingAbs.length+'</div><div class="lbl">На рассмотрении</div></div>';
   html+='</div>';
   const attention=[];
   if(pendingAbs.length)attention.push({type:'danger',text:'Пропусков на рассмотрении: '+pendingAbs.length,block:'attendance'});
-  if(!session.isManager&&debtors.length)attention.push({type:'danger',text:'Учеников с долгами: '+debtors.length,block:'homework'});
+  if(!session.isManager&&!session.isVospit&&debtors.length)attention.push({type:'danger',text:'Учеников с долгами: '+debtors.length,block:'homework'});
   if(pendingReqs.length)attention.push({type:'info',text:'Заявок на справки: '+pendingReqs.length,block:'requests'});
   if(openQ.length)attention.push({type:'info',text:'Вопросов без ответа: '+openQ.length,block:'questions'});
   if(todayDuties.length)attention.push({type:'info',text:'Дежурят: '+todayDuties.map(function(d){return d.studentName;}).join(', '),block:'duties'});
@@ -1616,7 +1785,7 @@ function renderTeacherHome(){
   }
   html+='<div class="grid-2">';
   html+='<div class="card"><h3>Расписание сегодня</h3>';
-  if(scheduleToday.length){for(let i=0;i<scheduleToday.length;i++){const subj=scheduleToday[i];const has=session.isHomeroom||session.isManager||session.subjects.indexOf(subj)>=0;html+='<div class="hw-card" style="'+(has?'':'opacity:.5')+'"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(subj)+'</div></div>';}}
+  if(scheduleToday.length){for(let i=0;i<scheduleToday.length;i++){const subj=scheduleToday[i];const has=session.isHomeroom||session.isManager||session.isVospit||session.subjects.indexOf(subj)>=0;html+='<div class="hw-card" style="'+(has?'':'opacity:.5')+'"><div class="hw-card-title">'+(i+1)+'. '+escapeHtml(subj)+'</div></div>';}}
   else html+='<div class="empty">Уроков нет</div>';
   html+='</div>';
   html+='<div class="card"><h3>Ближайшее</h3>';
@@ -1644,18 +1813,31 @@ function renderLates(){
   html+='<div class="stat"><div class="num">'+list.length+'</div><div class="lbl">Всего опозданий</div></div>';
   html+='<div class="stat"><div class="num'+(todayCount>0?' warn':'')+'">'+todayCount+'</div><div class="lbl">Сегодня</div></div>';
   html+='<div class="stat"><div class="num'+(weekCount>0?' warn':'')+'">'+weekCount+'</div><div class="lbl">За неделю</div></div></div>';
-  const availableSubjects=getSessionAvailableSubjects();
-  html+='<div class="card"><h3>Отметить опоздание</h3><form id="lateForm"><div class="grid-2">';
-  html+='<div><label>Дата</label><input type="date" id="ltDate" value="'+todayISO()+'"></div>';
-  html+='<div><label>Ученик</label><select id="ltStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
-  html+='<div><label>Предмет</label><select id="ltSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
-  html+='<div><label>Время прихода</label><input type="time" id="ltTime" value="08:15"></div>';
-  html+='</div><label>Комментарий</label><input type="text" id="ltNote">';
-  html+='<button type="submit" class="btn" style="margin-top:14px">Отметить</button></form></div>';
+  const canEdit=canAddLates();
+  if(canEdit){
+    const availableSubjects=getLatesSubjects();
+    if(availableSubjects.length){
+      html+='<div class="card"><h3>Отметить опоздание</h3><form id="lateForm"><div class="grid-2">';
+      html+='<div><label>Дата</label><input type="date" id="ltDate" value="'+todayISO()+'"></div>';
+      html+='<div><label>Ученик</label><select id="ltStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
+      html+='<div><label>Предмет</label><select id="ltSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
+      html+='<div><label>Время прихода</label><input type="time" id="ltTime" value="08:15"></div>';
+      html+='</div><label>Комментарий</label><input type="text" id="ltNote">';
+      html+='<button type="submit" class="btn" style="margin-top:14px">Отметить</button></form></div>';
+    }else{
+      html+='<div class="card"><div class="edit-info">Вы не ведёте предметы в этом классе — только просмотр.</div></div>';
+    }
+  }else{
+    html+='<div class="card"><div class="edit-info">Только просмотр списка опоздавших.</div></div>';
+  }
   html+='<div class="card"><h3>Журнал опозданий ('+list.length+')</h3>';
   if(list.length){
-    html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Время</th><th>ФИО</th><th>Предмет</th><th>Примечание</th><th></th></tr></thead><tbody>';
-    for(const l of list){html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td><td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td><td data-label="ФИО">'+escapeHtml(l.studentName)+'</td><td data-label="Предмет">'+escapeHtml(l.subject)+'</td><td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn btn-danger btn-sm" data-del-late="'+l.id+'">Удалить</button></div></td></tr>';}
+    html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Время</th><th>ФИО</th><th>Предмет</th><th>Примечание</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>';
+    for(const l of list){
+      html+='<tr><td data-label="Дата">'+formatDate(l.date)+'</td><td data-label="Время"><span class="late-chip">'+escapeHtml(l.time||'—')+'</span></td><td data-label="ФИО">'+escapeHtml(l.studentName)+'</td><td data-label="Предмет">'+escapeHtml(l.subject)+'</td><td data-label="Примечание">'+escapeHtml(l.note||'—')+'</td>';
+      if(canEdit)html+='<td><div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn btn-danger btn-sm" data-del-late="'+l.id+'">Удалить</button></div></td>';
+      html+='</tr>';
+    }
     html+='</tbody></table></div>';
   }else html+='<div class="empty">Опозданий нет</div>';
   html+='</div>';
@@ -1705,7 +1887,7 @@ function renderTrips(){
   const future=all.filter(function(t){return t.date>=todayISO();});
   const past=all.filter(function(t){return t.date<todayISO();});
   let html='';
-  if(canCreateTrips()){
+  if(canManageTrips()){
     html+='<div class="card"><h3>Создать экскурсию</h3><form id="tripForm"><div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="tripTitle"></div>';
     html+='<div><label>Дата</label><input type="date" id="tripDate" value="'+todayISO()+'"></div>';
@@ -1722,7 +1904,7 @@ function renderTrips(){
     html+='<div class="full"><label>Описание</label><textarea id="tripDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
-  html+='<div class="card"><h3>Экскурсии и поездки ('+all.length+')</h3>';
+  html+='<div class="card"><h3>Экскурсии и поездки ('+all.length+')'+(canManageTrips()?'':' (просмотр)')+'</h3>';
   if(!all.length)html+='<div class="empty">Экскурсий пока нет</div>';
   else{
     if(future.length){html+='<div style="font-weight:800;font-size:13px;margin-bottom:10px">Предстоящие</div>';for(const t of future)html+=renderTripCard(t,true);}
@@ -1735,7 +1917,7 @@ function renderTripCard(t,isFuture){
   const participants=t.participants||[];
   const imIn=participants.indexOf(session.name)>=0;
   const canJoin=(session.role==='student'||session.role==='parent')&&isFuture;
-  const canDelete=canCreateTrips();
+  const canDelete=canManageTrips();
   const isFull=(t.maxStudents&&participants.length>=t.maxStudents);
   let consentTag='';
   if(t.requiresConsent){
@@ -1781,9 +1963,11 @@ function renderTripCard(t,isFuture){
 function renderRequests(){
   const canProcess=canProcessRequests();
   const isUser=session.role==='student'||session.role==='parent';
+  const isTeacher=session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician;
   let all;
   if(isUser)all=data.requests.filter(function(r){return r.studentName===session.name;});
   else if(canProcess)all=data.requests.slice();
+  else if(isTeacher)all=data.requests.filter(function(r){return r.createdBy===session.name;});
   else all=[];
   all.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
   const pending=all.filter(function(r){return r.status==='pending';});
@@ -1791,21 +1975,47 @@ function renderRequests(){
   const rejected=all.filter(function(r){return r.status==='rejected';});
   let html='';
   if(isUser){
+    const allTypes = REQUEST_TYPES.concat(data.customRequestTypes.filter(function(t){
+      if(t.classId && t.classId!==session.class) return false;
+      return true;
+    }).map(function(t){return {id:t.id,name:t.name};}));
     html+='<div class="card"><h3>Заказать справку</h3><form id="reqForm"><div class="grid-2">';
-    html+='<div><label>Тип</label><select id="reqType">'+optionsHTML(REQUEST_TYPES.map(function(t){return {id:t.id,name:t.name};}),'','id')+'</select></div>';
+    html+='<div><label>Тип</label><select id="reqType">'+optionsHTML(allTypes,'','id')+'</select></div>';
     html+='<div class="full"><label>Назначение / текст</label><textarea id="reqPurpose" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Отправить</button></form></div>';
+  }
+  if(isTeacher){
+    html+='<div class="card"><h3>Создать свой тип справки</h3><form id="customReqTypeForm"><div class="grid-2">';
+    html+='<div><label>Название</label><input type="text" id="crtName" placeholder="Например: Справка для бассейна"></div>';
+    html+='<div><label>Класс</label><select id="crtClass"><option value="">— для всех моих классов —</option>'+optionsHTML((session.allClasses||[]),'')+'</select></div>';
+    html+='<div class="full"><label>Текст справки (шаблон)</label><textarea id="crtText" rows="2" placeholder="Дана ... в том, что..."></textarea></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Добавить</button></form>';
+    if(data.customRequestTypes.length){
+      html+='<div style="margin-top:14px"><b style="font-size:13px">Мои типы:</b>';
+      for(const t of data.customRequestTypes){
+        html+='<div class="duty-item" style="margin-top:6px"><span><b>'+escapeHtml(t.name)+'</b>'+(t.classId?' <span class="tag neutral">'+escapeHtml(t.classId)+'</span>':'')+'</span><button class="btn btn-danger btn-sm" data-crt-del="'+t.id+'">✕</button></div>';
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+    html+='<div class="card"><h3>Выдать справку ученику</h3><form id="issueCertForm"><div class="grid-2">';
+    html+='<div><label>Ученик</label><select id="icStudent">'+optionsHTML(getStudentsOfClass(session.class).map(function(s){return s.name;}),'')+'</select></div>';
+    html+='<div><label>Тип</label><select id="icType">'+optionsHTML(REQUEST_TYPES.map(function(t){return {id:t.id,name:t.name};}),'','id')+'</select></div>';
+    html+='<div class="full"><label>Текст справки</label><textarea id="icText" rows="3" placeholder="Дана ..."></textarea></div>';
+    html+='</div><button type="submit" class="btn btn-success" style="margin-top:14px">Выдать</button></form></div>';
   }
   const renderGroup=function(title,items){
     if(!items.length)return '';
     let h='<div class="card"><h3>'+title+' ('+items.length+')</h3>';
     for(const r of items){
       const t=requestTypeById(r.type);
+      const customT = data.customRequestTypes.find(function(x){return x.id===r.type;});
+      const displayName = customT ? customT.name : t.name;
       let statusTag='';
       if(r.status==='pending')statusTag='<span class="tag warn">На рассмотрении</span>';
       else if(r.status==='ready')statusTag='<span class="tag good">Готово</span>';
       else statusTag='<span class="tag bad">Отклонено</span>';
-      h+='<div class="req-card"><div class="req-head"><div><div class="req-title">'+escapeHtml(t.name)+'</div><div class="req-meta">'+escapeHtml(r.studentName)+' · '+escapeHtml(r.class)+' · '+formatDateTime(r.createdAt)+'</div></div>'+statusTag+'</div>';
+      h+='<div class="req-card"><div class="req-head"><div><div class="req-title">'+escapeHtml(displayName)+'</div><div class="req-meta">'+escapeHtml(r.studentName)+' · '+escapeHtml(r.class)+' · '+formatDateTime(r.createdAt)+'</div></div>'+statusTag+'</div>';
       if(r.purpose)h+='<div class="req-body">'+escapeHtml(r.purpose)+'</div>';
       if(r.note)h+='<div style="font-size:12.5px;color:var(--accent);margin-top:6px;font-style:italic">Ответ: '+escapeHtml(r.note)+'</div>';
       if(canProcess&&r.status==='pending')h+='<div class="req-actions"><button class="btn btn-success btn-sm" data-req-ready="'+r.id+'">Готово</button><button class="btn btn-danger btn-sm" data-req-reject="'+r.id+'">Отклонить</button></div>';
@@ -1818,7 +2028,7 @@ function renderRequests(){
   if(pending.length)html+=renderGroup('На рассмотрении',pending);
   if(ready.length)html+=renderGroup('Готовы',ready);
   if(rejected.length)html+=renderGroup('Отклонены',rejected);
-  if(!all.length)html+='<div class="card"><div class="empty">Заявок нет</div></div>';
+  if(!all.length&&!isTeacher)html+='<div class="card"><div class="empty">Заявок нет</div></div>';
   return html;
 }
 
@@ -1826,7 +2036,7 @@ function renderAttendance(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
   const absAll=getSessionAbsences();
-  const canEdit=!session.isManager;
+  const canEdit=canAddAbsences();
   let list=absAll.filter(function(a){
     if(uiState.filterReason&&a.reason!==uiState.filterReason)return false;
     if(uiState.filterStudent&&a.studentName!==uiState.filterStudent)return false;
@@ -1836,16 +2046,20 @@ function renderAttendance(){
   const pending=absAll.filter(function(a){return a.status==='pending';}).length;
   let html='';
   if(canEdit){
-    const availableSubjects=getSessionAvailableSubjects();
-    html+='<div class="card"><h3>Добавить</h3><form id="attForm"><div class="grid-2">';
-    html+='<div><label>Дата</label><input type="date" id="attDate" value="'+todayISO()+'"></div>';
-    html+='<div><label>Ученик</label><select id="attStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
-    html+='<div><label>Предмет</label><select id="attSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
-    html+='<div><label>Причина</label><select id="attReason">'+optionsHTML(REASONS,'','id')+'</select></div>';
-    html+='</div><label>Комментарий</label><input type="text" id="attNote">';
-    html+='<button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
+    const availableSubjects=getAttendanceSubjects();
+    if(availableSubjects.length){
+      html+='<div class="card"><h3>Добавить</h3><form id="attForm"><div class="grid-2">';
+      html+='<div><label>Дата</label><input type="date" id="attDate" value="'+todayISO()+'"></div>';
+      html+='<div><label>Ученик</label><select id="attStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
+      html+='<div><label>Предмет</label><select id="attSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
+      html+='<div><label>Причина</label><select id="attReason">'+optionsHTML(REASONS,'','id')+'</select></div>';
+      html+='</div><label>Комментарий</label><input type="text" id="attNote">';
+      html+='<button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
+    }else{
+      html+='<div class="card"><div class="edit-info">Вы не ведёте предметы в этом классе — только просмотр.</div></div>';
+    }
   }else{
-    html+='<div class="card"><h3>Журнал посещаемости</h3><div class="edit-info">Просмотр журнала.</div></div>';
+    html+='<div class="card"><h3>Журнал посещаемости</h3><div class="edit-info">Только просмотр журнала.</div></div>';
   }
   if(canEdit&&pending)html+='<div class="warning-banner" style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(217,119,6,.04));border-left-color:var(--warn)"><div class="warn-icon">◔</div><div class="warn-text" style="color:#92400e"><b>На рассмотрении: '+pending+'</b></div></div>';
   html+='<div class="card"><h3>Журнал ('+list.length+')</h3>';
@@ -1877,30 +2091,42 @@ function renderHomework(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
   const hw=getSessionHomework().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-  const availableSubjects=getSessionAvailableSubjects();
-  let html='<div class="card"><h3>Задать ДЗ</h3><form id="hwForm"><div class="grid-2">';
-  html+='<div><label>Дата</label><input type="date" id="hwDate" value="'+todayISO()+'"></div>';
-  html+='<div><label>Предмет</label><select id="hwSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
-  html+='<div><label>Сдать до</label><input type="date" id="hwDeadline"></div></div>';
-  html+='<label>Текст задания</label><textarea id="hwText" rows="3"></textarea>';
-  html+='<button type="submit" class="btn" style="margin-top:14px">Задать</button></form></div>';
-  html+='<div class="card"><h3>Заданные работы ('+hw.length+')</h3>';
+  const availableSubjects=getHomeworkSubjects();
+  let html='';
+  if(canAddHomework()){
+    if(availableSubjects.length){
+      html+='<div class="card"><h3>Задать ДЗ</h3><form id="hwForm"><div class="grid-2">';
+      html+='<div><label>Дата</label><input type="date" id="hwDate" value="'+todayISO()+'"></div>';
+      html+='<div><label>Предмет</label><select id="hwSubject">'+optionsHTML(availableSubjects,'')+'</select></div>';
+      html+='<div><label>Сдать до</label><input type="date" id="hwDeadline"></div></div>';
+      html+='<label>Текст задания</label><textarea id="hwText" rows="3"></textarea>';
+      html+='<button type="submit" class="btn" style="margin-top:14px">Задать</button></form></div>';
+    }else{
+      html+='<div class="card"><div class="edit-info">Вы не ведёте ни одного предмета в этом классе — ДЗ добавить нельзя.</div></div>';
+    }
+  }
+  html+='<div class="card"><h3>Заданные работы ('+hw.length+')'+(canAddHomework()?'':' (просмотр)')+'</h3>';
   if(hw.length){
     for(const h of hw){
       const total=students.length;const done=(h.done||[]).length;
       const debtors=students.filter(function(s){return !(h.done||[]).includes(s.name);});
-      html+='<div class="hw-card"><div class="hw-card-header"><div><div class="hw-card-title">'+escapeHtml(h.subject)+'</div><div class="hw-card-meta">'+formatDate(h.date)+(h.deadline?' · до '+formatDate(h.deadline):'')+'</div></div><button class="btn btn-danger btn-sm" data-del-hw="'+h.id+'">✕</button></div>';
+      html+='<div class="hw-card"><div class="hw-card-header"><div><div class="hw-card-title">'+escapeHtml(h.subject)+'</div><div class="hw-card-meta">'+formatDate(h.date)+(h.deadline?' · до '+formatDate(h.deadline):'')+'</div></div>';
+      if(canAddHomework())html+='<button class="btn btn-danger btn-sm" data-del-hw="'+h.id+'">✕</button>';
+      html+='</div>';
       html+='<div class="hw-card-text">'+escapeHtml(h.text)+'</div>';
       html+='<div style="font-size:12.5px;margin-top:8px"><span style="color:var(--success);font-weight:800">Сдали: '+done+'/'+total+'</span>';
       if(debtors.length)html+=' <span style="color:var(--danger);font-weight:800">· не сдали: '+debtors.length+'</span>';
       html+='</div>';
-      html+='<button class="btn btn-secondary btn-sm" data-hw-manage="'+h.id+'" style="margin-top:10px;width:100%">Управление статусом</button>';
-      html+='<div class="hw-students-list" id="hw-manage-'+h.id+'" style="display:none">';
-      for(const s of students){
-        const isDone=(h.done||[]).includes(s.name);
-        html+='<div class="hw-student-row'+(isDone?' done':'')+'"><span>'+escapeHtml(s.name)+'</span><button class="hw-toggle-btn '+(isDone?'is-done':'is-not')+'" data-hw-toggle="'+h.id+'|'+escapeHtml(s.name)+'">'+(isDone?'Сдал':'Не сдал')+'</button></div>';
+      if(canAddHomework()){
+        html+='<button class="btn btn-secondary btn-sm" data-hw-manage="'+h.id+'" style="margin-top:10px;width:100%">Управление статусом</button>';
+        html+='<div class="hw-students-list" id="hw-manage-'+h.id+'" style="display:none">';
+        for(const s of students){
+          const isDone=(h.done||[]).includes(s.name);
+          html+='<div class="hw-student-row'+(isDone?' done':'')+'"><span>'+escapeHtml(s.name)+'</span><button class="hw-toggle-btn '+(isDone?'is-done':'is-not')+'" data-hw-toggle="'+h.id+'|'+escapeHtml(s.name)+'">'+(isDone?'Сдал':'Не сдал')+'</button></div>';
+        }
+        html+='<div class="hw-actions-row"><button class="btn btn-secondary btn-sm" data-hw-all-done="'+h.id+'">Все сдали</button><button class="btn btn-secondary btn-sm" data-hw-all-clear="'+h.id+'">Сбросить</button></div></div>';
       }
-      html+='<div class="hw-actions-row"><button class="btn btn-secondary btn-sm" data-hw-all-done="'+h.id+'">Все сдали</button><button class="btn btn-secondary btn-sm" data-hw-all-clear="'+h.id+'">Сбросить</button></div></div></div>';
+      html+='</div>';
     }
   }else html+='<div class="empty">ДЗ ещё не задано</div>';
   html+='</div>';
@@ -1950,9 +2176,9 @@ function renderClubs(){
   }
   if(role==='teacher'){
     if(myClubs.length){html+='<div class="card"><h3>Посещаемость</h3>';for(const club of myClubs){html+='<div class="club-card" style="margin-bottom:12px"><div class="club-title">'+escapeHtml(club.name)+'</div><div class="club-meta">'+escapeHtml(club.day)+' · '+escapeHtml(club.time)+'</div><div class="club-meta">Записано: '+((club.enrolled||[]).length)+'/'+(club.maxStudents||'∞')+'</div><div class="date-input-row" style="margin-top:10px"><label style="margin:0;flex:0 0 auto">Дата:</label><input type="date" id="clubAttDate-'+club.id+'" value="'+todayISO()+'" style="flex:1;max-width:200px"><button class="btn btn-sm" data-club-attendance="'+club.id+'">Отметить</button><button class="btn btn-secondary btn-sm" data-club-attendance-view="'+club.id+'">История</button></div></div>';}html+='</div>';}
-    else html+='<div class="card"><div class="empty">У вас пока нет своих кружков.</div></div>';
+    else if(!canManageClubs())html+='<div class="card"><div class="empty">У вас пока нет своих кружков.</div></div>';
   }
-  if(role==='admin'||session.isManager){
+  if(canManageClubs()){
     html+='<div class="card"><h3>Создать кружок</h3><form id="clubForm"><div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="clubName"></div>';
     html+='<div><label>Руководитель</label><input type="text" id="clubTeacher"></div>';
@@ -1990,7 +2216,7 @@ function renderEvents(){
   const role=session.role;
   const allEvents=data.events.slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
   let html='';
-  if(role==='admin'||session.isManager){
+  if(canManageEvents()){
     html+='<div class="card"><h3>Создать мероприятие</h3><form id="eventForm"><div class="grid-2">';
     html+='<div><label>Название</label><input type="text" id="evTitle"></div>';
     html+='<div><label>Тип</label><select id="evType">'+optionsHTML(EVENT_TYPES,'','id')+'</select></div>';
@@ -1999,7 +2225,7 @@ function renderEvents(){
     html+='<div class="full"><label>Описание</label><textarea id="evDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
-  html+='<div class="card"><h3>Мероприятия ('+allEvents.length+')</h3>';
+  html+='<div class="card"><h3>Мероприятия ('+allEvents.length+')'+(canManageEvents()?'':' (просмотр)')+'</h3>';
   if(allEvents.length){
     const future=allEvents.filter(function(e){return e.date>=todayISO();});
     const past=allEvents.filter(function(e){return e.date<todayISO();});
@@ -2020,14 +2246,16 @@ function renderEventCard(ev,isFuture){
   if(ev.description)html+='<div style="font-size:13px;color:var(--text-mid);margin-bottom:10px">'+escapeHtml(ev.description)+'</div>';
   html+='<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px">Участников: '+participants.length+'</div>';
   if(canRegister&&isFuture){if(imIn)html+='<button class="btn btn-secondary btn-sm" data-event-leave="'+ev.id+'">Отменить</button>';else html+='<button class="btn btn-success btn-sm" data-event-join="'+ev.id+'">Участвовать</button>';}
-  if(session.role==='admin'||session.isManager)html+=' <button class="btn btn-danger btn-sm" data-event-del="'+ev.id+'">Удалить</button>';
+  if(canManageEvents())html+=' <button class="btn btn-danger btn-sm" data-event-del="'+ev.id+'">Удалить</button>';
   html+='</div>';
   return html;
 }
 
 function renderCafeteria(){
-  if(session.role==='student'||session.role==='parent')return renderCafeteriaUser();
-  return renderCafeteriaAdmin();
+  /* Только зав. столовой и админ управляют меню. Все остальные — заказывают */
+  if(session.role==='admin')return renderCafeteriaAdmin();
+  if(session.role==='teacher'&&session.isCafeteria)return renderCafeteriaAdmin();
+  return renderCafeteriaUser();
 }
 function renderCafeteriaAdmin(){
   const today=todayISO();
@@ -2049,8 +2277,6 @@ function renderCafeteriaAdmin(){
     html+='<div><label>Цена (₽)</label><input type="number" id="menuPrice" value="80" min="0"></div>';
     html+='<div class="full"><label>Аллергены</label><input type="text" id="menuAllergens"></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Добавить</button></form></div>';
-  }else{
-    html+='<div class="card"><div class="edit-info">Меню изменяют только зав. столовой и администратор.</div></div>';
   }
   html+='<div class="card"><h3>Все блюда в меню</h3>';
   const futureMenu=data.menu.filter(function(m){return m.date>=today;}).sort(function(a,b){return a.date.localeCompare(b.date)||a.meal.localeCompare(b.meal);});
@@ -2058,7 +2284,9 @@ function renderCafeteriaAdmin(){
     html+='<div style="max-height:500px;overflow-y:auto;margin-bottom:8px">';
     for(const m of futureMenu.slice(0,300)){
       html+='<div class="menu-edit-row"><span style="font-weight:700;font-size:12px">'+formatDate(m.date)+'</span><span><b>'+(m.meal==='breakfast'?'З':'О')+'</b> '+escapeHtml(m.dish)+' · '+m.price+'₽</span>';
-      html+='<button class="btn btn-secondary btn-xs" data-menu-edit="'+m.id+'">✎</button><button class="btn btn-danger btn-xs" data-menu-del="'+m.id+'">✕</button></div>';
+      if(canManageMenu())html+='<button class="btn btn-secondary btn-xs" data-menu-edit="'+m.id+'">✎</button><button class="btn btn-danger btn-xs" data-menu-del="'+m.id+'">✕</button>';
+      else html+='<span></span><span></span>';
+      html+='</div>';
     }
     if(futureMenu.length>300)html+='<div style="text-align:center;font-size:12px;color:var(--text-dim);padding:8px">...и ещё '+(futureMenu.length-300)+'</div>';
     html+='</div>';
@@ -2085,9 +2313,10 @@ function renderCafeteriaUser(){
   const dates=[];for(let i=0;i<7;i++)dates.push(addDays(today,i));
   const menuForDate=data.menu.filter(function(m){return m.date===selectedDate;});
   const myOrder=data.mealOrders.find(function(o){return o.date===selectedDate&&o.studentName===session.name;});
-  const acc=getMealAccount(session.name,session.class);
+  const myClass=getStaffClassName();
+  const acc=getMealAccount(session.name,myClass);
   let html='<div class="card"><h3>Меню</h3>';
-  html+='<div style="margin-bottom:12px;padding:10px 14px;background:var(--bg-subtle);border-radius:10px;font-size:13.5px"><b>Баланс:</b> <span style="color:'+(acc.balance<0?'var(--danger)':'var(--success)')+';font-weight:800">'+acc.balance+' ₽</span></div>';
+  html+='<div style="margin-bottom:12px;padding:10px 14px;background:var(--bg-subtle);border-radius:10px;font-size:13.5px"><b>Баланс:</b> <span style="color:'+(acc.balance<0?'var(--danger)':'var(--success)')+';font-weight:800">'+acc.balance+' ₽</span> <a href="#" data-view="mealBalance" style="margin-left:10px;color:var(--primary);font-weight:600;text-decoration:none">Пополнить →</a></div>';
   html+='<button class="btn btn-success" id="yearOrderBtn" style="margin-bottom:16px;width:100%;padding:14px">Заказать питание на весь учебный год</button>';
   html+='<div class="menu-date-tabs">';
   for(const d of dates){const a=d===selectedDate?' active':'';html+='<button class="menu-date-tab'+a+'" data-cafeteria-date="'+d+'">'+formatDate(d)+'</button>';}
@@ -2102,10 +2331,12 @@ function renderCafeteriaUser(){
 
 function renderAnnouncements(){
   const cls=session.class;
+  const canPost = session.role==='admin'||session.isVospit||(session.role==='teacher'&&session.isHomeroom);
   const list=data.announcements.filter(function(a){return a.class===cls;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
-  let html='<div class="card"><h3>Объявление классу</h3><form id="annForm"><textarea id="annText" rows="2" placeholder="Текст..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
-  html+='<div class="card"><h3>История ('+list.length+')</h3>';
-  if(list.length){for(const a of list)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div><button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-ann="'+a.id+'">Удалить</button></div>';}
+  let html='';
+  if(canPost)html+='<div class="card"><h3>Объявление классу</h3><form id="annForm"><textarea id="annText" rows="2" placeholder="Текст..." style="margin-bottom:12px"></textarea><button type="submit" class="btn">Отправить</button></form></div>';
+  html+='<div class="card"><h3>История ('+list.length+')'+(canPost?'':' (просмотр)')+'</h3>';
+  if(list.length){for(const a of list)html+='<div class="msg-item"><div class="msg-head"><span class="msg-from">'+escapeHtml(a.from)+'</span><span class="msg-time">'+formatDateTime(a.time)+'</span></div><div class="msg-text">'+escapeHtml(a.text)+'</div>'+(canPost?'<button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-ann="'+a.id+'">Удалить</button>':'')+'</div>';}
   else html+='<div class="empty">Объявлений нет</div>';
   html+='</div>';
   return html;
@@ -2247,11 +2478,13 @@ function renderSettings(){
   let html='<div class="card"><h3>Настройки</h3><div class="teacher-role-info">';
   if(session.isDirector)html+='<b>Должность:</b> Директор<br>';
   else if(session.position==='zavuch')html+='<b>Должность:</b> Завуч<br>';
+  else if(session.position==='vospit')html+='<b>Должность:</b> Завуч по воспитательной работе<br>';
   else if(session.position==='cafeteria')html+='<b>Должность:</b> Зав. столовой<br>';
   else if(session.position==='zavhoz')html+='<b>Должность:</b> Завхоз<br>';
   else if(session.position==='technician')html+='<b>Должность:</b> Техник<br>';
   else html+='<b>Должность:</b> Учитель<br>';
-  if(!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
+  html+='<b>Школа:</b> '+escapeHtml(getSchoolName(currentSchoolId))+'<br>';
+  if(!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician&&!session.isVospit){
     html+='<b>Класс. рук.:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br><b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—');
   }
   html+='</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"><button class="btn" id="changePinBtn">Сменить PIN</button><button class="btn btn-secondary" id="notifyPermBtn">Уведомления</button></div></div>';
@@ -2260,7 +2493,7 @@ function renderSettings(){
 
 /* ============ ДИСЦИПЛИНА / БАЛАНС / ЗАЯВКИ / ТЕХНИКИ / СОГЛАСИЯ ============ */
 function renderDiscipline(){
-  const canEdit=session.role==='teacher'&&(session.isHomeroom||session.isManager);
+  const canEdit=canAddDiscipline();
   let list=[];
   if(session.role==='teacher'&&session.isManager)list=data.discipline.slice();
   else if(session.role==='teacher'&&session.isHomeroom)list=data.discipline.filter(function(d){return d.class===session.class;});
@@ -2282,7 +2515,7 @@ function renderDiscipline(){
     html+='<div class="full"><label>Описание</label><textarea id="discText" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Сохранить</button></form></div>';
   }
-  html+='<div class="card"><h3>Записи ('+list.length+')</h3>';
+  html+='<div class="card"><h3>Записи ('+list.length+')'+(canEdit?'':' (просмотр)')+'</h3>';
   if(list.length){
     for(const d of list){
       const type=DISCIPLINE_TYPES.find(function(t){return t.id===d.type;})||DISCIPLINE_TYPES[0];
@@ -2303,8 +2536,8 @@ function renderDiscipline(){
 function renderMealBalance(){
   if(session.role==='teacher'&&session.isCafeteria)return renderMealBalancesAdmin();
   if(session.role==='admin'||(session.role==='teacher'&&session.isManager))return renderMealBalancesAdmin();
-  const acc=getMealAccount(session.name,session.class);
-  const tx=data.mealTransactions.filter(function(t){return t.studentName===session.name&&t.class===session.class;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
+  const acc=getMealAccount(session.name,getStaffClassName());
+  const tx=data.mealTransactions.filter(function(t){return t.studentName===session.name;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   const topups=tx.filter(function(t){return t.amount>0;}).reduce(function(s,t){return s+t.amount;},0);
   const charges=tx.filter(function(t){return t.amount<0;}).reduce(function(s,t){return s+Math.abs(t.amount);},0);
   let html='<div class="stats">';
@@ -2350,8 +2583,9 @@ function renderMaintenance(){
   const isZavhoz=session.isZavhoz;
   const isTech=session.isTechnician;
   const isAdmin=session.role==='admin';
+  const canManage = isZavhoz||isAdmin;
   let list=[];
-  if(isZavhoz||isAdmin)list=data.maintenanceRequests.slice();
+  if(canManage)list=data.maintenanceRequests.slice();
   else if(isTech)list=data.maintenanceRequests.filter(function(r){return r.assignedTo===session.name;});
   else list=data.maintenanceRequests.filter(function(r){return r.createdBy===session.name;});
   list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
@@ -2363,7 +2597,7 @@ function renderMaintenance(){
   html+='<div class="stat"><div class="num">'+nProg+'</div><div class="lbl">В работе</div></div>';
   html+='<div class="stat"><div class="num ok">'+nDone+'</div><div class="lbl">Выполнено</div></div>';
   html+='</div>';
-  if((session.role==='teacher'&&!isZavhoz&&!isTech)||isAdmin){
+  if(!canManage&&!isTech){
     html+='<div class="card"><h3>Новая заявка</h3><form id="maintForm"><div class="grid-2">';
     html+='<div><label>Заголовок</label><input type="text" id="mtTitle" placeholder="Протекает кран"></div>';
     html+='<div><label>Категория</label><select id="mtCategory">'+optionsHTML(MAINTENANCE_CATEGORIES,'','id')+'</select></div>';
@@ -2383,7 +2617,7 @@ function renderMaintenance(){
       html+='<div><span class="tag '+pri.cls+'">'+pri.name+'</span> <span class="tag '+st.cls+'">'+st.name+'</span></div></div>';
       html+='<div class="req-body">'+escapeHtml(r.description)+'</div>';
       if(r.assignedTo)html+='<div style="font-size:12.5px;margin-top:6px"><b>Назначен:</b> '+escapeHtml(r.assignedTo)+'</div>';
-      if(isZavhoz||isAdmin){
+      if(canManage){
         html+='<div class="req-actions" style="flex-wrap:wrap">';
         html+='<select data-maint-assign="'+r.id+'" style="max-width:200px"><option value="">— назначить —</option>';
         for(const tech of data.technicians)html+='<option value="'+escapeHtml(tech.name)+'"'+(tech.name===r.assignedTo?' selected':'')+'>'+escapeHtml(tech.name)+'</option>';
@@ -2434,7 +2668,7 @@ function signConsent(consentId,signed){
 function renderConsents(){
   const isStudent=session.role==='student';
   const isParent=session.role==='parent';
-  const canCreate=session.role==='admin'||(session.role==='teacher'&&(session.isManager||session.isHomeroom));
+  const canCreate=canManageConsents();
   let list=[];
   if(isStudent||isParent){
     list=data.consents.filter(function(c){
@@ -2442,25 +2676,25 @@ function renderConsents(){
       if(c.targetClass&&c.targetClass!==session.class)return false;
       return true;
     });
-  }else if(session.isManager||session.role==='admin'){
+  }else if(session.isManager||session.role==='admin'||session.isVospit){
     list=data.consents.slice();
-  }else if(session.isHomeroom){
-    list=data.consents.filter(function(c){return c.targetClass===session.class||!c.targetClass;});
-  }else{
-    list=data.consents.filter(function(c){return c.createdBy===session.name;});
+  }else if(session.role==='teacher'){
+    list=data.consents.filter(function(c){return !c.targetClass || (session.allClasses||[]).indexOf(c.targetClass)>=0 || c.targetClass===session.homeroomClass || c.createdBy===session.name;});
   }
   list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
   let html='';
   if(canCreate){
+    const classOptions = session.role==='admin'||session.isManager||session.isVospit ? CLASSES : (session.allClasses||[]).concat(session.homeroomClass?[session.homeroomClass]:[]);
+    const uniqueOptions = classOptions.filter(function(c,i,arr){return arr.indexOf(c)===i;});
     html+='<div class="card"><h3>Создать согласие</h3><form id="consentForm"><div class="grid-2">';
     html+='<div><label>Заголовок</label><input type="text" id="consTitle" placeholder="Согласие на..."></div>';
-    html+='<div><label>Класс</label><select id="consClass"><option value="">— для всех —</option>'+optionsHTML(CLASSES,session.class||'')+'</select></div>';
+    html+='<div><label>Класс</label><select id="consClass"><option value="">— для всех моих классов —</option>'+optionsHTML(uniqueOptions,session.class||'')+'</select></div>';
     html+='<div><label>Дедлайн</label><input type="date" id="consDeadline" value="'+addDays(todayISO(),7)+'"></div>';
     html+='<div><label>Тип</label><select id="consType"><option value="general">Общее</option><option value="trip">Экскурсия</option><option value="event">Мероприятие</option></select></div>';
     html+='<div class="full"><label>Текст</label><textarea id="consText" rows="3" placeholder="Я, родитель/законный представитель..."></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
-  html+='<div class="card"><h3>Согласия ('+list.length+')</h3>';
+  html+='<div class="card"><h3>Согласия ('+list.length+')'+(canCreate?'':' (просмотр)')+'</h3>';
   if(list.length){
     for(const c of list){
       const signed=(c.signatures||[]).filter(function(s){return s.signed;}).length;
@@ -2474,7 +2708,7 @@ function renderConsents(){
       else if(mySig)html+='<span class="tag '+(mySig.signed?'good':'bad')+'">'+(mySig.signed?'✓ Подписано':'✕ Отказано')+'</span>';
       html+='</div>';
       html+='<div class="req-body">'+escapeHtml(c.text||'')+'</div>';
-      if(session.isManager||session.role==='admin'||session.isHomeroom){
+      if(session.isManager||session.role==='admin'||session.isHomeroom||session.isVospit){
         html+='<div style="margin-top:8px;font-size:12.5px"><b>Подписано:</b> '+signed+'/'+target+'</div>';
         if(target>0){
           html+='<div style="height:6px;background:var(--bg-subtle);border-radius:3px;overflow:hidden;margin-top:4px"><div style="height:100%;width:'+Math.round(signed/target*100)+'%;background:var(--gradient-primary)"></div></div>';
@@ -2487,6 +2721,29 @@ function renderConsents(){
       html+='</div>';
     }
   }else html+='<div class="empty">Согласий нет</div>';
+  html+='</div>';
+  return html;
+}
+
+/* ============ АДМИН: ШКОЛЫ ============ */
+function renderSchools(){
+  if(session.role!=='admin')return '<div class="card"><div class="empty">Доступ запрещён</div></div>';
+  let html='<div class="card"><h3>Добавить школу</h3><form id="schoolForm" style="display:flex;gap:10px;flex-wrap:wrap">';
+  html+='<input type="text" id="schoolName" placeholder="Название (например, МАОУ СОШ №5)" style="flex:1;min-width:200px">';
+  html+='<button type="submit" class="btn">Создать</button></form>';
+  html+='<div class="edit-info" style="margin-top:10px">Новая школа начнётся с пустым набором данных. Можно будет добавлять учеников и сотрудников через раздел «Пользователи», а также переключиться на неё.</div></div>';
+  html+='<div class="card"><h3>Школы ('+schoolsRegistry.length+')</h3>';
+  for(const s of schoolsRegistry){
+    const isActive = s.id===currentSchoolId;
+    html+='<div class="duty-item'+(isActive?' duty-today':'')+'" style="margin-bottom:10px">';
+    html+='<div><b>'+escapeHtml(s.name)+'</b> <span style="color:var(--text-dim);font-size:11.5px">· '+formatDate((s.createdAt||'').slice(0,10))+'</span>';
+    if(isActive)html+=' <span class="tag good">активна</span>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:6px">';
+    if(!isActive)html+='<button class="btn btn-success btn-sm" data-school-switch="'+s.id+'">Переключиться</button>';
+    if(!isActive)html+='<button class="btn btn-danger btn-sm" data-school-del="'+s.id+'">Удалить</button>';
+    html+='</div></div>';
+  }
   html+='</div>';
   return html;
 }
@@ -2625,8 +2882,8 @@ function renderParentNotes(){
 
 /* === ADMIN === */
 function renderAdminView(){
-  const dispatch={users:renderAdminUsers,allclubs:renderClubs,allevents:renderEvents,menuadmin:renderCafeteria,belladmin:renderAdminBells,backups:renderAdminBackups,log:renderAdminLog,maintenance:renderMaintenance,technicians:renderTechnicians,consents:renderConsents};
-  return (dispatch[currentView]||renderAdminUsers)();
+  const dispatch={schools:renderSchools,users:renderAdminUsers,allclubs:renderClubs,allevents:renderEvents,menuadmin:renderCafeteria,belladmin:renderAdminBells,backups:renderAdminBackups,log:renderAdminLog,maintenance:renderMaintenance,technicians:renderTechnicians,consents:renderConsents};
+  return (dispatch[currentView]||renderSchools)();
 }
 function renderAdminBells(){
   let html='<div class="card"><h3>Звонки</h3><form id="bellsForm">';
@@ -2637,7 +2894,7 @@ function renderAdminBells(){
 function renderAdminUsers(){
   const teachers=data.teachers.slice().sort(function(a,b){return a.name.localeCompare(b.name,'ru');});
   const canEdit=session&&(session.role==='admin'||session.isDirector);
-  let html='<div class="card"><h3>Добавить пользователя</h3><form id="addTeacherForm"><div class="grid-2">';
+  let html='<div class="card"><h3>Добавить пользователя — '+escapeHtml(getSchoolName(currentSchoolId))+'</h3><form id="addTeacherForm"><div class="grid-2">';
   html+='<div><label>ФИО</label><input type="text" id="ntName"></div>';
   html+='<div><label>Должность</label><select id="ntPosition">'+optionsHTML(POSITIONS,'teacher','id')+'</select></div>';
   html+='<div><label>Класс. рук.</label><select id="ntHrClass"><option value="">— нет —</option>'+optionsHTML(CLASSES,'')+'</select></div>';
@@ -2645,17 +2902,17 @@ function renderAdminUsers(){
   html+='<details data-did="add-t-subjects" style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0">Предметы</summary><div class="checkbox-group">';
   for(const s of ALL_SUBJECTS)html+='<label><input type="checkbox" class="nt-subject" value="'+escapeHtml(s)+'"><span>'+escapeHtml(s)+'</span></label>';
   html+='</div></details>';
-  html+='<details data-did="add-t-classes" style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0">Классы</summary><div class="checkbox-group">';
+  html+='<details data-did="add-t-classes" style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0">Классы, в которых ведёт</summary><div class="checkbox-group">';
   for(const c of CLASSES)html+='<label><input type="checkbox" class="nt-class" value="'+escapeHtml(c)+'"><span>'+escapeHtml(c)+'</span></label>';
   html+='</div></details>';
   html+='<button type="submit" class="btn" style="margin-top:16px">Добавить</button></form></div>';
   html+='<div class="card"><h3>Пользователи ('+teachers.length+')</h3>';
-  if(teachers.length){html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Должность</th><th>Роль</th><th>Действия</th></tr></thead><tbody>';for(const t of teachers){const pos=positionById(t.position);let role='';if(t.class)role+='<span class="tag good">Классрук '+escapeHtml(t.class)+'</span> ';if(t.subjects&&t.subjects.length)role+='<span class="tag" style="margin-top:4px;display:inline-block">'+t.subjects.length+' предм.</span>';if(!role)role='<span style="color:var(--text-dim)">—</span>';const posCls=t.position==='cafeteria'?' cafe':'';html+='<tr><td data-label="ФИО"><b>'+escapeHtml(t.name)+'</b></td><td data-label="Должность"><span class="tag position'+posCls+'">'+(pos.emoji||'')+' '+escapeHtml(pos.name)+'</span></td><td data-label="Роль">'+role+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">';if(canEdit){html+='<button class="btn btn-secondary btn-sm" data-tedit="'+escapeHtml(t.name)+'">✎</button><button class="btn btn-secondary btn-sm" data-treset="'+escapeHtml(t.name)+'">PIN</button><button class="btn btn-danger btn-sm" data-tdel="'+escapeHtml(t.name)+'">✕</button>';}else html+='<span style="color:var(--text-dim);font-size:11.5px">просмотр</span>';html+='</div></td></tr>';}html+='</tbody></table></div>';}
+  if(teachers.length){html+='<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Должность</th><th>Роль</th><th>Действия</th></tr></thead><tbody>';for(const t of teachers){const pos=positionById(t.position);let role='';if(t.class)role+='<span class="tag good">Классрук '+escapeHtml(t.class)+'</span> ';if(t.subjects&&t.subjects.length)role+='<span class="tag" style="margin-top:4px;display:inline-block">'+t.subjects.length+' предм.</span>';if(!role)role='<span style="color:var(--text-dim)">—</span>';const posCls=t.position==='cafeteria'?' cafe':(t.position==='vospit'?' vospit':'');html+='<tr><td data-label="ФИО"><b>'+escapeHtml(t.name)+'</b></td><td data-label="Должность"><span class="tag position'+posCls+'">'+(pos.emoji||'')+' '+escapeHtml(pos.name)+'</span></td><td data-label="Роль">'+role+'</td><td><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">';if(canEdit){html+='<button class="btn btn-secondary btn-sm" data-tedit="'+escapeHtml(t.name)+'">✎</button><button class="btn btn-secondary btn-sm" data-treset="'+escapeHtml(t.name)+'">PIN</button><button class="btn btn-danger btn-sm" data-tdel="'+escapeHtml(t.name)+'">✕</button>';}else html+='<span style="color:var(--text-dim);font-size:11.5px">просмотр</span>';html+='</div></td></tr>';}html+='</tbody></table></div>';}
   else html+='<div class="empty">Нет пользователей</div>';
   html+='</div>';
   return html;
 }
-function renderAdminBackups(){return '<div class="card"><h3>Резервные копии</h3><p style="color:var(--text-dim);margin-bottom:14px;font-size:13px">Хранятся '+BACKUP_KEEP_DAYS+' дней.</p><div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap"><button class="btn" id="manualBackupBtn">Создать</button><button class="btn btn-secondary" id="refreshBackupsBtn">Обновить</button></div><div id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';}
+function renderAdminBackups(){return '<div class="card"><h3>Резервные копии ('+escapeHtml(getSchoolName(currentSchoolId))+')</h3><p style="color:var(--text-dim);margin-bottom:14px;font-size:13px">Хранятся '+BACKUP_KEEP_DAYS+' дней.</p><div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap"><button class="btn" id="manualBackupBtn">Создать</button><button class="btn btn-secondary" id="refreshBackupsBtn">Обновить</button></div><div id="backupList"><div class="empty">Нажмите «Обновить»</div></div></div>';}
 function renderAdminLog(){
   const log=data.log.slice().sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
   let html='<div class="card"><h3>История</h3>';
@@ -2670,9 +2927,9 @@ function openStudentProfile(name){
   const cls=session.class;
   const st=data.students.find(function(s){return s.class===cls&&s.name===name;});
   if(!st)return toast('Не найден',true);
-  const abs=filterByPeriod(data.absences.filter(function(a){if(a.class!==cls||a.studentName!==name)return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(a.subject)<0)return false;return true;}),cls);
-  const lates=filterByPeriod(data.lates.filter(function(l){if(l.class!==cls||l.studentName!==name)return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(l.subject)<0)return false;return true;}),cls);
-  const hw=data.homework.filter(function(h){if(h.class!==cls)return false;if(h.deadline&&h.deadline>todayISO())return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&session.subjects.indexOf(h.subject)<0)return false;return true;});
+  const abs=filterByPeriod(data.absences.filter(function(a){if(a.class!==cls||a.studentName!==name)return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&!session.isVospit&&session.subjects.indexOf(a.subject)<0)return false;return true;}),cls);
+  const lates=filterByPeriod(data.lates.filter(function(l){if(l.class!==cls||l.studentName!==name)return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&!session.isVospit&&session.subjects.indexOf(l.subject)<0)return false;return true;}),cls);
+  const hw=data.homework.filter(function(h){if(h.class!==cls)return false;if(h.deadline&&h.deadline>todayISO())return false;if(session.role==='teacher'&&!session.isHomeroom&&!session.isManager&&!session.isVospit&&session.subjects.indexOf(h.subject)<0)return false;return true;});
   const notDone=hw.filter(function(h){return !(h.done||[]).includes(name);});
   const o=document.createElement('div');o.className='modal-overlay';o.id='profileOverlay';
   let html='<div class="modal" style="max-width:680px"><div class="modal-header"><h3>'+escapeHtml(name)+'</h3><button class="modal-close" id="prClose">×</button></div><div class="modal-body">';
@@ -2768,13 +3025,14 @@ function openMealYearOrderModal(){
     const lunch=document.getElementById('myLunch').checked;
     if(!breakfast&&!lunch)return toast('Выберите',true);
     let added=0;let totalCost=0;
-    const acc=getMealAccount(session.name,session.class);
+    const myClass=getStaffClassName();
+    const acc=getMealAccount(session.name,myClass);
     let cur=startDate;
     while(cur<=endDate){
       const dow=new Date(cur+'T00:00:00').getDay();
       if(dow!==0&&dow!==6){
         let order=data.mealOrders.find(function(o2){return o2.date===cur&&o2.studentName===session.name;});
-        if(!order){order={id:uid(),date:cur,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);added++;}
+        if(!order){order={id:uid(),date:cur,studentName:session.name,class:myClass,breakfast:false,lunch:false};data.mealOrders.push(order);added++;}
         const menuForDay=data.menu.filter(function(m){return m.date===cur;});
         const bf=menuForDay.find(function(m){return m.meal==='breakfast';});
         const ln=menuForDay.find(function(m){return m.meal==='lunch';});
@@ -2783,14 +3041,14 @@ function openMealYearOrderModal(){
       }
       cur=addDays(cur,1);
     }
-    if(totalCost>0){data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:-totalCost,description:'Заказ питания на год',time:new Date().toISOString()});}
+    if(totalCost>0){data.mealTransactions.push({id:uid(),studentName:session.name,class:myClass,amount:-totalCost,description:'Заказ питания на год',time:new Date().toISOString()});}
     saveData();toast('Заказано на '+added+' дней, списано '+totalCost+' ₽');close();renderApp();
   });
 }
 function clearMyMealOrders(){
   if(!confirm('Отменить все заказы?'))return;
   const myOrders=data.mealOrders.filter(function(o){return o.studentName===session.name;});
-  const acc=getMealAccount(session.name,session.class);
+  const acc=getMealAccount(session.name,getStaffClassName());
   let refund=0;
   for(const o of myOrders){
     const menuItems=data.menu.filter(function(m){return m.date===o.date;});
@@ -2799,7 +3057,7 @@ function clearMyMealOrders(){
   }
   if(refund>0){
     acc.balance+=refund;
-    data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:refund,description:'Возврат за отменённые заказы',time:new Date().toISOString()});
+    data.mealTransactions.push({id:uid(),studentName:session.name,class:getStaffClassName(),amount:refund,description:'Возврат за отменённые заказы',time:new Date().toISOString()});
   }
   data.mealOrders=data.mealOrders.filter(function(o){return o.studentName!==session.name;});
   saveData();toast('Отменено');renderApp();
@@ -2876,7 +3134,35 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-attention-block]').forEach(function(el){el.addEventListener('click',function(){currentView=el.dataset.attentionBlock;renderApp();window.scrollTo({top:0,behavior:'smooth'});});});
   document.querySelectorAll('[data-open-student]').forEach(function(el){el.addEventListener('click',function(e){if(e.target.closest('button'))return;openStudentProfile(el.dataset.openStudent);});});
+  document.querySelectorAll('[data-view]').forEach(function(el){if(el.tagName==='A'){el.addEventListener('click',function(e){e.preventDefault();currentView=el.dataset.view;renderApp();window.scrollTo({top:0,behavior:'smooth'});});}});
 
+  /* ===== ШКОЛЫ ===== */
+  document.getElementById('schoolForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const name=document.getElementById('schoolName').value.trim();
+    if(!name)return toast('Введите название',true);
+    if(schoolsRegistry.some(function(s){return s.name.toLowerCase()===name.toLowerCase();}))return toast('Уже есть',true);
+    addSchool(name);
+    toast('Школа создана');
+    renderApp();
+  });
+  document.querySelectorAll('[data-school-switch]').forEach(function(b){b.addEventListener('click',function(){
+    currentSchoolId = b.dataset.schoolSwitch;
+    localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
+    data = loadDataForSchool(currentSchoolId);
+    normalizeData();
+    session=null;saveSession();
+    toast('Школа: '+getSchoolName(currentSchoolId));
+    renderApp();
+    subscribeToFirebase();
+  });});
+  document.querySelectorAll('[data-school-del]').forEach(function(b){b.addEventListener('click',function(){
+    if(!confirm('Удалить школу и все её данные?'))return;
+    if(deleteSchool(b.dataset.schoolDel)){toast('Удалено');renderApp();}
+    else toast('Нельзя удалить последнюю',true);
+  });});
+
+  /* ===== ПОСЕЩАЕМОСТЬ ===== */
   document.getElementById('attForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('attDate').value,sn=document.getElementById('attStudent').value,subj=document.getElementById('attSubject').value,r=document.getElementById('attReason').value,note=document.getElementById('attNote').value.trim();
@@ -2904,6 +3190,7 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-late]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.lates=data.lates.filter(function(l){return l.id!==b.dataset.delLate;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== СПРАВКИ ===== */
   document.getElementById('reqForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const type=document.getElementById('reqType').value;
@@ -2914,10 +3201,31 @@ function bindAllEvents(){
     if(dir)pushNotification('teacher',dir.name,'Новая заявка',session.name+' · '+requestTypeById(type).name,'request');
     saveData();toast('Отправлено');renderApp();
   });
+  document.getElementById('customReqTypeForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const name=document.getElementById('crtName').value.trim();
+    const cls=document.getElementById('crtClass').value||null;
+    const text=document.getElementById('crtText').value.trim();
+    if(!name)return toast('Введите название',true);
+    data.customRequestTypes.push({id:uid(),name:name,classId:cls,text:text,createdBy:session.name,createdAt:new Date().toISOString()});
+    saveData();toast('Создано');renderApp();
+  });
+  document.querySelectorAll('[data-crt-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.customRequestTypes=data.customRequestTypes.filter(function(t){return t.id!==b.dataset.crtDel;});saveData();toast('Удалено');renderApp();});});
+  document.getElementById('issueCertForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const sn=document.getElementById('icStudent').value;
+    const type=document.getElementById('icType').value;
+    const text=document.getElementById('icText').value.trim();
+    if(!sn||!type||!text)return toast('Заполните',true);
+    data.requests.push({id:uid(),type:type,studentName:sn,class:session.class,purpose:'',note:text,status:'ready',createdBy:'teacher',createdAt:new Date().toISOString(),readyAt:new Date().toISOString()});
+    pushNotification('parent',sn,'Справка выдана',requestTypeById(type).name+' · '+formatDate(todayISO()),'request');
+    saveData();toast('Справка выдана');renderApp();
+  });
   document.querySelectorAll('[data-req-ready]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReady;});if(!r)return;const note=prompt('Комментарий:','')||'';r.status='ready';r.readyAt=new Date().toISOString();r.note=note;saveData();toast('Готово');pushNotification('parent',r.studentName,'Справка готова',requestTypeById(r.type).name,'request');renderApp();});});
   document.querySelectorAll('[data-req-reject]').forEach(function(b){b.addEventListener('click',function(){const r=data.requests.find(function(x){return x.id===b.dataset.reqReject;});if(!r||!confirm('Отклонить?'))return;const note=prompt('Причина:','')||'';r.status='rejected';r.note=note;saveData();toast('Отклонено',true);renderApp();});});
   document.querySelectorAll('[data-req-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.requests=data.requests.filter(function(r){return r.id!==b.dataset.reqDel;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== ЭКСКУРСИИ ===== */
   document.getElementById('tripForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('tripTitle').value.trim();
@@ -2962,6 +3270,7 @@ function bindAllEvents(){
   document.querySelectorAll('[data-trip-leave]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripLeave);if(!t)return;if(!confirm('Отменить?'))return;t.participants=(t.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-trip-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.trips=data.trips.filter(function(t){return t.id!==b.dataset.tripDel;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== ЗАМЕНЫ ===== */
   document.getElementById('subClass')?.addEventListener('change',function(e){document.getElementById('subSubject').innerHTML=optionsHTML(getSubjects(e.target.value),'');});
   document.getElementById('substForm')?.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2979,6 +3288,7 @@ function bindAllEvents(){
   });
   document.querySelectorAll('[data-del-subst]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.substitutions=data.substitutions.filter(function(s){return s.id!==b.dataset.delSubst;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== ДЗ ===== */
   document.getElementById('hwForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('hwDate').value,subj=document.getElementById('hwSubject').value,text=document.getElementById('hwText').value.trim(),deadline=document.getElementById('hwDeadline').value;
@@ -2995,10 +3305,12 @@ function bindAllEvents(){
   document.querySelectorAll('[data-hw-all-clear]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.hwAllClear;});if(!h||!confirm('Сбросить?'))return;h.done=[];saveData();toast('Сброшено');renderApp();});});
   document.querySelectorAll('[data-toggle-done]').forEach(function(b){b.addEventListener('click',function(){const h=data.homework.find(function(x){return x.id===b.dataset.toggleDone;});if(!h)return;if(!h.done)h.done=[];const idx=h.done.indexOf(session.name);if(idx>=0)h.done.splice(idx,1);else h.done.push(session.name);saveData();toast('Сохранено');renderApp();});});
 
+  /* ===== РАСПИСАНИЕ / ЗВОНКИ ===== */
   document.getElementById('editScheduleBtn')?.addEventListener('click',openScheduleEditor);
   document.getElementById('editBellsBtn')?.addEventListener('click',openBellsEditor);
   document.getElementById('bellsForm')?.addEventListener('submit',function(e){e.preventDefault();document.querySelectorAll('[data-bell-num]').forEach(function(inp){const n=parseInt(inp.dataset.bellNum,10);const f=inp.dataset.bellField;const b=data.bellSchedule.find(function(x){return x.num===n;});if(b)b[f]=inp.value;});saveData();toast('Сохранено');renderApp();});
 
+  /* ===== КРУЖКИ ===== */
   document.getElementById('clubForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const name=document.getElementById('clubName').value.trim();
@@ -3012,6 +3324,7 @@ function bindAllEvents(){
   document.querySelectorAll('[data-club-attendance]').forEach(function(b){b.addEventListener('click',function(){openClubAttendance(b.dataset.clubAttendance);});});
   document.querySelectorAll('[data-club-attendance-view]').forEach(function(b){b.addEventListener('click',function(){openClubHistory(b.dataset.clubAttendanceView);});});
 
+  /* ===== МЕРОПРИЯТИЯ ===== */
   document.getElementById('eventForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('evTitle').value.trim();
@@ -3024,6 +3337,7 @@ function bindAllEvents(){
   document.querySelectorAll('[data-event-leave]').forEach(function(b){b.addEventListener('click',function(){const ev=getEventById(b.dataset.eventLeave);if(!ev)return;ev.participants=(ev.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-event-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.events=data.events.filter(function(e){return e.id!==b.dataset.eventDel;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== СТОЛОВАЯ ===== */
   document.getElementById('menuForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const date=document.getElementById('menuDate').value,dish=document.getElementById('menuDish').value.trim();
@@ -3036,22 +3350,22 @@ function bindAllEvents(){
   document.querySelectorAll('[data-menu-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.menu=data.menu.filter(function(m){return m.id!==b.dataset.menuDel;});saveData();toast('Удалено');renderApp();});});
   document.querySelectorAll('[data-menu-edit]').forEach(function(b){b.addEventListener('click',function(){openEditMenuItemModal(b.dataset.menuEdit);});});
   document.querySelectorAll('[data-cafeteria-date]').forEach(function(b){b.addEventListener('click',function(){uiState.cafeteriaDate=b.dataset.cafeteriaDate;renderApp();});});
-
   document.querySelectorAll('[data-meal-order]').forEach(function(b){b.addEventListener('click',function(){
     const m=data.menu.find(function(x){return x.id===b.dataset.mealOrder;});
     if(!m)return;
     let order=data.mealOrders.find(function(o){return o.date===m.date&&o.studentName===session.name;});
-    if(!order){order={id:uid(),date:m.date,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);}
+    const myClass=getStaffClassName();
+    if(!order){order={id:uid(),date:m.date,studentName:session.name,class:myClass,breakfast:false,lunch:false};data.mealOrders.push(order);}
     const key=m.meal==='breakfast'?'breakfast':'lunch';
     order[key]=!order[key];
-    const acc=getMealAccount(session.name,session.class);
+    const acc=getMealAccount(session.name,myClass);
     if(order[key]){
       acc.balance-=m.price;
-      data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:-m.price,description:(m.meal==='breakfast'?'Завтрак':'Обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
+      data.mealTransactions.push({id:uid(),studentName:session.name,class:myClass,amount:-m.price,description:(m.meal==='breakfast'?'Завтрак':'Обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
       if(acc.balance<0)toast('Внимание: отрицательный баланс',true);
     }else{
       acc.balance+=m.price;
-      data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:m.price,description:'Возврат: '+(m.meal==='breakfast'?'завтрак':'обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
+      data.mealTransactions.push({id:uid(),studentName:session.name,class:myClass,amount:m.price,description:'Возврат: '+(m.meal==='breakfast'?'завтрак':'обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
     }
     if(!order.breakfast&&!order.lunch)data.mealOrders=data.mealOrders.filter(function(o){return o.id!==order.id;});
     saveData();toast('Сохранено');renderApp();
@@ -3059,27 +3373,33 @@ function bindAllEvents(){
   document.getElementById('yearOrderBtn')?.addEventListener('click',openMealYearOrderModal);
   document.getElementById('clearAllOrdersBtn')?.addEventListener('click',clearMyMealOrders);
 
+  /* ===== ОБЪЯВЛЕНИЯ ===== */
   document.getElementById('annForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('annText').value.trim();if(!text)return;data.announcements.push({id:uid(),class:session.class,text:text,time:new Date().toISOString(),from:session.name});getStudentsOfClass(session.class).forEach(function(s){pushNotification('student',s.name,'Объявление',text,'message');});saveData();toast('Отправлено');renderApp();});
   document.querySelectorAll('[data-del-ann]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.announcements=data.announcements.filter(function(a){return a.id!==b.dataset.delAnn;});saveData();renderApp();});});
   document.getElementById('taForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('taText').value.trim();if(!text)return;data.teacherAnnouncements.push({id:uid(),text:text,time:new Date().toISOString(),from:session.name,fromPosition:session.position||'teacher'});for(const t of data.teachers){if(t.name!==session.name)pushNotification('teacher',t.name,'Объявление учителям',text,'info');}saveData();toast('Опубликовано');renderApp();});
   document.querySelectorAll('[data-del-ta]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.teacherAnnouncements=data.teacherAnnouncements.filter(function(a){return a.id!==b.dataset.delTa;});saveData();renderApp();});});
 
+  /* ===== ВОПРОСЫ ===== */
   document.querySelectorAll('[data-ans-q]').forEach(function(b){b.addEventListener('click',function(){const id=b.dataset.ansQ;const el=document.getElementById('ans-'+id);const ans=el?el.value.trim():'';if(!ans)return toast('Введите ответ',true);const q=data.questions.find(function(x){return x.id===id;});if(!q)return;q.answered=true;q.answer=ans;saveData();toast('Отвечено');renderApp();});});
   document.getElementById('qForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('qText').value.trim();if(!text)return;let recipient=null;const hr=data.teachers.find(function(t){return t.class===session.class;});if(hr)recipient=hr.name;if(!recipient)return toast('Нет учителя',true);data.questions.push({id:uid(),class:session.class,from:session.name,to:recipient,text:text,time:new Date().toISOString(),answered:false});pushNotification('teacher',recipient,'Вопрос',text,'question');saveData();toast('Отправлено');renderApp();});
 
+  /* ===== УЧЕНИКИ ===== */
   document.getElementById('addStudentForm')?.addEventListener('submit',async function(e){e.preventDefault();const name=(document.getElementById('newStudentName').value||'').trim();if(!name)return;if(data.students.some(function(s){return s.class===session.class&&s.name.toLowerCase()===name.toLowerCase();}))return toast('Уже есть',true);data.students.push({id:uid(),class:session.class,name:name,pin:await setPinHash('1234'),attempts:0,blockedUntil:null});saveData();toast('Добавлен');renderApp();});
   document.getElementById('newStudentName')?.addEventListener('input',function(e){uiState.newStudentName=e.target.value;});
   document.querySelectorAll('[data-del-student]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();const st=data.students.find(function(s){return s.id===b.dataset.delStudent;});if(!st||!confirm('Удалить?'))return;data.students=data.students.filter(function(s){return s.id!==st.id;});data.absences=data.absences.filter(function(a){return !(a.class===st.class&&a.studentName===st.name);});saveData();toast('Удалён');renderApp();});});
 
+  /* ===== ЗАМЕТКИ ===== */
   document.getElementById('todoForm')?.addEventListener('submit',function(e){e.preventDefault();const t=document.getElementById('todoText').value.trim();if(!t)return;data.todos.push({id:uid(),teacherName:session.name,text:t,done:false,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-toggle-todo]').forEach(function(b){b.addEventListener('click',function(){const t=data.todos.find(function(x){return x.id===b.dataset.toggleTodo;});if(t){t.done=!t.done;saveData();renderApp();}});});
   document.querySelectorAll('[data-del-todo]').forEach(function(b){b.addEventListener('click',function(){data.todos=data.todos.filter(function(t){return t.id!==b.dataset.delTodo;});saveData();renderApp();});});
   document.getElementById('noteForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('noteText').value.trim();const sn=document.getElementById('noteStudent').value;if(!text)return;data.notes.push({id:uid(),teacherName:session.name,studentName:sn,text:text,time:new Date().toISOString()});saveData();renderApp();});
   document.querySelectorAll('[data-del-note]').forEach(function(b){b.addEventListener('click',function(){data.notes=data.notes.filter(function(n){return n.id!==b.dataset.delNote;});saveData();renderApp();});});
 
+  /* ===== ДЕЖУРСТВА ===== */
   document.getElementById('dutyForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('dutyDate').value,sn=document.getElementById('dutyStudent').value;if(!date||!sn)return;data.duties.push({id:uid(),class:session.class,date:date,studentName:sn});saveData();toast('Назначено');renderApp();});
   document.querySelectorAll('[data-del-duty]').forEach(function(b){b.addEventListener('click',function(){data.duties=data.duties.filter(function(d){return d.id!==b.dataset.delDuty;});saveData();renderApp();});});
 
+  /* ===== ШКОЛЬНОЕ ДЕЖУРСТВО ===== */
   document.getElementById('addPostForm')?.addEventListener('submit',function(e){e.preventDefault();const n=document.getElementById('newPostName').value.trim();if(!n)return;data.schoolPosts.push({id:uid(),name:n});saveData();toast('Добавлено');renderApp();});
   document.querySelectorAll('[data-del-post]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolPosts=data.schoolPosts.filter(function(p){return p.id!==b.dataset.delPost;});saveData();renderApp();});});
   document.getElementById('createWeekForm')?.addEventListener('submit',function(e){e.preventDefault();const cls=document.getElementById('weekClass').value,start=document.getElementById('weekStart').value;if(!cls||!start)return toast('Заполните',true);if(!DUTY_CLASSES.includes(cls))return toast('Только 6-11',true);if(data.schoolDutyWeeks.some(function(w){return w.startDate===start&&!w.transferred;}))return toast('Уже есть',true);createSchoolDutyWeek(cls,start);toast('Создано');renderApp();});
@@ -3089,41 +3409,21 @@ function bindAllEvents(){
   document.querySelectorAll('[data-transfer-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Передать?'))return;transferSchoolDuty(b.dataset.transferWeek);});});
   document.querySelectorAll('[data-del-week]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.schoolDutyWeeks=data.schoolDutyWeeks.filter(function(w){return w.id!==b.dataset.delWeek;});saveData();toast('Удалено');renderApp();});});
 
+  /* ===== ОТЧЁТЫ ===== */
   document.getElementById('expAbsences')?.addEventListener('click',function(){exportCSV('absences');});
   document.getElementById('expHw')?.addEventListener('click',function(){exportCSV('homework');});
   document.getElementById('expLates')?.addEventListener('click',function(){exportCSV('lates');});
   document.getElementById('expSchoolSummary')?.addEventListener('click',function(){exportCSV('school');});
 
+  /* ===== НАСТРОЙКИ ===== */
   document.getElementById('changePinBtn')?.addEventListener('click',function(){const t=findTeacher(session.name);if(!t)return;openChangePinModal({onSave:async function(old,newP){if(!await verifyPin(old,t.pin))return {ok:false,error:'Неверный PIN'};t.pin=await setPinHash(newP);t.attempts=0;t.blockedUntil=null;saveData();return {ok:true};}});});
   document.getElementById('notifyPermBtn')?.addEventListener('click',function(){if(!('Notification' in window))return toast('Не поддерживается',true);if(Notification.permission==='default')Notification.requestPermission();});
 
+  /* ===== СТУДЕНТ / РОДИТЕЛЬ ===== */
   document.getElementById('addMyAbsBtn')?.addEventListener('click',openAddAbsenceModal);
   document.getElementById('addParentNoteBtn')?.addEventListener('click',openAddParentNote);
   document.getElementById('parentMsgForm')?.addEventListener('submit',function(e){e.preventDefault();const text=document.getElementById('pmText').value.trim();if(!text)return;const teacher=data.teachers.find(function(t){return t.class===session.class;});data.contacts.push({id:uid(),class:session.class,studentName:session.name,from:session.name,fromRole:'parent',to:teacher?teacher.name:'—',text:text,time:new Date().toISOString(),read:false});if(teacher)pushNotification('teacher',teacher.name,'Сообщение от '+session.name,text,'message');saveData();toast('Отправлено');renderApp();});
   document.getElementById('noteParentForm')?.addEventListener('submit',function(e){e.preventDefault();const date=document.getElementById('pnDate').value,reason=document.getElementById('pnReason').value,text=document.getElementById('pnText').value.trim();if(!date||!reason||!text)return toast('Заполните',true);data.parentNotes.push({id:uid(),date:date,class:session.class,studentName:session.name,reason:reason,text:text,status:'pending',time:new Date().toISOString()});const teacher=data.teachers.find(function(t){return t.class===session.class;});if(teacher)pushNotification('teacher',teacher.name,'Записка',session.name+' · '+formatDate(date),'absence');saveData();toast('Отправлено');renderApp();});
-
-  document.getElementById('addTeacherForm')?.addEventListener('submit',async function(e){
-    e.preventDefault();
-    const name=document.getElementById('ntName').value.trim();
-    if(!name)return toast('Введите ФИО',true);
-    if(findTeacher(name))return toast('Уже есть',true);
-    const position=document.getElementById('ntPosition').value;
-    const hrClass=document.getElementById('ntHrClass').value||null;
-    const subjects=Array.from(document.querySelectorAll('.nt-subject:checked')).map(function(i){return i.value;});
-    const classes=Array.from(document.querySelectorAll('.nt-class:checked')).map(function(i){return i.value;});
-    if(position==='teacher'&&!hrClass&&(!subjects.length||!classes.length))return toast('Нужен класс или предметы+классы',true);
-    const pinRaw=document.getElementById('ntPin').value.trim();
-    const pin=pinRaw||'1234';
-    if(!/^\d{4,8}$/.test(pin))return toast('PIN 4-8 цифр',true);
-    data.teachers.push({name:name,class:hrClass,position:position,subjects:subjects,classes:classes,pin:await setPinHash(pin),createdAt:new Date().toISOString(),attempts:0,blockedUntil:null});
-    saveData();toast('Добавлен');renderApp();
-  });
-  document.querySelectorAll('[data-tedit]').forEach(function(b){b.addEventListener('click',function(){openEditTeacherModal(b.dataset.tedit);});});
-  document.querySelectorAll('[data-treset]').forEach(function(b){b.addEventListener('click',async function(){const t=findTeacher(b.dataset.treset);if(!t||!confirm('Сбросить PIN?'))return;t.pin=await setPinHash('1234');saveData();toast('Сброшено');renderApp();});});
-  document.querySelectorAll('[data-tdel]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.teachers=data.teachers.filter(function(t){return t.name!==b.dataset.tdel;});saveData();renderApp();});});
-  document.getElementById('manualBackupBtn')?.addEventListener('click',async function(){toast('Создаю...');await runAutoBackup(true);toast('Создан');loadBackupList();});
-  document.getElementById('refreshBackupsBtn')?.addEventListener('click',loadBackupList);
-  if(currentView==='backups')loadBackupList();
 
   /* ===== ДИСЦИПЛИНА ===== */
   document.getElementById('discForm')?.addEventListener('submit',function(e){
@@ -3146,10 +3446,11 @@ function bindAllEvents(){
     const amount=parseInt(document.getElementById('tuAmount').value,10)||0;
     const method=document.getElementById('tuMethod').value;
     if(amount<=0)return toast('Сумма > 0',true);
-    const acc=getMealAccount(session.name,session.class);
+    const myClass=getStaffClassName();
+    const acc=getMealAccount(session.name,myClass);
     acc.balance+=amount;
     const methodName={card:'карта',cash:'наличные',transfer:'перевод'}[method]||method;
-    data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:amount,description:'Пополнение ('+methodName+')',time:new Date().toISOString()});
+    data.mealTransactions.push({id:uid(),studentName:session.name,class:myClass,amount:amount,description:'Пополнение ('+methodName+')',time:new Date().toISOString()});
     saveData();toast('Пополнено на '+amount+' ₽');renderApp();
   });
   document.querySelectorAll('[data-adjust-balance]').forEach(function(b){b.addEventListener('click',function(){
@@ -3165,7 +3466,7 @@ function bindAllEvents(){
     saveData();toast('Сохранено');renderApp();
   });});
 
-  /* ===== ЗАЯВКИ ===== */
+  /* ===== ЗАЯВКИ НА РЕМОНТ ===== */
   document.getElementById('maintForm')?.addEventListener('submit',function(e){
     e.preventDefault();
     const title=document.getElementById('mtTitle').value.trim();
@@ -3213,13 +3514,37 @@ function bindAllEvents(){
     const text=document.getElementById('consText').value.trim();
     if(!title||!text)return toast('Заполните',true);
     data.consents.push({id:uid(),title:title,text:text,type:type,targetClass:cls,targetStudents:null,deadline:deadline,createdBy:session.name,createdAt:new Date().toISOString(),signatures:[],tripId:null});
-    if(cls){getStudentsOfClass(cls).forEach(function(s){pushNotification('parent',s.name,'Новое согласие',title,'info');});}
-    else{data.students.forEach(function(s){pushNotification('parent',s.name,'Новое согласие',title,'info');});}
+    const targetStudents = cls ? getStudentsOfClass(cls) : data.students;
+    targetStudents.forEach(function(s){pushNotification('parent',s.name,'Новое согласие',title,'info');});
     saveData();toast('Создано');renderApp();
   });
   document.querySelectorAll('[data-consent-sign]').forEach(function(b){b.addEventListener('click',function(){signConsent(b.dataset.consentSign,true);toast('Подписано');renderApp();});});
   document.querySelectorAll('[data-consent-decline]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Отказаться?'))return;signConsent(b.dataset.consentDecline,false);toast('Отказано',true);renderApp();});});
   document.querySelectorAll('[data-consent-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.consents=data.consents.filter(function(c){return c.id!==b.dataset.consentDel;});saveData();toast('Удалено');renderApp();});});
+
+  /* ===== УЧЁТНЫЕ ЗАПИСИ ===== */
+  document.getElementById('addTeacherForm')?.addEventListener('submit',async function(e){
+    e.preventDefault();
+    const name=document.getElementById('ntName').value.trim();
+    if(!name)return toast('Введите ФИО',true);
+    if(findTeacher(name))return toast('Уже есть',true);
+    const position=document.getElementById('ntPosition').value;
+    const hrClass=document.getElementById('ntHrClass').value||null;
+    const subjects=Array.from(document.querySelectorAll('.nt-subject:checked')).map(function(i){return i.value;});
+    const classes=Array.from(document.querySelectorAll('.nt-class:checked')).map(function(i){return i.value;});
+    if(position==='teacher'&&!hrClass&&(!subjects.length||!classes.length))return toast('Нужен класс или предметы+классы',true);
+    const pinRaw=document.getElementById('ntPin').value.trim();
+    const pin=pinRaw||'1234';
+    if(!/^\d{4,8}$/.test(pin))return toast('PIN 4-8 цифр',true);
+    data.teachers.push({name:name,class:hrClass,position:position,subjects:subjects,classes:classes,pin:await setPinHash(pin),createdAt:new Date().toISOString(),attempts:0,blockedUntil:null});
+    saveData();toast('Добавлен');renderApp();
+  });
+  document.querySelectorAll('[data-tedit]').forEach(function(b){b.addEventListener('click',function(){openEditTeacherModal(b.dataset.tedit);});});
+  document.querySelectorAll('[data-treset]').forEach(function(b){b.addEventListener('click',async function(){const t=findTeacher(b.dataset.treset);if(!t||!confirm('Сбросить PIN?'))return;t.pin=await setPinHash('1234');saveData();toast('Сброшено');renderApp();});});
+  document.querySelectorAll('[data-tdel]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.teachers=data.teachers.filter(function(t){return t.name!==b.dataset.tdel;});saveData();renderApp();});});
+  document.getElementById('manualBackupBtn')?.addEventListener('click',async function(){toast('Создаю...');await runAutoBackup(true);toast('Создан');loadBackupList();});
+  document.getElementById('refreshBackupsBtn')?.addEventListener('click',loadBackupList);
+  if(currentView==='backups')loadBackupList();
 }
 
 function exportCSV(type){
@@ -3274,9 +3599,19 @@ document.addEventListener('keydown',function(e){
 /* ============ START ============ */
 (async function startApp(){
   if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');
+  loadSchoolsRegistry();
+  data = loadDataForSchool(currentSchoolId);
+  normalizeData();
   session=loadSession();
+  if(session&&session.schoolId && session.schoolId!==currentSchoolId){
+    currentSchoolId = session.schoolId;
+    localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
+    data = loadDataForSchool(currentSchoolId);
+    normalizeData();
+  }
   if(session&&session.isCafeteria)currentView='cafeteria';
   else if(session&&(session.isZavhoz||session.isTechnician))currentView='maintenance';
+  else if(session&&session.role==='admin')currentView='schools';
   renderApp();
   setTimeout(async function(){
     const t0=Date.now();
