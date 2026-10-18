@@ -687,7 +687,7 @@ function loadSchoolsRegistry(){
   try{const raw = localStorage.getItem(SCHOOLS_REG_KEY);if(raw) schoolsRegistry = JSON.parse(raw);}catch(e){ schoolsRegistry = []; }
   if(!Array.isArray(schoolsRegistry) || !schoolsRegistry.length){
     schoolsRegistry = [{id:'school1', name:'Школа №1', createdAt:new Date().toISOString()}];
-    saveSchoolsRegistry();
+    localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
   }
   currentSchoolId = localStorage.getItem(CURRENT_SCHOOL_KEY) || schoolsRegistry[0].id;
   if(!schoolsRegistry.find(function(s){return s.id===currentSchoolId;})){
@@ -695,14 +695,60 @@ function loadSchoolsRegistry(){
     localStorage.setItem(CURRENT_SCHOOL_KEY, currentSchoolId);
   }
 }
+function parseSchoolsRaw(raw){
+  if(!raw) return [];
+  if(Array.isArray(raw)) return raw.filter(Boolean);
+  return Object.keys(raw).map(function(k){ return raw[k]; }).filter(function(s){ return s && s.id; });
+}
+async function pushSchoolsRegistry(){
+  if(!window.firebaseDB) return;
+  try{
+    const {db,ref,get,set} = window.firebaseDB;
+    const snap = await get(ref(db, FB_PATH + '/registry/schools'));
+    const cloudSchools = parseSchoolsRaw(snap.val());
+    const merged = cloudSchools.slice();
+    for(const ls of schoolsRegistry){
+      if(!merged.find(function(s){return s.id===ls.id;})) merged.push(ls);
+    }
+    const asObject = {};
+    for(const s of merged) asObject[s.id] = s;
+    await set(ref(db, FB_PATH + '/registry/schools'), asObject);
+    console.log('[sync] schools registry pushed:', merged.length);
+  }catch(e){
+    console.error('[sync] pushSchoolsRegistry error:', e);
+  }
+}
+async function syncSchoolsRegistry(){
+  if(!window.firebaseDB) return false;
+  try{
+    const {db,ref,get} = window.firebaseDB;
+    const snap = await get(ref(db, FB_PATH + '/registry/schools'));
+    const cloudSchools = parseSchoolsRaw(snap.val());
+    if(!cloudSchools.length){
+      if(schoolsRegistry.length) pushSchoolsRegistry();
+      return false;
+    }
+    let changed = false;
+    for(const cs of cloudSchools){
+      if(!schoolsRegistry.find(function(s){return s.id===cs.id;})){
+        schoolsRegistry.push(cs);
+        changed = true;
+        console.log('[sync] new school from cloud:', cs.name);
+      }
+    }
+    const cloudIds = cloudSchools.map(function(s){return s.id;});
+    const localOnly = schoolsRegistry.filter(function(s){return cloudIds.indexOf(s.id)<0;});
+    if(localOnly.length) pushSchoolsRegistry();
+    if(changed) localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
+    return changed;
+  }catch(e){
+    console.error('[sync] syncSchoolsRegistry error:', e);
+    return false;
+  }
+}
 function saveSchoolsRegistry(){
   localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
-  if(window.firebaseDB){
-    try{
-      const{db,ref,set}=window.firebaseDB;
-      set(ref(db,FB_PATH+'/registry/schools'),schoolsRegistry).catch(function(){});
-    }catch(e){}
-  }
+  pushSchoolsRegistry();
 }
 function getSchoolName(id){
   const s = schoolsRegistry.find(function(x){return x.id===id;});
@@ -711,14 +757,29 @@ function getSchoolName(id){
 function addSchool(name){
   const s = {id:'school_'+uid(), name:name, createdAt:new Date().toISOString()};
   schoolsRegistry.push(s);
-  saveSchoolsRegistry();
+  localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
+  if(window.firebaseDB){
+    try{
+      const {db,ref,set} = window.firebaseDB;
+      set(ref(db, FB_PATH + '/registry/schools/' + s.id), s)
+        .then(function(){console.log('[sync] school added to cloud:', s.name);})
+        .catch(function(err){console.error('[sync] add school error:', err);});
+    }catch(e){}
+  }
   return s;
 }
 function deleteSchool(id){
   if(schoolsRegistry.length<=1)return false;
   schoolsRegistry = schoolsRegistry.filter(function(s){return s.id!==id;});
   try{ localStorage.removeItem(getDataKey(id)); }catch(e){}
-  saveSchoolsRegistry();
+  localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
+  if(window.firebaseDB){
+    try{
+      const {db,ref,remove} = window.firebaseDB;
+      remove(ref(db, FB_PATH + '/registry/schools/' + id)).catch(function(){});
+      remove(ref(db, FB_PATH + '/schools/' + id)).catch(function(){});
+    }catch(e){}
+  }
   if(currentSchoolId===id){
     currentSchoolId = schoolsRegistry[0].id;
     localStorage.setItem(CURRENT_SCHOOL_KEY, currentSchoolId);
@@ -1058,6 +1119,25 @@ function subscribeToFirebase(){
   fbListeners.push(onValue(ref(db,schoolPath+'/notifications'), function(s){
     data.notifications=s.val()||[];
     if(session) processIncomingNotifications();
+  }));
+
+  // Подписка на реестр школ — школы, созданные на других устройствах, появятся автоматически
+  fbListeners.push(onValue(ref(db, FB_PATH + '/registry/schools'), function(snap){
+    const cloudSchools = parseSchoolsRaw(snap.val());
+    let changed = false;
+    for(const cs of cloudSchools){
+      if(!schoolsRegistry.find(function(s){return s.id===cs.id;})){
+        schoolsRegistry.push(cs);
+        changed = true;
+      }
+    }
+    if(changed){
+      localStorage.setItem(SCHOOLS_REG_KEY, JSON.stringify(schoolsRegistry));
+      console.log('[sync] schools registry updated from cloud');
+      if(!session) renderLogin();
+      else if(currentView==='schools') renderApp();
+      else toast('Список школ обновлён');
+    }
   }));
 }
 function updateStatusBadge(){
@@ -1531,11 +1611,29 @@ function renderLogin(){
   html+='<div style="text-align:center;margin-top:10px;font-size:11.5px;color:var(--text-dim)" id="syncStatus"></div></form></div></div>';
   app.innerHTML=html;
   updateStatusBadge();
-  document.getElementById('loginSchoolSelect').addEventListener('change',function(e){
+  document.getElementById('loginSchoolSelect').addEventListener('change', async function(e){
     currentSchoolId = e.target.value;
     localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
     data = loadDataForSchool(currentSchoolId);
     normalizeData();
+    // Подтянуть данные школы из Firebase (для входа на устройстве, где эта школа ещё не открывалась)
+    if(window.firebaseDB && (!data.teachers || !data.teachers.length)){
+      try{
+        const {db,ref,get} = window.firebaseDB;
+        const snap = await get(ref(db, FB_PATH + '/schools/' + currentSchoolId + '/main'));
+        if(snap.exists()){
+          const inc = snap.val();
+          for(const f of LIST_FIELDS) data[f]=inc[f]||[];
+          data.periods=inc.periods||{}; data.currentPeriod=inc.currentPeriod||{}; data.schedules=inc.schedules||{};
+          if(Array.isArray(inc.bellSchedule)&&inc.bellSchedule.length) data.bellSchedule=inc.bellSchedule;
+          if(Array.isArray(inc.schoolPosts)&&inc.schoolPosts.length) data.schoolPosts=inc.schoolPosts;
+          data.adminPasswordHash=inc.adminPasswordHash||null;
+          normalizeData();
+          try{ localStorage.setItem(getDataKey(currentSchoolId), JSON.stringify(data)); }catch(er){}
+          console.log('[sync] school data pulled on login change:', data.teachers.length, 'teachers');
+        }
+      }catch(err){ console.error('[sync] pull school data on login error:', err); }
+    }
     renderLogin();
   });
   document.querySelectorAll('.role-tab').forEach(function(t){t.addEventListener('click',function(){loginState.role=t.dataset.role;renderLogin();});});
@@ -2825,7 +2923,7 @@ function renderSchools(){
   let html='<div class="card"><h3>Добавить школу</h3><form id="schoolForm" style="display:flex;gap:10px;flex-wrap:wrap">';
   html+='<input type="text" id="schoolName" placeholder="Название (например, МАОУ СОШ №5)" style="flex:1;min-width:200px">';
   html+='<button type="submit" class="btn">Создать</button></form>';
-  html+='<div class="edit-info" style="margin-top:10px">Новая школа начнётся с пустым набором данных.</div></div>';
+  html+='<div class="edit-info" style="margin-top:10px">Новая школа начнётся с пустым набором данных. Созданные школы синхронизируются между всеми устройствами.</div></div>';
   html+='<div class="card"><h3>Школы ('+schoolsRegistry.length+')</h3>';
   for(const s of schoolsRegistry){
     const isActive = s.id===currentSchoolId;
@@ -3245,6 +3343,23 @@ function bindAllEvents(){
     localStorage.setItem(CURRENT_SCHOOL_KEY,currentSchoolId);
     data = loadDataForSchool(currentSchoolId);
     normalizeData();
+    // Если данных этой школы ещё нет локально — тянем из Firebase
+    if(window.firebaseDB && (!data.teachers || !data.teachers.length)){
+      try{
+        const {db,ref,get} = window.firebaseDB;
+        const snap = await get(ref(db, FB_PATH + '/schools/' + currentSchoolId + '/main'));
+        if(snap.exists()){
+          const inc = snap.val();
+          for(const f of LIST_FIELDS) data[f]=inc[f]||[];
+          data.periods=inc.periods||{}; data.currentPeriod=inc.currentPeriod||{}; data.schedules=inc.schedules||{};
+          if(Array.isArray(inc.bellSchedule)&&inc.bellSchedule.length) data.bellSchedule=inc.bellSchedule;
+          if(Array.isArray(inc.schoolPosts)&&inc.schoolPosts.length) data.schoolPosts=inc.schoolPosts;
+          data.adminPasswordHash=inc.adminPasswordHash||null;
+          normalizeData();
+          try{ localStorage.setItem(getDataKey(currentSchoolId), JSON.stringify(data)); }catch(er){}
+        }
+      }catch(err){ console.error('[sync] pull school data error:', err); }
+    }
     session=null;saveSession();
     toast('Школа: '+getSchoolName(currentSchoolId));
     if(fbReadyPromise) await fbReadyPromise;
@@ -3508,26 +3623,32 @@ function bindAllEvents(){
     log.push('3. window.firebaseError: ' + (window.firebaseError || '—'));
     log.push('4. firebaseConnected: ' + (firebaseConnected ? '✓ да' : '✗ нет'));
     log.push('5. currentSchoolId: ' + currentSchoolId);
+    log.push('6. schoolsRegistry: ' + schoolsRegistry.length + ' шт.');
     if(window.firebaseDB){
       try{
         const {db,ref,get,set} = window.firebaseDB;
         const testPath = FB_PATH+'/schools/'+currentSchoolId+'/main';
-        log.push('6. Пробую прочитать: ' + testPath);
+        log.push('7. Пробую прочитать: ' + testPath);
         const snap = await get(ref(db, testPath));
-        log.push('7. Чтение: ' + (snap.exists() ? '✓ данные есть ('+Object.keys(snap.val()).length+' полей)' : '⚠ данных нет'));
+        log.push('8. Чтение: ' + (snap.exists() ? '✓ данные есть ('+Object.keys(snap.val()).length+' полей)' : '⚠ данных нет'));
         try{
           const pingRef = ref(db, FB_PATH+'/schools/'+currentSchoolId+'/_ping');
           await set(pingRef, {time: Date.now()});
-          log.push('8. Запись: ✓ разрешена');
+          log.push('9. Запись: ✓ разрешена');
         }catch(wErr){
-          log.push('8. Запись: ✗ ОШИБКА — ' + (wErr.code || wErr.message));
-          log.push('   → Скорее всего Firebase Rules закрыты.');
-          log.push('   → Откройте Firebase Console → Realtime Database → Rules');
-          log.push('   → Установите: { "rules": { ".read": true, ".write": true } }');
+          log.push('9. Запись: ✗ ОШИБКА — ' + (wErr.code || wErr.message));
+          log.push('   → Firebase Rules закрыты.');
+          log.push('   → Firebase Console → Realtime Database → Rules');
+          log.push('   → { "rules": { ".read": true, ".write": true } }');
         }
+        try{
+          const regSnap = await get(ref(db, FB_PATH+'/registry/schools'));
+          const cloudSchools = parseSchoolsRaw(regSnap.val());
+          log.push('10. Школ в облаке: ' + cloudSchools.length);
+          for(const cs of cloudSchools) log.push('    · ' + cs.name + ' (' + cs.id + ')');
+        }catch(e){ log.push('10. Ошибка чтения реестра школ: ' + (e.code || e.message)); }
       }catch(rErr){
-        log.push('6-7. ОШИБКА чтения: ' + (rErr.code || rErr.message));
-        log.push('   → Firebase Rules закрыты или неверный databaseURL');
+        log.push('7-8. ОШИБКА чтения: ' + (rErr.code || rErr.message));
       }
     } else {
       log.push('');
@@ -3559,6 +3680,7 @@ function bindAllEvents(){
         saveData();
         toast('Локальные данные отправлены на сервер');
       }
+      await syncSchoolsRegistry();
     }catch(e){
       console.error('[sync] forceSync failed:', e);
       toast('Ошибка: ' + (e.code || e.message), true);
@@ -3780,6 +3902,9 @@ document.addEventListener('keydown',function(e){
 
   await fbReadyPromise;
   if(window.firebaseDB){
+    // Синхронизируем список школ — чтобы увидеть школы, созданные на других устройствах
+    const schoolsChanged = await syncSchoolsRegistry();
+    if(schoolsChanged && !session) renderLogin();
     subscribeToFirebase();
     updateStatusBadge();
     setTimeout(function(){ runAutoBackup(false); }, 2000);
