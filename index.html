@@ -114,8 +114,6 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
   border:1.5px dashed var(--border-strong);border-radius:14px;color:var(--text-mid);
   font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .forgot-link:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);border-style:solid}
-
-/* ===== TOPBAR ===== */
 .topbar{background:var(--topbar-bg);backdrop-filter:blur(24px) saturate(1.4);
   -webkit-backdrop-filter:blur(24px) saturate(1.4);color:#fff;padding:14px 28px;
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
@@ -145,8 +143,6 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
   line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px}
 .icon-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
 .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-
-/* ===== SIDE MENU (top-left) ===== */
 .side-menu{
   position:fixed;
   top:72px;
@@ -190,8 +186,6 @@ input[type="checkbox"]{width:auto;margin-right:8px;accent-color:var(--primary)}
 .subnav-badge{background:var(--gradient-accent);color:#fff;font-size:10px;font-weight:800;
   padding:2px 7px;border-radius:var(--radius-full);min-width:18px;text-align:center;
   box-shadow:0 2px 6px rgba(236,72,153,.35);flex-shrink:0}
-
-/* ===== CONTAINER & CARDS ===== */
 .container{max-width:1200px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .3s ease}
 .card{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;margin-bottom:18px;
   box-shadow:var(--shadow);border:1px solid var(--border);transition:box-shadow .25s}
@@ -499,7 +493,6 @@ body.dark .trip-price{color:var(--primary-light)}
 .subst-meta{font-size:12px;color:var(--text-dim);margin-top:2px}
 .subst-reason{font-size:12.5px;color:var(--text-mid);margin-top:8px;padding:8px 10px;background:var(--bg-card);border-radius:8px;border-left:3px solid var(--warn)}
 .menu-edit-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:11px;margin-bottom:6px;font-size:13px}
-
 @media(max-width:768px){
   input,select,textarea{font-size:16px !important;padding:13px !important;min-height:46px}
   .btn{min-height:44px;padding:11px 16px !important;font-size:13.5px !important}
@@ -593,7 +586,9 @@ const POSITIONS=[
   {id:'teacher',name:'Учитель',emoji:''},
   {id:'zavuch',name:'Завуч',emoji:'📋'},
   {id:'director',name:'Директор',emoji:'🏛'},
-  {id:'cafeteria',name:'Зав. столовой',emoji:'🍽'}
+  {id:'cafeteria',name:'Зав. столовой',emoji:'🍽'},
+  {id:'zavhoz',name:'Завхоз',emoji:'🔧'},
+  {id:'technician',name:'Техник',emoji:'🛠'}
 ];
 const REQUEST_TYPES=[
   {id:'cert-edu',name:'Справка об обучении',short:'Справка об обучении'},
@@ -601,6 +596,42 @@ const REQUEST_TYPES=[
   {id:'cert-free',name:'Справка свободной формы',short:'Свободная справка'},
   {id:'application',name:'Заявление',short:'Заявление'},
   {id:'other',name:'Другое',short:'Другое'}
+];
+const DISCIPLINE_TYPES=[
+  {id:'remark',name:'Замечание',cls:'bad'},
+  {id:'commendation',name:'Поощрение',cls:'good'}
+];
+const DISCIPLINE_CATEGORIES=[
+  {id:'behavior',name:'Нарушение поведения'},
+  {id:'phone',name:'Телефон на уроке'},
+  {id:'uniform',name:'Школьная форма'},
+  {id:'homework',name:'Невыполненное ДЗ'},
+  {id:'disrespect',name:'Неуважение к учителю'},
+  {id:'noise',name:'Шум на уроке'},
+  {id:'help',name:'Помощь / отзывчивость'},
+  {id:'activity',name:'Активность'},
+  {id:'achievement',name:'Достижение'},
+  {id:'other',name:'Другое'}
+];
+const MAINTENANCE_CATEGORIES=[
+  {id:'plumbing',name:'Сантехника',icon:'🚿'},
+  {id:'electrical',name:'Электрика',icon:'⚡'},
+  {id:'furniture',name:'Мебель',icon:'🪑'},
+  {id:'it',name:'IT / Компьютеры',icon:'💻'},
+  {id:'cleaning',name:'Уборка',icon:'🧹'},
+  {id:'other',name:'Другое',icon:'🔧'}
+];
+const MAINTENANCE_PRIORITIES=[
+  {id:'low',name:'Низкий',cls:'neutral'},
+  {id:'medium',name:'Средний',cls:'warn'},
+  {id:'high',name:'Высокий',cls:'bad'},
+  {id:'urgent',name:'Срочный',cls:'bad'}
+];
+const MAINTENANCE_STATUSES=[
+  {id:'new',name:'Новая',cls:'warn'},
+  {id:'in_progress',name:'В работе',cls:'neutral'},
+  {id:'done',name:'Выполнена',cls:'good'},
+  {id:'rejected',name:'Отклонена',cls:'bad'}
 ];
 const DEFAULT_BELLS=[
   {num:1,start:'08:00',end:'08:45'},{num:2,start:'09:00',end:'09:45'},
@@ -651,6 +682,8 @@ function emptyDB(){
     schoolPosts:DEFAULT_POSTS.slice(),schoolDutyWeeks:[],
     teacherAnnouncements:[],
     lates:[],requests:[],trips:[],substitutions:[],
+    discipline:[],mealAccounts:[],mealTransactions:[],
+    maintenanceRequests:[],technicians:[],consents:[],
     adminPasswordHash:null
   };
 }
@@ -662,7 +695,7 @@ function buildSeedData(){
 }
 function loadLocalData(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return Object.assign(emptyDB(),JSON.parse(raw));}catch(e){}return buildSeedData();}
 let data=loadLocalData();
-const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDutyWeeks','teacherAnnouncements','lates','requests','trips','substitutions'];
+const LIST_FIELDS=['students','teachers','absences','homework','questions','announcements','remarks','notes','contacts','duties','todos','parentNotes','log','notifications','clubs','clubAttendance','menu','mealOrders','events','schoolPosts','schoolDutyWeeks','teacherAnnouncements','lates','requests','trips','substitutions','discipline','mealAccounts','mealTransactions','maintenanceRequests','technicians','consents'];
 for(const f of LIST_FIELDS){if(!Array.isArray(data[f]))data[f]=[];}
 if(!data.periods)data.periods={};if(!data.currentPeriod)data.currentPeriod={};if(!data.schedules)data.schedules={};
 if(!Array.isArray(data.bellSchedule)||!data.bellSchedule.length)data.bellSchedule=DEFAULT_BELLS.slice();
@@ -726,6 +759,7 @@ function getMyClubsForStudent(name){return data.clubs.filter(function(c){return 
 function getClubsForTeacher(name){return data.clubs.filter(function(c){return c.teacherName===name;});}
 function getActiveSchoolWeek(){const today=todayISO();return data.schoolDutyWeeks.find(function(w){return w.startDate<=today&&today<=w.endDate;});}
 function getStudentLatesThisWeek(name,cls){const today=todayISO();const weekAgo=addDays(today,-7);return data.lates.filter(function(l){return l.class===cls&&l.studentName===name&&l.date>=weekAgo&&l.date<=today;}).length;}
+function getMealAccount(studentName,cls){let acc=data.mealAccounts.find(function(a){return a.studentName===studentName&&a.class===cls;});if(!acc){acc={id:uid(),studentName:studentName,class:cls,balance:0,createdAt:new Date().toISOString()};data.mealAccounts.push(acc);}return acc;}
 
 function getStudentFlags(name,cls){
   const flags=[];
@@ -922,14 +956,17 @@ function buildTeacherSession(t,preferred){
   const isManager=position==='zavuch'||position==='director';
   const isDirector=position==='director';
   const isCafeteria=position==='cafeteria';
-  if(isCafeteria)return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:false,isDirector:false,isCafeteria:true,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
+  const isZavhoz=position==='zavhoz';
+  const isTechnician=position==='technician';
+  if(isCafeteria)return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:false,isDirector:false,isCafeteria:true,isZavhoz:false,isTechnician:false,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
+  if(isZavhoz||isTechnician)return {role:'teacher',name:t.name,class:null,homeroomClass:null,isHomeroom:false,isManager:false,isDirector:false,isCafeteria:false,isZavhoz:isZavhoz,isTechnician:isTechnician,position:position,subjects:[],allClasses:[],expiresAt:Date.now()+SESSION_TTL_MS};
   let allCls;
   if(isManager){allCls=CLASSES.slice();if(t.class&&allCls.indexOf(t.class)<0)allCls.push(t.class);}
   else{allCls=buildAllClasses(t);}
   if(!allCls.length)return null;
   let current=(t.class&&allCls.indexOf(t.class)>=0)?t.class:allCls[0];
   if(preferred&&allCls.indexOf(preferred)>=0)current=preferred;
-  return {role:'teacher',name:t.name,class:current,homeroomClass:t.class||null,isHomeroom:current===t.class,isManager:isManager,isDirector:isDirector,isCafeteria:false,position:position,subjects:t.subjects||[],allClasses:allCls,expiresAt:Date.now()+SESSION_TTL_MS};
+  return {role:'teacher',name:t.name,class:current,homeroomClass:t.class||null,isHomeroom:current===t.class,isManager:isManager,isDirector:isDirector,isCafeteria:false,isZavhoz:false,isTechnician:false,position:position,subjects:t.subjects||[],allClasses:allCls,expiresAt:Date.now()+SESSION_TTL_MS};
 }
 function saveSession(){if(session){if(!session.expiresAt)session.expiresAt=Date.now()+SESSION_TTL_MS;localStorage.setItem(SESSION_KEY,JSON.stringify(session));}else localStorage.removeItem(SESSION_KEY);}
 function loadSession(){
@@ -951,7 +988,20 @@ let loginState={role:'teacher',teacherName:'',studentClass:CLASSES[0],studentNam
 function getNavItems(){
   if(!session)return[];
   if(session.role==='teacher'){
-    if(session.isCafeteria)return[{id:'cafeteria',icon:'◐',label:'Столовая'},{id:'settings',icon:'⚙',label:'Настройки'}];
+    if(session.isCafeteria)return[
+      {id:'cafeteria',icon:'◐',label:'Столовая'},
+      {id:'mealBalance',icon:'₽',label:'Балансы'},
+      {id:'settings',icon:'⚙',label:'Настройки'}
+    ];
+    if(session.isZavhoz)return[
+      {id:'maintenance',icon:'🔧',label:'Заявки'},
+      {id:'technicians',icon:'🛠',label:'Техники'},
+      {id:'settings',icon:'⚙',label:'Настройки'}
+    ];
+    if(session.isTechnician)return[
+      {id:'maintenance',icon:'🔧',label:'Мои заявки'},
+      {id:'settings',icon:'⚙',label:'Настройки'}
+    ];
     if(session.isManager){
       const nav=[
         {id:'home',icon:'◈',label:'Сводка'},
@@ -970,6 +1020,9 @@ function getNavItems(){
         {id:'notes',icon:'✎',label:'Заметки'},
         {id:'duties',icon:'✦',label:'Дежурства'},
         {id:'requests',icon:'▤',label:'Справки'},
+        {id:'discipline',icon:'⚠',label:'Дисциплина'},
+        {id:'maintenance',icon:'🔧',label:'Заявки'},
+        {id:'consents',icon:'✓',label:'Согласия'},
         {id:'reports',icon:'▥',label:'Отчёты'}
       ];
       if(canManageUsers())nav.push({id:'users',icon:'⚇',label:'Пользователи'});
@@ -993,6 +1046,9 @@ function getNavItems(){
         {id:'students',icon:'◍',label:'Ученики'},
         {id:'notes',icon:'✎',label:'Заметки'},
         {id:'duties',icon:'✦',label:'Дежурства'},
+        {id:'discipline',icon:'⚠',label:'Дисциплина'},
+        {id:'maintenance',icon:'🔧',label:'Заявки'},
+        {id:'consents',icon:'✓',label:'Согласия'},
         {id:'reports',icon:'▥',label:'Отчёты'},
         {id:'settings',icon:'⚙',label:'Настройки'}
       ];
@@ -1009,6 +1065,7 @@ function getNavItems(){
       {id:'teacherAnn',icon:'⚑',label:'Учителям'},
       {id:'students',icon:'◍',label:'Ученики'},
       {id:'notes',icon:'✎',label:'Заметки'},
+      {id:'maintenance',icon:'🔧',label:'Заявки'},
       {id:'reports',icon:'▥',label:'Отчёты'},
       {id:'settings',icon:'⚙',label:'Настройки'}
     ];
@@ -1019,36 +1076,43 @@ function getNavItems(){
     {id:'schedule',icon:'▦',label:'Расписание'},
     {id:'clubs',icon:'◉',label:'Кружки'},{id:'events',icon:'★',label:'Мероприятия'},
     {id:'trips',icon:'➤',label:'Экскурсии'},
-    {id:'cafeteria',icon:'◐',label:'Столовая'},{id:'announcements',icon:'◬',label:'Объявления'},
-    {id:'requests',icon:'▤',label:'Справки'},{id:'questions',icon:'?',label:'Вопросы'}
+    {id:'cafeteria',icon:'◐',label:'Столовая'},{id:'mealBalance',icon:'₽',label:'Баланс питания'},
+    {id:'discipline',icon:'⚠',label:'Замечания'},
+    {id:'announcements',icon:'◬',label:'Объявления'},
+    {id:'requests',icon:'▤',label:'Справки'},{id:'consents',icon:'✓',label:'Согласия'},
+    {id:'questions',icon:'?',label:'Вопросы'}
   ];
   if(session.role==='parent')return[
     {id:'home',icon:'◈',label:'Сводка'},{id:'absences',icon:'✕',label:'Пропуски'},
     {id:'lates',icon:'◔',label:'Опоздания'},{id:'schedule',icon:'▦',label:'Расписание'},
     {id:'clubs',icon:'◉',label:'Кружки'},{id:'events',icon:'★',label:'Мероприятия'},
     {id:'trips',icon:'➤',label:'Экскурсии'},{id:'cafeteria',icon:'◐',label:'Столовая'},
-    {id:'requests',icon:'▤',label:'Справки'},{id:'messages',icon:'✉',label:'Учителю'},
-    {id:'notes',icon:'✎',label:'Записки'}
+    {id:'mealBalance',icon:'₽',label:'Баланс питания'},
+    {id:'discipline',icon:'⚠',label:'Замечания'},
+    {id:'requests',icon:'▤',label:'Справки'},{id:'consents',icon:'✓',label:'Согласия'},
+    {id:'messages',icon:'✉',label:'Учителю'},{id:'notes',icon:'✎',label:'Записки'}
   ];
   return[
-    {id:'users',icon:'⚇',label:'Пользователи'},{id:'allclubs',icon:'◉',label:'Кружки'},
+    {id:'users',icon:'⚇',label:'Пользователи'},{id:'technicians',icon:'🛠',label:'Техники'},
+    {id:'maintenance',icon:'🔧',label:'Заявки'},{id:'consents',icon:'✓',label:'Согласия'},
+    {id:'allclubs',icon:'◉',label:'Кружки'},
     {id:'allevents',icon:'★',label:'Мероприятия'},{id:'menuadmin',icon:'◐',label:'Меню'},
     {id:'belladmin',icon:'◔',label:'Звонки'},{id:'backups',icon:'▤',label:'Бэкапы'},
     {id:'log',icon:'≡',label:'История'}
   ];
 }
 
-/* ============ ГРУППИРОВКА МЕНЮ ============ */
 function getNavGroups(nav){
   const map={};
   nav.forEach(function(n){map[n.id]=n;});
   const role=session.role;
   let defs=[];
   if(session.isCafeteria){
-    defs=[
-      {title:'Столовая',ids:['cafeteria']},
-      {title:'Управление',ids:['settings']}
-    ];
+    defs=[{title:'Столовая',ids:['cafeteria','mealBalance']},{title:'Управление',ids:['settings']}];
+  }else if(session.isZavhoz){
+    defs=[{title:'Обслуживание',ids:['maintenance','technicians']},{title:'Управление',ids:['settings']}];
+  }else if(session.isTechnician){
+    defs=[{title:'Мои заявки',ids:['maintenance']},{title:'Управление',ids:['settings']}];
   }else if(role==='teacher'&&session.isManager){
     defs=[
       {title:'Основное',ids:['home']},
@@ -1057,9 +1121,10 @@ function getNavGroups(nav){
       {title:'Активности',ids:['clubs','events','trips']},
       {title:'Коммуникация',ids:['announcements','teacherAnn','questions']},
       {title:'Столовая',ids:['cafeteria']},
-      {title:'Ученики',ids:['students','notes']},
+      {title:'Ученики',ids:['students','notes','discipline']},
       {title:'Дежурства',ids:['duties']},
-      {title:'Документы',ids:['requests','reports']},
+      {title:'Обслуживание',ids:['maintenance']},
+      {title:'Документы',ids:['requests','consents','reports']},
       {title:'Управление',ids:['users','settings']}
     ];
   }else if(role==='teacher'&&session.isHomeroom){
@@ -1070,9 +1135,10 @@ function getNavGroups(nav){
       {title:'Активности',ids:['clubs','events','trips']},
       {title:'Коммуникация',ids:['announcements','teacherAnn','questions']},
       {title:'Столовая',ids:['cafeteria']},
-      {title:'Ученики',ids:['students','notes']},
+      {title:'Ученики',ids:['students','notes','discipline']},
       {title:'Дежурства',ids:['duties']},
-      {title:'Документы',ids:['reports']},
+      {title:'Обслуживание',ids:['maintenance']},
+      {title:'Документы',ids:['consents','reports']},
       {title:'Управление',ids:['settings']}
     ];
   }else if(role==='teacher'){
@@ -1083,6 +1149,7 @@ function getNavGroups(nav){
       {title:'Активности',ids:['clubs','events','trips']},
       {title:'Коммуникация',ids:['teacherAnn']},
       {title:'Ученики',ids:['students','notes']},
+      {title:'Обслуживание',ids:['maintenance']},
       {title:'Документы',ids:['reports']},
       {title:'Управление',ids:['settings']}
     ];
@@ -1091,25 +1158,28 @@ function getNavGroups(nav){
       {title:'Основное',ids:['home']},
       {title:'Учёба',ids:['homework','schedule']},
       {title:'Посещаемость',ids:['absences','lates']},
+      {title:'Воспитание',ids:['discipline']},
       {title:'Активности',ids:['clubs','events','trips']},
-      {title:'Столовая',ids:['cafeteria']},
+      {title:'Столовая',ids:['cafeteria','mealBalance']},
       {title:'Коммуникация',ids:['announcements','questions']},
-      {title:'Документы',ids:['requests']}
+      {title:'Документы',ids:['requests','consents']}
     ];
   }else if(role==='parent'){
     defs=[
       {title:'Основное',ids:['home']},
       {title:'Посещаемость',ids:['absences','lates']},
+      {title:'Воспитание',ids:['discipline']},
       {title:'Учёба',ids:['schedule']},
       {title:'Активности',ids:['clubs','events','trips']},
-      {title:'Столовая',ids:['cafeteria']},
-      {title:'Документы',ids:['requests']},
+      {title:'Столовая',ids:['cafeteria','mealBalance']},
+      {title:'Документы',ids:['requests','consents']},
       {title:'Коммуникация',ids:['messages','notes']}
     ];
   }else{
     defs=[
-      {title:'Управление',ids:['users']},
-      {title:'Контент',ids:['allclubs','allevents','menuadmin','belladmin']},
+      {title:'Управление',ids:['users','technicians']},
+      {title:'Обслуживание',ids:['maintenance']},
+      {title:'Контент',ids:['allclubs','allevents','menuadmin','belladmin','consents']},
       {title:'Система',ids:['backups','log']}
     ];
   }
@@ -1118,19 +1188,28 @@ function getNavGroups(nav){
   }).filter(function(g){return g.items.length;});
 }
 
-/* ============ РЕНДЕР МЕНЮ ============ */
 function getNavCounts(){
   const cnt={};
-  if(session.role==='teacher'&&!session.isCafeteria){
+  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
     cnt.questions=getSessionQuestions().filter(function(q){return !q.answered;}).length;
     cnt.attendance=getSessionAbsences().filter(function(a){return a.status==='pending';}).length;
     cnt.requests=data.requests.filter(function(r){return r.status==='pending'&&canProcessRequests();}).length;
     const aw=getActiveSchoolWeek();
     if(aw){const notDone=aw.posts.filter(function(p){return !p.done;}).length;if(notDone>0)cnt.duties=notDone;}
   }
+  if(session.isZavhoz)cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.status==='new';}).length;
+  if(session.isTechnician)cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.assignedTo===session.name&&r.status==='in_progress';}).length;
   if(session.role==='parent'||session.role==='student'){
     cnt.requests=data.requests.filter(function(r){return r.studentName===session.name&&r.status==='ready';}).length;
+    cnt.consents=data.consents.filter(function(c){
+      if(c.targetStudents&&c.targetStudents.indexOf(session.name)<0)return false;
+      if(c.targetClass&&c.targetClass!==session.class)return false;
+      if(!c.deadline||c.deadline<todayISO())return false;
+      const sig=(c.signatures||[]).find(function(s){return s.studentName===session.name;});
+      return !sig;
+    }).length;
   }
+  if(session.role==='admin'||session.isManager)cnt.maintenance=data.maintenanceRequests.filter(function(r){return r.status==='new';}).length;
   return cnt;
 }
 
@@ -1157,41 +1236,25 @@ function renderMenu(){
   return html;
 }
 
-function openSideMenu(){
-  const m=document.getElementById('sideMenu');
-  const b=document.getElementById('sideMenuBackdrop');
-  if(m)m.classList.add('open');
-  if(b)b.classList.add('show');
-}
-function closeSideMenu(){
-  const m=document.getElementById('sideMenu');
-  const b=document.getElementById('sideMenuBackdrop');
-  if(m)m.classList.remove('open');
-  if(b)b.classList.remove('show');
-}
-function toggleSideMenu(){
-  const m=document.getElementById('sideMenu');
-  if(!m)return;
-  if(m.classList.contains('open'))closeSideMenu();else openSideMenu();
-}
+function openSideMenu(){const m=document.getElementById('sideMenu');const b=document.getElementById('sideMenuBackdrop');if(m)m.classList.add('open');if(b)b.classList.add('show');}
+function closeSideMenu(){const m=document.getElementById('sideMenu');const b=document.getElementById('sideMenuBackdrop');if(m)m.classList.remove('open');if(b)b.classList.remove('show');}
+function toggleSideMenu(){const m=document.getElementById('sideMenu');if(!m)return;if(m.classList.contains('open'))closeSideMenu();else openSideMenu();}
 
-/* ============ DETAILS STATE ============ */
 function saveOpenDetails(){document.querySelectorAll('details[data-did]').forEach(function(d){if(d.open)_openDetails[d.dataset.did]=true;else delete _openDetails[d.dataset.did];});}
 function restoreOpenDetails(){document.querySelectorAll('details[data-did]').forEach(function(d){if(_openDetails[d.dataset.did])d.setAttribute('open','');});}
 
-/* ============ TOPBAR ============ */
 function topbarHTML(title){
   const isDark=document.body.classList.contains('dark');
   let html='<div class="topbar"><div class="topbar-left">';
   html+='<button class="menu-toggle" id="menuToggle" title="Меню"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>';
   html+='<h2>'+escapeHtml(title)+'</h2></div>';
   html+='<div class="user-info"><span>'+escapeHtml(session.name)+'</span>';
-  if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria)){
+  if(session.role==='teacher'&&(session.isDirector||session.isManager||session.isCafeteria||session.isZavhoz||session.isTechnician)){
     const pos=positionById(session.position);
     const extraCls=session.isCafeteria?' cafe':'';
     html+='<span class="badge position'+extraCls+'">'+(pos.emoji||'')+' '+pos.name+'</span>';
   }
-  if(session.role==='teacher'&&!session.isCafeteria){
+  if(session.role==='teacher'&&!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
     if(session.allClasses&&session.allClasses.length>1){
       html+='<select class="class-switch" id="classSwitch">';
       for(const c of session.allClasses){const isHr=c===session.homeroomClass;html+='<option value="'+escapeHtml(c)+'"'+(c===session.class?' selected':'')+'>'+escapeHtml(c)+(isHr?' ★':'')+'</option>';}
@@ -1271,7 +1334,9 @@ async function handleLogin(e){
   }
   if(session.class)ensurePeriods(session.class);
   saveSession();_sessionStartTime=Date.now();_seenNotifIds.clear();
-  currentView=session.isCafeteria?'cafeteria':'home';
+  if(session.isCafeteria)currentView='cafeteria';
+  else if(session.isZavhoz||session.isTechnician)currentView='maintenance';
+  else currentView='home';
   uiState={filterReason:'',filterStudent:'',filterDate:'',newStudentName:'',cafeteriaDate:null,selectedClubId:null,menuManageDate:null};
   _openDetails={};
   logAction('login',session.role+' вошёл');
@@ -1450,23 +1515,13 @@ function renderApp(){
   setTimeout(function(){if(currentView==='reports')drawReportsCharts();},50);
 }
 
-/* ============ BIND SUBNAV (меню) ============ */
 function bindSubnav(){
-  document.getElementById('menuToggle')?.addEventListener('click',function(e){
-    e.stopPropagation();
-    toggleSideMenu();
-  });
-  document.getElementById('sideMenuClose')?.addEventListener('click',function(){
-    closeSideMenu();
-  });
-  document.getElementById('sideMenuBackdrop')?.addEventListener('click',function(){
-    closeSideMenu();
-  });
+  document.getElementById('menuToggle')?.addEventListener('click',function(e){e.stopPropagation();toggleSideMenu();});
+  document.getElementById('sideMenuClose')?.addEventListener('click',function(){closeSideMenu();});
+  document.getElementById('sideMenuBackdrop')?.addEventListener('click',function(){closeSideMenu();});
   document.querySelectorAll('[data-view]').forEach(function(t){
     t.addEventListener('click',function(){
-      currentView=t.dataset.view;
-      closeSideMenu();
-      renderApp();
+      currentView=t.dataset.view;closeSideMenu();renderApp();
       window.scrollTo({top:0,behavior:'smooth'});
     });
   });
@@ -1474,7 +1529,20 @@ function bindSubnav(){
 
 /* ============ TEACHER ============ */
 function renderTeacherView(){
-  if(session.isCafeteria){if(currentView==='settings')return renderSettings();return renderCafeteria();}
+  if(session.isCafeteria){
+    if(currentView==='settings')return renderSettings();
+    if(currentView==='mealBalance')return renderMealBalance();
+    return renderCafeteria();
+  }
+  if(session.isZavhoz){
+    if(currentView==='settings')return renderSettings();
+    if(currentView==='technicians')return renderTechnicians();
+    return renderMaintenance();
+  }
+  if(session.isTechnician){
+    if(currentView==='settings')return renderSettings();
+    return renderMaintenance();
+  }
   if(currentView==='homework'&&session.isManager){currentView='home';return renderTeacherHome();}
   if(currentView==='users'&&!canManageUsers()){currentView='home';return renderTeacherHome();}
   const dispatch={
@@ -1483,10 +1551,12 @@ function renderTeacherView(){
     trips:renderTrips,announcements:renderAnnouncements,questions:renderQuestions,cafeteria:renderCafeteria,
     students:renderStudents,notes:renderNotes,duties:renderDuties,
     teacherAnn:renderTeacherAnnouncements,requests:renderRequests,
+    discipline:renderDiscipline,consents:renderConsents,maintenance:renderMaintenance,technicians:renderTechnicians,
     reports:renderReports,users:renderAdminUsers,settings:renderSettings
   };
   return (dispatch[currentView]||renderTeacherHome)();
 }
+
 function renderTeacherHome(){
   const cls=session.class;
   const students=getStudentsOfClass(cls);
@@ -1631,19 +1701,24 @@ function renderSubstitutions(){
 }
 
 function renderTrips(){
-  const role=session.role;
   const all=data.trips.slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
   const future=all.filter(function(t){return t.date>=todayISO();});
   const past=all.filter(function(t){return t.date<todayISO();});
   let html='';
   if(canCreateTrips()){
     html+='<div class="card"><h3>Создать экскурсию</h3><form id="tripForm"><div class="grid-2">';
-    html+='<div><label>Название</label><input type="text" id="tripTitle" placeholder="Поездка в музей"></div>';
+    html+='<div><label>Название</label><input type="text" id="tripTitle"></div>';
     html+='<div><label>Дата</label><input type="date" id="tripDate" value="'+todayISO()+'"></div>';
     html+='<div><label>Место</label><input type="text" id="tripPlace"></div>';
+    html+='<div><label>Класс</label><select id="tripClass"><option value="">— все —</option>'+optionsHTML(CLASSES,'')+'</select></div>';
     html+='<div><label>Стоимость (₽)</label><input type="number" id="tripPrice" value="0" min="0"></div>';
     html+='<div><label>Макс. мест</label><input type="number" id="tripMax" value="30" min="1"></div>';
+    html+='<div><label>Место сбора</label><input type="text" id="tripMeeting"></div>';
+    html+='<div><label>Время сбора</label><input type="time" id="tripMeetTime" value="08:00"></div>';
+    html+='<div><label>Время возврата</label><input type="time" id="tripReturn" value="18:00"></div>';
+    html+='<div><label>Экстренный телефон</label><input type="text" id="tripPhone"></div>';
     html+='<div><label>Организатор</label><input type="text" id="tripOrganizer" value="'+escapeHtml(session.name)+'"></div>';
+    html+='<div style="display:flex;align-items:center;padding-top:22px"><label style="margin:0;display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="tripConsent" style="width:auto;margin:0">Требуется согласие</label></div>';
     html+='<div class="full"><label>Описание</label><textarea id="tripDesc" rows="2"></textarea></div>';
     html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
   }
@@ -1651,7 +1726,7 @@ function renderTrips(){
   if(!all.length)html+='<div class="empty">Экскурсий пока нет</div>';
   else{
     if(future.length){html+='<div style="font-weight:800;font-size:13px;margin-bottom:10px">Предстоящие</div>';for(const t of future)html+=renderTripCard(t,true);}
-    if(past.length){html+='<div style="font-weight:800;font-size:13px;margin:16px 0 10px">Прошедшие</div>';for(const t of past.reverse())html+=renderTripCard(t,false);}
+    if(past.length){html+='<div style="font-weight:800;font-size:13px;margin:16px 0 10px">Прошедшие</div>';for(const t of past.slice().reverse())html+=renderTripCard(t,false);}
   }
   html+='</div>';
   return html;
@@ -1662,11 +1737,31 @@ function renderTripCard(t,isFuture){
   const canJoin=(session.role==='student'||session.role==='parent')&&isFuture;
   const canDelete=canCreateTrips();
   const isFull=(t.maxStudents&&participants.length>=t.maxStudents);
+  let consentTag='';
+  if(t.requiresConsent){
+    const cons=data.consents.find(function(c){return c.tripId===t.id;});
+    const sig=cons?(cons.signatures||[]).find(function(s){return s.studentName===session.name;}):null;
+    if(session.role==='student'||session.role==='parent'){
+      if(sig&&sig.signed)consentTag='<span class="tag good">✓ Согласие подписано</span> ';
+      else consentTag='<span class="tag warn">⚠ Требуется согласие</span> ';
+    }
+  }
   let html='<div class="trip-card"><div class="trip-title">➤ '+escapeHtml(t.title)+'</div>';
-  html+='<div class="trip-meta">Дата: <b>'+formatDate(t.date)+'</b> · Место: <b>'+escapeHtml(t.place||'—')+'</b> · Организатор: '+escapeHtml(t.organizer||'—')+'</div>';
-  if(t.description)html+='<div style="font-size:13px;color:var(--text-mid);margin-bottom:10px">'+escapeHtml(t.description)+'</div>';
+  html+='<div class="trip-meta">Дата: <b>'+formatDate(t.date)+'</b> · Место: <b>'+escapeHtml(t.place||'—')+'</b>';
+  if(t.class)html+=' · Класс: <b>'+escapeHtml(t.class)+'</b>';
+  html+=' · Организатор: '+escapeHtml(t.organizer||'—')+'</div>';
+  if(t.meetingPoint||t.meetingTime||t.returnTime||t.emergencyPhone){
+    html+='<div class="trip-meta" style="background:var(--bg-card);padding:8px 10px;border-radius:8px">';
+    if(t.meetingPoint)html+='<b>Сбор:</b> '+escapeHtml(t.meetingPoint)+' ';
+    if(t.meetingTime)html+='<b>'+escapeHtml(t.meetingTime)+'</b> ';
+    if(t.returnTime)html+='· <b>Возврат:</b> '+escapeHtml(t.returnTime)+' ';
+    if(t.emergencyPhone)html+='· <b>Тел.:</b> '+escapeHtml(t.emergencyPhone);
+    html+='</div>';
+  }
+  if(t.description)html+='<div style="font-size:13px;color:var(--text-mid);margin:8px 0">'+escapeHtml(t.description)+'</div>';
   if(t.price)html+='<span class="trip-price">'+t.price+' ₽</span>';
-  html+='<span style="font-size:12.5px;color:var(--text-dim)">Участников: '+participants.length+'/'+(t.maxStudents||'∞')+'</span>';
+  html+='<span style="font-size:12.5px;color:var(--text-dim)">Участников: '+participants.length+'/'+(t.maxStudents||'∞')+'</span> ';
+  html+=consentTag;
   if(participants.length){
     html+='<div class="trip-participants"><details data-did="trip-parts-'+t.id+'"><summary style="cursor:pointer;font-weight:600">Список ('+participants.length+')</summary><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">';
     for(const n of participants)html+='<span class="tag neutral">'+escapeHtml(n)+'</span>';
@@ -1909,7 +2004,7 @@ function renderEvents(){
     const future=allEvents.filter(function(e){return e.date>=todayISO();});
     const past=allEvents.filter(function(e){return e.date<todayISO();});
     if(future.length){html+='<div style="font-weight:800;font-size:13px;margin-bottom:10px">Предстоящие</div>';for(const ev of future)html+=renderEventCard(ev,true);}
-    if(past.length){html+='<div style="font-weight:800;font-size:13px;margin:16px 0 10px">Прошедшие</div>';for(const ev of past.reverse())html+=renderEventCard(ev,false);}
+    if(past.length){html+='<div style="font-weight:800;font-size:13px;margin:16px 0 10px">Прошедшие</div>';for(const ev of past.slice().reverse())html+=renderEventCard(ev,false);}
   }else html+='<div class="empty">Мероприятий нет</div>';
   html+='</div>';
   return html;
@@ -1990,7 +2085,9 @@ function renderCafeteriaUser(){
   const dates=[];for(let i=0;i<7;i++)dates.push(addDays(today,i));
   const menuForDate=data.menu.filter(function(m){return m.date===selectedDate;});
   const myOrder=data.mealOrders.find(function(o){return o.date===selectedDate&&o.studentName===session.name;});
+  const acc=getMealAccount(session.name,session.class);
   let html='<div class="card"><h3>Меню</h3>';
+  html+='<div style="margin-bottom:12px;padding:10px 14px;background:var(--bg-subtle);border-radius:10px;font-size:13.5px"><b>Баланс:</b> <span style="color:'+(acc.balance<0?'var(--danger)':'var(--success)')+';font-weight:800">'+acc.balance+' ₽</span></div>';
   html+='<button class="btn btn-success" id="yearOrderBtn" style="margin-bottom:16px;width:100%;padding:14px">Заказать питание на весь учебный год</button>';
   html+='<div class="menu-date-tabs">';
   for(const d of dates){const a=d===selectedDate?' active':'';html+='<button class="menu-date-tab'+a+'" data-cafeteria-date="'+d+'">'+formatDate(d)+'</button>';}
@@ -2151,15 +2248,252 @@ function renderSettings(){
   if(session.isDirector)html+='<b>Должность:</b> Директор<br>';
   else if(session.position==='zavuch')html+='<b>Должность:</b> Завуч<br>';
   else if(session.position==='cafeteria')html+='<b>Должность:</b> Зав. столовой<br>';
+  else if(session.position==='zavhoz')html+='<b>Должность:</b> Завхоз<br>';
+  else if(session.position==='technician')html+='<b>Должность:</b> Техник<br>';
   else html+='<b>Должность:</b> Учитель<br>';
-  if(!session.isCafeteria){html+='<b>Класс. рук.:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br><b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—');}
+  if(!session.isCafeteria&&!session.isZavhoz&&!session.isTechnician){
+    html+='<b>Класс. рук.:</b> '+(session.homeroomClass?escapeHtml(session.homeroomClass):'—')+'<br><b>Предметы:</b> '+(session.subjects.length?session.subjects.map(function(s){return escapeHtml(s);}).join(', '):'—');
+  }
   html+='</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"><button class="btn" id="changePinBtn">Сменить PIN</button><button class="btn btn-secondary" id="notifyPermBtn">Уведомления</button></div></div>';
   return html;
 }
 
-/* === STUDENT === */
+/* ============ ДИСЦИПЛИНА / БАЛАНС / ЗАЯВКИ / ТЕХНИКИ / СОГЛАСИЯ ============ */
+function renderDiscipline(){
+  const canEdit=session.role==='teacher'&&(session.isHomeroom||session.isManager);
+  let list=[];
+  if(session.role==='teacher'&&session.isManager)list=data.discipline.slice();
+  else if(session.role==='teacher'&&session.isHomeroom)list=data.discipline.filter(function(d){return d.class===session.class;});
+  else if(session.role==='student'||session.role==='parent')list=data.discipline.filter(function(d){return d.class===session.class&&d.studentName===session.name;});
+  list.sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
+  let html='';
+  if(session.role==='student'||session.role==='parent'){
+    const r=list.filter(function(d){return d.type==='remark';}).length;
+    const c=list.filter(function(d){return d.type==='commendation';}).length;
+    html+='<div class="stats"><div class="stat"><div class="num warn">'+r+'</div><div class="lbl">Замечаний</div></div><div class="stat"><div class="num ok">'+c+'</div><div class="lbl">Поощрений</div></div></div>';
+  }
+  if(canEdit){
+    const students=getStudentsOfClass(session.class);
+    html+='<div class="card"><h3>Добавить запись</h3><form id="discForm"><div class="grid-2">';
+    html+='<div><label>Дата</label><input type="date" id="discDate" value="'+todayISO()+'"></div>';
+    html+='<div><label>Ученик</label><select id="discStudent">'+optionsHTML(students.map(function(s){return s.name;}),'')+'</select></div>';
+    html+='<div><label>Тип</label><select id="discType">'+optionsHTML(DISCIPLINE_TYPES,'','id')+'</select></div>';
+    html+='<div><label>Категория</label><select id="discCategory">'+optionsHTML(DISCIPLINE_CATEGORIES,'','id')+'</select></div>';
+    html+='<div class="full"><label>Описание</label><textarea id="discText" rows="2"></textarea></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Сохранить</button></form></div>';
+  }
+  html+='<div class="card"><h3>Записи ('+list.length+')</h3>';
+  if(list.length){
+    for(const d of list){
+      const type=DISCIPLINE_TYPES.find(function(t){return t.id===d.type;})||DISCIPLINE_TYPES[0];
+      const cat=DISCIPLINE_CATEGORIES.find(function(c){return c.id===d.category;})||DISCIPLINE_CATEGORIES[DISCIPLINE_CATEGORIES.length-1];
+      const borderColor=d.type==='remark'?'var(--danger)':'var(--success)';
+      html+='<div class="msg-item" style="border-left:3px solid '+borderColor+'">';
+      html+='<div class="msg-head"><span class="msg-from">'+escapeHtml(d.studentName)+' · '+escapeHtml(cat.name)+'</span><span class="msg-time">'+formatDate(d.date)+'</span></div>';
+      html+='<div class="msg-text">'+escapeHtml(d.text||'')+'</div>';
+      html+='<div style="font-size:11.5px;color:var(--text-dim);margin-top:6px"><span class="tag '+type.cls+'">'+type.name+'</span> · '+escapeHtml(d.from||'—')+'</div>';
+      if(canEdit)html+='<button class="btn btn-danger btn-sm" style="margin-top:8px" data-del-disc="'+d.id+'">Удалить</button>';
+      html+='</div>';
+    }
+  }else html+='<div class="empty">Записей нет</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderMealBalance(){
+  if(session.role==='teacher'&&session.isCafeteria)return renderMealBalancesAdmin();
+  if(session.role==='admin'||(session.role==='teacher'&&session.isManager))return renderMealBalancesAdmin();
+  const acc=getMealAccount(session.name,session.class);
+  const tx=data.mealTransactions.filter(function(t){return t.studentName===session.name&&t.class===session.class;}).sort(function(a,b){return (b.time||'').localeCompare(a.time||'');});
+  const topups=tx.filter(function(t){return t.amount>0;}).reduce(function(s,t){return s+t.amount;},0);
+  const charges=tx.filter(function(t){return t.amount<0;}).reduce(function(s,t){return s+Math.abs(t.amount);},0);
+  let html='<div class="stats">';
+  html+='<div class="stat"><div class="num'+(acc.balance<0?' warn':' ok')+'">'+acc.balance+' ₽</div><div class="lbl">Баланс</div></div>';
+  html+='<div class="stat"><div class="num">'+topups+' ₽</div><div class="lbl">Пополнено</div></div>';
+  html+='<div class="stat"><div class="num">'+charges+' ₽</div><div class="lbl">Потрачено</div></div>';
+  html+='</div>';
+  html+='<div class="card"><h3>Пополнить баланс</h3><form id="topupForm"><div class="grid-2">';
+  html+='<div><label>Сумма (₽)</label><input type="number" id="tuAmount" min="1" value="500"></div>';
+  html+='<div><label>Способ</label><select id="tuMethod"><option value="card">Банковская карта</option><option value="cash">Наличные</option><option value="transfer">Перевод</option></select></div>';
+  html+='</div><button type="submit" class="btn btn-success" style="margin-top:14px">Пополнить</button></form></div>';
+  html+='<div class="card"><h3>История операций ('+tx.length+')</h3>';
+  if(tx.length){
+    html+='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Описание</th><th>Сумма</th></tr></thead><tbody>';
+    for(const t of tx){
+      html+='<tr><td data-label="Дата">'+formatDateTime(t.time)+'</td><td data-label="Описание">'+escapeHtml(t.description||'—')+'</td>';
+      html+='<td data-label="Сумма"><b style="color:'+(t.amount>0?'var(--success)':'var(--danger)')+'">'+(t.amount>0?'+':'')+t.amount+' ₽</b></td></tr>';
+    }
+    html+='</tbody></table></div>';
+  }else html+='<div class="empty">Операций нет</div>';
+  html+='</div>';
+  return html;
+}
+function renderMealBalancesAdmin(){
+  const all=data.mealAccounts.slice().sort(function(a,b){return a.class.localeCompare(b.class)||a.studentName.localeCompare(b.studentName);});
+  const total=all.reduce(function(s,a){return s+a.balance;},0);
+  let html='<div class="card"><h3>Балансы учеников ('+all.length+')</h3>';
+  html+='<div class="stat" style="margin-bottom:14px"><div class="num">'+total+' ₽</div><div class="lbl">Общий баланс</div></div>';
+  if(all.length){
+    html+='<div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Баланс</th><th></th></tr></thead><tbody>';
+    for(const a of all){
+      html+='<tr><td data-label="Ученик">'+escapeHtml(a.studentName)+'</td><td data-label="Класс">'+escapeHtml(a.class)+'</td>';
+      html+='<td data-label="Баланс"><b style="color:'+(a.balance<0?'var(--danger)':'')+'">'+a.balance+' ₽</b></td>';
+      html+='<td><button class="btn btn-secondary btn-sm" data-adjust-balance="'+a.id+'">✎</button></td></tr>';
+    }
+    html+='</tbody></table></div>';
+  }else html+='<div class="empty">Счетов нет</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderMaintenance(){
+  const isZavhoz=session.isZavhoz;
+  const isTech=session.isTechnician;
+  const isAdmin=session.role==='admin';
+  let list=[];
+  if(isZavhoz||isAdmin)list=data.maintenanceRequests.slice();
+  else if(isTech)list=data.maintenanceRequests.filter(function(r){return r.assignedTo===session.name;});
+  else list=data.maintenanceRequests.filter(function(r){return r.createdBy===session.name;});
+  list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+  const nNew=list.filter(function(r){return r.status==='new';}).length;
+  const nProg=list.filter(function(r){return r.status==='in_progress';}).length;
+  const nDone=list.filter(function(r){return r.status==='done';}).length;
+  let html='<div class="stats">';
+  html+='<div class="stat"><div class="num warn">'+nNew+'</div><div class="lbl">Новых</div></div>';
+  html+='<div class="stat"><div class="num">'+nProg+'</div><div class="lbl">В работе</div></div>';
+  html+='<div class="stat"><div class="num ok">'+nDone+'</div><div class="lbl">Выполнено</div></div>';
+  html+='</div>';
+  if((session.role==='teacher'&&!isZavhoz&&!isTech)||isAdmin){
+    html+='<div class="card"><h3>Новая заявка</h3><form id="maintForm"><div class="grid-2">';
+    html+='<div><label>Заголовок</label><input type="text" id="mtTitle" placeholder="Протекает кран"></div>';
+    html+='<div><label>Категория</label><select id="mtCategory">'+optionsHTML(MAINTENANCE_CATEGORIES,'','id')+'</select></div>';
+    html+='<div><label>Приоритет</label><select id="mtPriority">'+optionsHTML(MAINTENANCE_PRIORITIES,'medium','id')+'</select></div>';
+    html+='<div><label>Место</label><input type="text" id="mtLocation" placeholder="Каб. 205"></div>';
+    html+='<div class="full"><label>Описание</label><textarea id="mtText" rows="2"></textarea></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Отправить</button></form></div>';
+  }
+  html+='<div class="card"><h3>Заявки ('+list.length+')</h3>';
+  if(list.length){
+    for(const r of list){
+      const cat=MAINTENANCE_CATEGORIES.find(function(c){return c.id===r.category;})||MAINTENANCE_CATEGORIES[MAINTENANCE_CATEGORIES.length-1];
+      const pri=MAINTENANCE_PRIORITIES.find(function(p){return p.id===r.priority;})||MAINTENANCE_PRIORITIES[1];
+      const st=MAINTENANCE_STATUSES.find(function(s){return s.id===r.status;})||MAINTENANCE_STATUSES[0];
+      html+='<div class="req-card"><div class="req-head"><div><div class="req-title">'+cat.icon+' '+escapeHtml(r.title)+'</div>';
+      html+='<div class="req-meta">'+escapeHtml(r.location||'—')+' · '+escapeHtml(r.createdBy)+' · '+formatDateTime(r.createdAt)+'</div></div>';
+      html+='<div><span class="tag '+pri.cls+'">'+pri.name+'</span> <span class="tag '+st.cls+'">'+st.name+'</span></div></div>';
+      html+='<div class="req-body">'+escapeHtml(r.description)+'</div>';
+      if(r.assignedTo)html+='<div style="font-size:12.5px;margin-top:6px"><b>Назначен:</b> '+escapeHtml(r.assignedTo)+'</div>';
+      if(isZavhoz||isAdmin){
+        html+='<div class="req-actions" style="flex-wrap:wrap">';
+        html+='<select data-maint-assign="'+r.id+'" style="max-width:200px"><option value="">— назначить —</option>';
+        for(const tech of data.technicians)html+='<option value="'+escapeHtml(tech.name)+'"'+(tech.name===r.assignedTo?' selected':'')+'>'+escapeHtml(tech.name)+'</option>';
+        html+='</select>';
+        if(r.status!=='done')html+='<button class="btn btn-success btn-sm" data-maint-done="'+r.id+'">Выполнено</button>';
+        if(r.status!=='rejected')html+='<button class="btn btn-danger btn-sm" data-maint-reject="'+r.id+'">Отклонить</button>';
+        html+='<button class="btn btn-danger btn-sm" data-maint-del="'+r.id+'">Удалить</button>';
+        html+='</div>';
+      }else if(isTech){
+        if(r.status!=='done')html+='<div class="req-actions"><button class="btn btn-success btn-sm" data-maint-done="'+r.id+'">Выполнено</button></div>';
+      }else{
+        if(r.status==='new')html+='<div class="req-actions"><button class="btn btn-danger btn-sm" data-maint-del="'+r.id+'">Отменить</button></div>';
+      }
+      html+='</div>';
+    }
+  }else html+='<div class="empty">Заявок нет</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderTechnicians(){
+  if(!session||(session.role!=='admin'&&!session.isZavhoz))return '<div class="card"><div class="empty">Доступ запрещён</div></div>';
+  let html='<div class="card"><h3>Добавить техника</h3><form id="techForm" style="display:flex;gap:10px;flex-wrap:wrap">';
+  html+='<input type="text" id="techName" placeholder="ФИО" style="flex:1;min-width:200px">';
+  html+='<button type="submit" class="btn">Добавить</button></form>';
+  html+='<div class="edit-info" style="margin-top:10px">Техник получает доступ к системе с PIN 1234.</div></div>';
+  html+='<div class="card"><h3>Техники ('+data.technicians.length+')</h3>';
+  if(data.technicians.length){
+    for(const t of data.technicians){
+      const assigned=data.maintenanceRequests.filter(function(r){return r.assignedTo===t.name&&r.status==='in_progress';}).length;
+      html+='<div class="duty-item"><span><b>'+escapeHtml(t.name)+'</b></span>';
+      html+='<span><span class="tag neutral">'+assigned+' в работе</span> <button class="btn btn-danger btn-sm" data-tech-del="'+t.id+'">✕</button></span></div>';
+    }
+  }else html+='<div class="empty">Техников нет</div>';
+  html+='</div>';
+  return html;
+}
+
+function signConsent(consentId,signed){
+  const c=data.consents.find(function(x){return x.id===consentId;});
+  if(!c)return;
+  if(!c.signatures)c.signatures=[];
+  const existing=c.signatures.find(function(s){return s.studentName===session.name;});
+  if(existing){existing.signed=signed;existing.signedAt=new Date().toISOString();existing.byParent=session.role==='parent';}
+  else c.signatures.push({studentName:session.name,byParent:session.role==='parent',signed:signed,signedAt:new Date().toISOString()});
+  saveData();
+}
+function renderConsents(){
+  const isStudent=session.role==='student';
+  const isParent=session.role==='parent';
+  const canCreate=session.role==='admin'||(session.role==='teacher'&&(session.isManager||session.isHomeroom));
+  let list=[];
+  if(isStudent||isParent){
+    list=data.consents.filter(function(c){
+      if(c.targetStudents&&c.targetStudents.indexOf(session.name)<0)return false;
+      if(c.targetClass&&c.targetClass!==session.class)return false;
+      return true;
+    });
+  }else if(session.isManager||session.role==='admin'){
+    list=data.consents.slice();
+  }else if(session.isHomeroom){
+    list=data.consents.filter(function(c){return c.targetClass===session.class||!c.targetClass;});
+  }else{
+    list=data.consents.filter(function(c){return c.createdBy===session.name;});
+  }
+  list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+  let html='';
+  if(canCreate){
+    html+='<div class="card"><h3>Создать согласие</h3><form id="consentForm"><div class="grid-2">';
+    html+='<div><label>Заголовок</label><input type="text" id="consTitle" placeholder="Согласие на..."></div>';
+    html+='<div><label>Класс</label><select id="consClass"><option value="">— для всех —</option>'+optionsHTML(CLASSES,session.class||'')+'</select></div>';
+    html+='<div><label>Дедлайн</label><input type="date" id="consDeadline" value="'+addDays(todayISO(),7)+'"></div>';
+    html+='<div><label>Тип</label><select id="consType"><option value="general">Общее</option><option value="trip">Экскурсия</option><option value="event">Мероприятие</option></select></div>';
+    html+='<div class="full"><label>Текст</label><textarea id="consText" rows="3" placeholder="Я, родитель/законный представитель..."></textarea></div>';
+    html+='</div><button type="submit" class="btn" style="margin-top:14px">Создать</button></form></div>';
+  }
+  html+='<div class="card"><h3>Согласия ('+list.length+')</h3>';
+  if(list.length){
+    for(const c of list){
+      const signed=(c.signatures||[]).filter(function(s){return s.signed;}).length;
+      const target=c.targetStudents?c.targetStudents.length:(c.targetClass?getStudentsOfClass(c.targetClass).length:0);
+      const mySig=(c.signatures||[]).find(function(s){return s.studentName===session.name;});
+      const isOverdue=c.deadline&&c.deadline<todayISO()&&!mySig;
+      html+='<div class="req-card"><div class="req-head"><div>';
+      html+='<div class="req-title">'+escapeHtml(c.title)+'</div>';
+      html+='<div class="req-meta">'+escapeHtml(c.targetClass||'все классы')+' · до '+formatDate(c.deadline||'')+'</div></div>';
+      if(isOverdue)html+='<span class="tag bad">Просрочено</span>';
+      else if(mySig)html+='<span class="tag '+(mySig.signed?'good':'bad')+'">'+(mySig.signed?'✓ Подписано':'✕ Отказано')+'</span>';
+      html+='</div>';
+      html+='<div class="req-body">'+escapeHtml(c.text||'')+'</div>';
+      if(session.isManager||session.role==='admin'||session.isHomeroom){
+        html+='<div style="margin-top:8px;font-size:12.5px"><b>Подписано:</b> '+signed+'/'+target+'</div>';
+        if(target>0){
+          html+='<div style="height:6px;background:var(--bg-subtle);border-radius:3px;overflow:hidden;margin-top:4px"><div style="height:100%;width:'+Math.round(signed/target*100)+'%;background:var(--gradient-primary)"></div></div>';
+        }
+      }
+      if((isStudent||isParent)&&!mySig&&c.deadline>=todayISO()){
+        html+='<div class="req-actions"><button class="btn btn-success btn-sm" data-consent-sign="'+c.id+'">Подписать</button><button class="btn btn-danger btn-sm" data-consent-decline="'+c.id+'">Отказаться</button></div>';
+      }
+      if(canCreate)html+='<div class="req-actions"><button class="btn btn-danger btn-sm" data-consent-del="'+c.id+'">Удалить</button></div>';
+      html+='</div>';
+    }
+  }else html+='<div class="empty">Согласий нет</div>';
+  html+='</div>';
+  return html;
+}
+
+/* ============ STUDENT ============ */
 function renderStudentView(){
-  const dispatch={home:renderStudentHome,homework:renderStudentHomework,absences:renderStudentAbsences,lates:renderStudentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,announcements:renderStudentAnnouncements,requests:renderRequests,questions:renderStudentQuestions};
+  const dispatch={home:renderStudentHome,homework:renderStudentHomework,absences:renderStudentAbsences,lates:renderStudentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,mealBalance:renderMealBalance,discipline:renderDiscipline,consents:renderConsents,announcements:renderStudentAnnouncements,requests:renderRequests,questions:renderStudentQuestions};
   return (dispatch[currentView]||renderStudentHome)();
 }
 function renderStudentHome(){
@@ -2232,7 +2566,7 @@ function renderStudentQuestions(){
 
 /* === PARENT === */
 function renderParentView(){
-  const dispatch={home:renderParentHome,absences:renderParentAbsences,lates:renderParentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,requests:renderRequests,messages:renderParentMessages,notes:renderParentNotes};
+  const dispatch={home:renderParentHome,absences:renderParentAbsences,lates:renderParentLates,schedule:renderSchedule,clubs:renderClubs,events:renderEvents,trips:renderTrips,cafeteria:renderCafeteria,mealBalance:renderMealBalance,discipline:renderDiscipline,consents:renderConsents,requests:renderRequests,messages:renderParentMessages,notes:renderParentNotes};
   return (dispatch[currentView]||renderParentHome)();
 }
 function renderParentHome(){
@@ -2291,7 +2625,7 @@ function renderParentNotes(){
 
 /* === ADMIN === */
 function renderAdminView(){
-  const dispatch={users:renderAdminUsers,allclubs:renderClubs,allevents:renderEvents,menuadmin:renderCafeteria,belladmin:renderAdminBells,backups:renderAdminBackups,log:renderAdminLog};
+  const dispatch={users:renderAdminUsers,allclubs:renderClubs,allevents:renderEvents,menuadmin:renderCafeteria,belladmin:renderAdminBells,backups:renderAdminBackups,log:renderAdminLog,maintenance:renderMaintenance,technicians:renderTechnicians,consents:renderConsents};
   return (dispatch[currentView]||renderAdminUsers)();
 }
 function renderAdminBells(){
@@ -2433,12 +2767,43 @@ function openMealYearOrderModal(){
     const breakfast=document.getElementById('myBreakfast').checked;
     const lunch=document.getElementById('myLunch').checked;
     if(!breakfast&&!lunch)return toast('Выберите',true);
-    let added=0;let cur=startDate;
-    while(cur<=endDate){const dow=new Date(cur+'T00:00:00').getDay();if(dow!==0&&dow!==6){let order=data.mealOrders.find(function(o2){return o2.date===cur&&o2.studentName===session.name;});if(!order){order={id:uid(),date:cur,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);added++;}if(breakfast)order.breakfast=true;if(lunch)order.lunch=true;}cur=addDays(cur,1);}
-    saveData();toast('Заказано на '+added);close();renderApp();
+    let added=0;let totalCost=0;
+    const acc=getMealAccount(session.name,session.class);
+    let cur=startDate;
+    while(cur<=endDate){
+      const dow=new Date(cur+'T00:00:00').getDay();
+      if(dow!==0&&dow!==6){
+        let order=data.mealOrders.find(function(o2){return o2.date===cur&&o2.studentName===session.name;});
+        if(!order){order={id:uid(),date:cur,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);added++;}
+        const menuForDay=data.menu.filter(function(m){return m.date===cur;});
+        const bf=menuForDay.find(function(m){return m.meal==='breakfast';});
+        const ln=menuForDay.find(function(m){return m.meal==='lunch';});
+        if(breakfast&&!order.breakfast){order.breakfast=true;if(bf){acc.balance-=bf.price;totalCost+=bf.price;}}
+        if(lunch&&!order.lunch){order.lunch=true;if(ln){acc.balance-=ln.price;totalCost+=ln.price;}}
+      }
+      cur=addDays(cur,1);
+    }
+    if(totalCost>0){data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:-totalCost,description:'Заказ питания на год',time:new Date().toISOString()});}
+    saveData();toast('Заказано на '+added+' дней, списано '+totalCost+' ₽');close();renderApp();
   });
 }
-function clearMyMealOrders(){if(!confirm('Отменить все заказы?'))return;const before=data.mealOrders.length;data.mealOrders=data.mealOrders.filter(function(o){return o.studentName!==session.name;});saveData();toast('Отменено '+(before-data.mealOrders.length));renderApp();}
+function clearMyMealOrders(){
+  if(!confirm('Отменить все заказы?'))return;
+  const myOrders=data.mealOrders.filter(function(o){return o.studentName===session.name;});
+  const acc=getMealAccount(session.name,session.class);
+  let refund=0;
+  for(const o of myOrders){
+    const menuItems=data.menu.filter(function(m){return m.date===o.date;});
+    if(o.breakfast){const bf=menuItems.find(function(m){return m.meal==='breakfast';});if(bf)refund+=bf.price;}
+    if(o.lunch){const ln=menuItems.find(function(m){return m.meal==='lunch';});if(ln)refund+=ln.price;}
+  }
+  if(refund>0){
+    acc.balance+=refund;
+    data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:refund,description:'Возврат за отменённые заказы',time:new Date().toISOString()});
+  }
+  data.mealOrders=data.mealOrders.filter(function(o){return o.studentName!==session.name;});
+  saveData();toast('Отменено');renderApp();
+}
 function openScheduleEditor(){
   const cls=session.class;ensureSchedule(cls);
   const subj=getSubjects(cls);
@@ -2558,15 +2923,42 @@ function bindAllEvents(){
     const title=document.getElementById('tripTitle').value.trim();
     const date=document.getElementById('tripDate').value;
     const place=document.getElementById('tripPlace').value.trim();
+    const cls=document.getElementById('tripClass').value||null;
     const price=parseInt(document.getElementById('tripPrice').value,10)||0;
     const max=parseInt(document.getElementById('tripMax').value,10)||30;
     const organizer=document.getElementById('tripOrganizer').value.trim()||session.name;
     const desc=document.getElementById('tripDesc').value.trim();
+    const meetingPoint=document.getElementById('tripMeeting').value.trim();
+    const meetingTime=document.getElementById('tripMeetTime').value;
+    const returnTime=document.getElementById('tripReturn').value;
+    const emergencyPhone=document.getElementById('tripPhone').value.trim();
+    const requiresConsent=document.getElementById('tripConsent').checked;
     if(!title||!date)return toast('Заполните',true);
-    data.trips.push({id:uid(),title:title,date:date,place:place,price:price,maxStudents:max,organizer:organizer,description:desc,participants:[],createdAt:new Date().toISOString(),createdBy:session.name});
+    const newTrip={id:uid(),title:title,date:date,place:place,class:cls,price:price,maxStudents:max,organizer:organizer,description:desc,meetingPoint:meetingPoint,meetingTime:meetingTime,returnTime:returnTime,emergencyPhone:emergencyPhone,requiresConsent:requiresConsent,participants:[],createdAt:new Date().toISOString(),createdBy:session.name};
+    data.trips.push(newTrip);
+    if(requiresConsent){
+      const cons={id:uid(),title:'Согласие: '+title,text:'Согласие на участие в экскурсии "'+title+'" '+formatDate(date)+'. Место: '+place+'.',type:'trip',targetClass:cls,targetStudents:null,deadline:addDays(todayISO(),7),createdBy:session.name,createdAt:new Date().toISOString(),signatures:[],tripId:newTrip.id};
+      data.consents.push(cons);
+      const targets=cls?getStudentsOfClass(cls):data.students;
+      targets.forEach(function(s){pushNotification('parent',s.name,'Требуется согласие',title,'info');});
+    }
     saveData();toast('Создано');renderApp();
   });
-  document.querySelectorAll('[data-trip-join]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripJoin);if(!t)return;if(!t.participants)t.participants=[];if(t.participants.indexOf(session.name)>=0)return;if(t.maxStudents&&t.participants.length>=t.maxStudents)return toast('Мест нет',true);if(!confirm('Подтверждаете участие в «'+t.title+'»?'))return;t.participants.push(session.name);saveData();toast('Записаны');renderApp();});});
+  document.querySelectorAll('[data-trip-join]').forEach(function(b){b.addEventListener('click',function(){
+    const t=getTripById(b.dataset.tripJoin);
+    if(!t)return;
+    if(t.requiresConsent){
+      const cons=data.consents.find(function(c){return c.tripId===t.id;});
+      const sig=cons?(cons.signatures||[]).find(function(s){return s.studentName===session.name;}):null;
+      if(!sig||!sig.signed){toast('Сначала подпишите согласие',true);currentView='consents';renderApp();return;}
+    }
+    if(!t.participants)t.participants=[];
+    if(t.participants.indexOf(session.name)>=0)return;
+    if(t.maxStudents&&t.participants.length>=t.maxStudents)return toast('Мест нет',true);
+    if(!confirm('Подтверждаете участие в «'+t.title+'»?'))return;
+    t.participants.push(session.name);
+    saveData();toast('Записаны');renderApp();
+  });});
   document.querySelectorAll('[data-trip-leave]').forEach(function(b){b.addEventListener('click',function(){const t=getTripById(b.dataset.tripLeave);if(!t)return;if(!confirm('Отменить?'))return;t.participants=(t.participants||[]).filter(function(n){return n!==session.name;});saveData();toast('Отменено');renderApp();});});
   document.querySelectorAll('[data-trip-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.trips=data.trips.filter(function(t){return t.id!==b.dataset.tripDel;});saveData();toast('Удалено');renderApp();});});
 
@@ -2644,7 +3036,26 @@ function bindAllEvents(){
   document.querySelectorAll('[data-menu-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.menu=data.menu.filter(function(m){return m.id!==b.dataset.menuDel;});saveData();toast('Удалено');renderApp();});});
   document.querySelectorAll('[data-menu-edit]').forEach(function(b){b.addEventListener('click',function(){openEditMenuItemModal(b.dataset.menuEdit);});});
   document.querySelectorAll('[data-cafeteria-date]').forEach(function(b){b.addEventListener('click',function(){uiState.cafeteriaDate=b.dataset.cafeteriaDate;renderApp();});});
-  document.querySelectorAll('[data-meal-order]').forEach(function(b){b.addEventListener('click',function(){const m=data.menu.find(function(x){return x.id===b.dataset.mealOrder;});if(!m)return;let order=data.mealOrders.find(function(o){return o.date===m.date&&o.studentName===session.name;});if(!order){order={id:uid(),date:m.date,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);}if(m.meal==='breakfast')order.breakfast=!order.breakfast;else order.lunch=!order.lunch;if(!order.breakfast&&!order.lunch)data.mealOrders=data.mealOrders.filter(function(o){return o.id!==order.id;});saveData();toast('Сохранено');renderApp();});});
+
+  document.querySelectorAll('[data-meal-order]').forEach(function(b){b.addEventListener('click',function(){
+    const m=data.menu.find(function(x){return x.id===b.dataset.mealOrder;});
+    if(!m)return;
+    let order=data.mealOrders.find(function(o){return o.date===m.date&&o.studentName===session.name;});
+    if(!order){order={id:uid(),date:m.date,studentName:session.name,class:session.class,breakfast:false,lunch:false};data.mealOrders.push(order);}
+    const key=m.meal==='breakfast'?'breakfast':'lunch';
+    order[key]=!order[key];
+    const acc=getMealAccount(session.name,session.class);
+    if(order[key]){
+      acc.balance-=m.price;
+      data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:-m.price,description:(m.meal==='breakfast'?'Завтрак':'Обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
+      if(acc.balance<0)toast('Внимание: отрицательный баланс',true);
+    }else{
+      acc.balance+=m.price;
+      data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:m.price,description:'Возврат: '+(m.meal==='breakfast'?'завтрак':'обед')+' · '+formatDate(m.date),time:new Date().toISOString()});
+    }
+    if(!order.breakfast&&!order.lunch)data.mealOrders=data.mealOrders.filter(function(o){return o.id!==order.id;});
+    saveData();toast('Сохранено');renderApp();
+  });});
   document.getElementById('yearOrderBtn')?.addEventListener('click',openMealYearOrderModal);
   document.getElementById('clearAllOrdersBtn')?.addEventListener('click',clearMyMealOrders);
 
@@ -2713,6 +3124,102 @@ function bindAllEvents(){
   document.getElementById('manualBackupBtn')?.addEventListener('click',async function(){toast('Создаю...');await runAutoBackup(true);toast('Создан');loadBackupList();});
   document.getElementById('refreshBackupsBtn')?.addEventListener('click',loadBackupList);
   if(currentView==='backups')loadBackupList();
+
+  /* ===== ДИСЦИПЛИНА ===== */
+  document.getElementById('discForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const date=document.getElementById('discDate').value;
+    const sn=document.getElementById('discStudent').value;
+    const type=document.getElementById('discType').value;
+    const cat=document.getElementById('discCategory').value;
+    const text=document.getElementById('discText').value.trim();
+    if(!date||!sn||!type)return toast('Заполните',true);
+    data.discipline.push({id:uid(),date:date,class:session.class,studentName:sn,type:type,category:cat,text:text,from:session.name,time:new Date().toISOString()});
+    pushNotification('parent',sn,type==='remark'?'Замечание':'Поощрение',formatDate(date)+' · '+DISCIPLINE_CATEGORIES.find(function(c){return c.id===cat;}).name,'info');
+    saveData();toast('Сохранено');renderApp();
+  });
+  document.querySelectorAll('[data-del-disc]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.discipline=data.discipline.filter(function(d){return d.id!==b.dataset.delDisc;});saveData();toast('Удалено');renderApp();});});
+
+  /* ===== БАЛАНС ===== */
+  document.getElementById('topupForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const amount=parseInt(document.getElementById('tuAmount').value,10)||0;
+    const method=document.getElementById('tuMethod').value;
+    if(amount<=0)return toast('Сумма > 0',true);
+    const acc=getMealAccount(session.name,session.class);
+    acc.balance+=amount;
+    const methodName={card:'карта',cash:'наличные',transfer:'перевод'}[method]||method;
+    data.mealTransactions.push({id:uid(),studentName:session.name,class:session.class,amount:amount,description:'Пополнение ('+methodName+')',time:new Date().toISOString()});
+    saveData();toast('Пополнено на '+amount+' ₽');renderApp();
+  });
+  document.querySelectorAll('[data-adjust-balance]').forEach(function(b){b.addEventListener('click',function(){
+    const a=data.mealAccounts.find(function(x){return x.id===b.dataset.adjustBalance;});
+    if(!a)return;
+    const sum=prompt('Новая сумма баланса (₽):',a.balance);
+    if(sum===null)return;
+    const val=parseInt(sum,10);
+    if(isNaN(val))return toast('Введите число',true);
+    const diff=val-a.balance;
+    a.balance=val;
+    data.mealTransactions.push({id:uid(),studentName:a.studentName,class:a.class,amount:diff,description:'Ручная корректировка (админ)',time:new Date().toISOString()});
+    saveData();toast('Сохранено');renderApp();
+  });});
+
+  /* ===== ЗАЯВКИ ===== */
+  document.getElementById('maintForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const title=document.getElementById('mtTitle').value.trim();
+    const cat=document.getElementById('mtCategory').value;
+    const pri=document.getElementById('mtPriority').value;
+    const loc=document.getElementById('mtLocation').value.trim();
+    const text=document.getElementById('mtText').value.trim();
+    if(!title||!text)return toast('Заполните',true);
+    data.maintenanceRequests.push({id:uid(),title:title,category:cat,priority:pri,location:loc,description:text,status:'new',createdBy:session.name,createdAt:new Date().toISOString(),assignedTo:null,resolvedAt:null});
+    const zavhoz=data.teachers.find(function(t){return t.position==='zavhoz';});
+    if(zavhoz)pushNotification('teacher',zavhoz.name,'Новая заявка',title+' · '+loc,'info');
+    saveData();toast('Отправлено');renderApp();
+  });
+  document.querySelectorAll('[data-maint-assign]').forEach(function(s){s.addEventListener('change',function(){
+    const r=data.maintenanceRequests.find(function(x){return x.id===s.dataset.maintAssign;});
+    if(!r)return;
+    r.assignedTo=s.value||null;
+    if(r.assignedTo&&r.status==='new')r.status='in_progress';
+    if(r.assignedTo)pushNotification('teacher',r.assignedTo,'Назначена заявка',r.title,'info');
+    saveData();toast('Назначено');renderApp();
+  });});
+  document.querySelectorAll('[data-maint-done]').forEach(function(b){b.addEventListener('click',function(){const r=data.maintenanceRequests.find(function(x){return x.id===b.dataset.maintDone;});if(!r)return;r.status='done';r.resolvedAt=new Date().toISOString();saveData();toast('Выполнено');renderApp();});});
+  document.querySelectorAll('[data-maint-reject]').forEach(function(b){b.addEventListener('click',function(){const r=data.maintenanceRequests.find(function(x){return x.id===b.dataset.maintReject;});if(!r||!confirm('Отклонить?'))return;r.status='rejected';saveData();toast('Отклонено');renderApp();});});
+  document.querySelectorAll('[data-maint-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.maintenanceRequests=data.maintenanceRequests.filter(function(r){return r.id!==b.dataset.maintDel;});saveData();toast('Удалено');renderApp();});});
+  document.getElementById('techForm')?.addEventListener('submit',async function(e){
+    e.preventDefault();
+    const name=document.getElementById('techName').value.trim();
+    if(!name)return toast('Введите имя',true);
+    if(data.technicians.some(function(t){return t.name===name;}))return toast('Уже есть',true);
+    data.technicians.push({id:uid(),name:name});
+    if(!findTeacher(name)){
+      data.teachers.push({name:name,class:null,position:'technician',subjects:[],classes:[],pin:await setPinHash('1234'),attempts:0,blockedUntil:null,createdAt:new Date().toISOString()});
+    }
+    saveData();toast('Добавлен · PIN 1234');renderApp();
+  });
+  document.querySelectorAll('[data-tech-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.technicians=data.technicians.filter(function(t){return t.id!==b.dataset.techDel;});saveData();toast('Удалено');renderApp();});});
+
+  /* ===== СОГЛАСИЯ ===== */
+  document.getElementById('consentForm')?.addEventListener('submit',function(e){
+    e.preventDefault();
+    const title=document.getElementById('consTitle').value.trim();
+    const cls=document.getElementById('consClass').value||null;
+    const deadline=document.getElementById('consDeadline').value;
+    const type=document.getElementById('consType').value;
+    const text=document.getElementById('consText').value.trim();
+    if(!title||!text)return toast('Заполните',true);
+    data.consents.push({id:uid(),title:title,text:text,type:type,targetClass:cls,targetStudents:null,deadline:deadline,createdBy:session.name,createdAt:new Date().toISOString(),signatures:[],tripId:null});
+    if(cls){getStudentsOfClass(cls).forEach(function(s){pushNotification('parent',s.name,'Новое согласие',title,'info');});}
+    else{data.students.forEach(function(s){pushNotification('parent',s.name,'Новое согласие',title,'info');});}
+    saveData();toast('Создано');renderApp();
+  });
+  document.querySelectorAll('[data-consent-sign]').forEach(function(b){b.addEventListener('click',function(){signConsent(b.dataset.consentSign,true);toast('Подписано');renderApp();});});
+  document.querySelectorAll('[data-consent-decline]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Отказаться?'))return;signConsent(b.dataset.consentDecline,false);toast('Отказано',true);renderApp();});});
+  document.querySelectorAll('[data-consent-del]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Удалить?'))return;data.consents=data.consents.filter(function(c){return c.id!==b.dataset.consentDel;});saveData();toast('Удалено');renderApp();});});
 }
 
 function exportCSV(type){
@@ -2769,6 +3276,7 @@ document.addEventListener('keydown',function(e){
   if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');
   session=loadSession();
   if(session&&session.isCafeteria)currentView='cafeteria';
+  else if(session&&(session.isZavhoz||session.isTechnician))currentView='maintenance';
   renderApp();
   setTimeout(async function(){
     const t0=Date.now();
