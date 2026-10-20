@@ -3,141 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Посещаемость — учёт пропусков и причин</title>
+<title>Посещаемость</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232563eb'/><stop offset='1' stop-color='%231d4ed8'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><path d='M28 52 l16 16 l30 -34' stroke='white' stroke-width='11' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-        --primary: #2563eb; --primary-d: #1d4ed8;
-        --bg: #f4f6fb; --card: #fff; --border: #e2e8f0;
+        --primary: #2563eb; --primary-d: #1d4ed8; --primary-l: #dbeafe;
+        --bg: #f4f6fb; --card: #ffffff; --border: #e2e8f0;
         --text: #1e293b; --muted: #64748b;
-        --success: #16a34a; --warning: #f59e0b;
-        --danger: #dc2626; --secondary: #6b7280;
+        --success: #16a34a; --success-l: #dcfce7;
+        --warning: #f59e0b; --warning-l: #fef3c7;
+        --danger:  #dc2626; --danger-l: #fee2e2;
+        --secondary: #6b7280;
         --director: #7c3aed; --deputy: #db2777;
         --admin: #0891b2;
-        --radius: 10px;
+        --radius: 12px;
         --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+        --shadow-hover: 0 10px 30px rgba(15,23,42,.09);
     }
+
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh;
+        background: linear-gradient(135deg, #f4f6fb 0%, #eef2f9 100%);
+        background-attachment: fixed;
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100vh;
     }
     .hidden { display: none !important; }
 
-    /* Buttons */
+    /* ---------- Buttons ---------- */
     .btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 8px 16px; border: 1px solid transparent; border-radius: 8px;
-        background: var(--primary); color: #fff; font-size: 14px; font-weight: 500;
-        cursor: pointer; font-family: inherit; transition: background .15s;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 9px 18px; border: none; border-radius: 9px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+        color: #fff; font-size: 14px; font-weight: 500;
+        cursor: pointer; font-family: inherit; transition: all .15s;
+        text-decoration: none;
     }
-    .btn:hover { background: var(--primary-d); }
-    .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
-    .btn-outline:hover { background: rgba(37,99,235,.08); }
-    .btn-danger { background: var(--danger); } .btn-danger:hover { background: #b91c1c; }
-    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; color: var(--text); }
-    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.35); }
+    .btn:active { transform: translateY(0); }
+    .btn-outline {
+        background: transparent; color: var(--primary);
+        border: 1px solid var(--primary); box-shadow: none;
+    }
+    .btn-outline:hover { background: rgba(37,99,235,.06); box-shadow: none; }
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+    }
+    .btn-danger:hover { box-shadow: 0 4px 14px rgba(220,38,38,.3); }
+    .btn-success {
+        background: linear-gradient(135deg, var(--success) 0%, #15803d 100%);
+    }
+    .btn-success:hover { box-shadow: 0 4px 14px rgba(22,163,74,.3); }
+    .btn-ghost {
+        background: transparent; color: var(--muted);
+        border: 1px solid var(--border); box-shadow: none;
+    }
+    .btn-ghost:hover { background: #f1f5f9; color: var(--text); box-shadow: none; transform: none; }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
 
-    /* Forms */
+    /* ---------- Forms ---------- */
     .form-group { margin-bottom: 16px; }
     .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
     .input, .select, .textarea {
-        width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-        border-radius: 8px; background: #fff; font-size: 14px; font-family: inherit;
+        width: 100%; padding: 10px 13px; border: 1px solid var(--border);
+        border-radius: 9px; background: #fff; font-size: 14px; font-family: inherit;
         color: var(--text); transition: border-color .15s, box-shadow .15s;
     }
     .input:focus, .select:focus, .textarea:focus {
         outline: none; border-color: var(--primary);
         box-shadow: 0 0 0 3px rgba(37,99,235,.12);
     }
-    .input:disabled, .select:disabled { background: #f8fafc; color: var(--muted); cursor: not-allowed; }
+    .input:disabled, .select:disabled {
+        background: #f8fafc; color: var(--muted); cursor: not-allowed;
+    }
     .textarea { resize: vertical; min-height: 60px; }
 
-    /* Login */
+    /* ---------- Login ---------- */
     #login-screen {
         display: flex; align-items: center; justify-content: center;
-        min-height: 100vh; padding: 20px;
+        min-height: 100vh; padding: 20px; flex-direction: column; gap: 16px;
     }
     .login-card {
-        background: var(--card); border-radius: var(--radius);
-        box-shadow: var(--shadow); padding: 32px; width: 100%; max-width: 460px;
+        background: var(--card); border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(15,23,42,.08);
+        padding: 36px 32px; width: 100%; max-width: 440px;
     }
-    .login-card h1 { font-size: 20px; text-align: center; margin-bottom: 24px; }
+    .login-card h1 {
+        font-size: 22px; text-align: center; margin-bottom: 26px; font-weight: 700;
+    }
     .login-card h1 .icon {
-        display: inline-block; background: var(--primary); color: #fff;
-        width: 40px; height: 40px; border-radius: 10px; line-height: 40px;
-        text-align: center; margin-right: 8px; font-size: 20px; vertical-align: middle;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+        color: #fff; width: 42px; height: 42px; border-radius: 12px;
+        margin-right: 10px; font-size: 22px; vertical-align: middle;
+        box-shadow: 0 4px 12px rgba(37,99,235,.35);
+    }
+    .login-card h1 .icon.warn {
+        background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        box-shadow: 0 4px 12px rgba(245,158,11,.35);
     }
     .demo-box {
-        margin-top: 20px; padding: 12px 14px; background: #f8fafc;
-        border: 1px dashed var(--border); border-radius: 8px;
+        margin-top: 22px; padding: 14px 16px; background: #f8fafc;
+        border: 1px dashed var(--border); border-radius: 10px;
         font-size: 12px; color: var(--muted); line-height: 1.9;
     }
     .demo-box b { color: var(--text); }
     .demo-box code {
-        background: #fff; padding: 1px 6px; border-radius: 4px;
+        background: #fff; padding: 1px 7px; border-radius: 5px;
         border: 1px solid var(--border); color: var(--text);
         font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px;
     }
     .error-msg {
-        background: #fef2f2; color: #991b1b; padding: 10px 14px;
-        border-radius: 8px; font-size: 13px; margin-bottom: 16px;
-        border: 1px solid #fecaca;
+        background: var(--danger-l); color: #991b1b;
+        padding: 11px 15px; border-radius: 9px; font-size: 13px;
+        margin-bottom: 16px; border: 1px solid #fecaca;
     }
+    .link-text {
+        font-size: 13px; color: var(--primary); text-decoration: none;
+        cursor: pointer; transition: color .15s;
+    }
+    .link-text:hover { color: var(--primary-d); text-decoration: underline; }
 
-    /* App header */
+    /* ---------- App header ---------- */
     .app-header {
-        background: #fff; border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
         padding: 0 24px; display: flex; align-items: center; gap: 24px;
-        height: 60px; position: sticky; top: 0; z-index: 10;
+        height: 62px; position: sticky; top: 0; z-index: 100;
     }
-    .app-header .logo { font-weight: 700; font-size: 16px; color: var(--primary); white-space: nowrap; }
-    .app-nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+    .app-header .logo {
+        font-weight: 800; font-size: 17px; white-space: nowrap;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .app-header .logo-mark {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 30px; height: 30px; border-radius: 8px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+        color: #fff; font-size: 16px;
+        box-shadow: 0 2px 8px rgba(37,99,235,.35);
+    }
+    .app-nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; padding: 4px 0; }
     .app-nav button {
-        padding: 8px 14px; background: transparent; border: none;
-        border-radius: 8px; font-size: 14px; font-family: inherit;
+        padding: 8px 15px; background: transparent; border: none;
+        border-radius: 9px; font-size: 14px; font-family: inherit;
         color: var(--muted); cursor: pointer; transition: all .15s;
-        white-space: nowrap;
+        white-space: nowrap; font-weight: 500;
     }
     .app-nav button:hover { background: #f1f5f9; color: var(--text); }
-    .app-nav button.active { background: rgba(37,99,235,.1); color: var(--primary); font-weight: 600; }
-    .user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
-    .user-info .name { color: var(--text); font-weight: 500; }
+    .app-nav button.active {
+        background: linear-gradient(135deg, rgba(37,99,235,.12) 0%, rgba(29,78,216,.12) 100%);
+        color: var(--primary); font-weight: 600;
+    }
+    .app-nav button .tab-badge {
+        display: inline-block;
+        background: var(--danger); color: #fff;
+        font-size: 10px; padding: 1px 6px; border-radius: 999px;
+        margin-left: 6px; font-weight: 700;
+    }
+    .user-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+    .user-info .name { color: var(--text); font-weight: 600; }
     .user-info .role {
-        padding: 2px 8px; border-radius: 4px; font-size: 11px;
-        text-transform: uppercase; letter-spacing: .03em; font-weight: 600;
+        padding: 3px 10px; border-radius: 6px; font-size: 10px;
+        text-transform: uppercase; letter-spacing: .04em; font-weight: 700;
     }
     .role-director { background: #f3e8ff; color: var(--director); }
     .role-deputy   { background: #fce7f3; color: var(--deputy); }
-    .role-teacher  { background: #dbeafe; color: var(--primary); }
-    .role-student  { background: #dcfce7; color: var(--success); }
+    .role-teacher  { background: var(--primary-l); color: var(--primary); }
+    .role-student  { background: var(--success-l); color: var(--success); }
     .role-admin    { background: #cffafe; color: var(--admin); }
 
-    /* Container */
+    /* ---------- Layout ---------- */
     .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
-    .page-title { font-size: 22px; margin-bottom: 4px; }
+    .page-title { font-size: 24px; margin-bottom: 4px; font-weight: 700; }
     .page-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
 
-    /* Cards */
+    /* ---------- Cards ---------- */
     .card {
         background: var(--card); border-radius: var(--radius);
         box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden;
+        transition: box-shadow .2s;
     }
+    .card:hover { box-shadow: var(--shadow-hover); }
     .card-header {
-        padding: 14px 20px; border-bottom: 1px solid var(--border);
+        padding: 15px 22px; border-bottom: 1px solid var(--border);
         font-weight: 600; font-size: 15px;
         display: flex; justify-content: space-between; align-items: center; gap: 12px;
         flex-wrap: wrap;
     }
-    .card-body { padding: 20px; }
+    .card-body { padding: 22px; }
     .card-body.p-0 { padding: 0; }
 
-    /* Table */
+    /* ---------- Tables ---------- */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead th {
         text-align: left; padding: 12px 16px; font-size: 11px;
-        font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+        font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
         color: var(--muted); background: #f8fafc;
         border-bottom: 1px solid var(--border);
     }
@@ -147,19 +215,19 @@
     .td-center { text-align: center; }
     .td-end { text-align: right; }
 
-    /* Badges */
+    /* ---------- Badges ---------- */
     .badge {
-        display: inline-block; padding: 2px 10px; border-radius: 999px;
-        font-size: 11px; font-weight: 600; text-transform: uppercase;
-        letter-spacing: .03em; white-space: nowrap;
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .04em; white-space: nowrap;
     }
-    .badge-success   { background: #dcfce7; color: #166534; }
-    .badge-warning   { background: #fef3c7; color: #92400e; }
+    .badge-success   { background: var(--success-l); color: #166534; }
+    .badge-warning   { background: var(--warning-l); color: #92400e; }
     .badge-secondary { background: #e2e8f0; color: #475569; }
-    .badge-danger    { background: #fee2e2; color: #991b1b; }
-    .badge-info      { background: #dbeafe; color: #1e40af; }
+    .badge-danger    { background: var(--danger-l); color: #991b1b; }
+    .badge-info      { background: var(--primary-l); color: #1e40af; }
 
-    /* KPI */
+    /* ---------- KPI ---------- */
     .kpi-grid {
         display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px; margin-bottom: 24px;
@@ -167,135 +235,194 @@
     .kpi {
         background: #fff; border-radius: var(--radius);
         box-shadow: var(--shadow); padding: 18px 20px;
-        border-left: 4px solid var(--primary);
+        border-left: 4px solid var(--primary); transition: transform .15s;
     }
+    .kpi:hover { transform: translateY(-2px); }
     .kpi.success { border-left-color: var(--success); }
     .kpi.warning { border-left-color: var(--warning); }
     .kpi.danger  { border-left-color: var(--danger); }
     .kpi.director { border-left-color: var(--director); }
     .kpi.deputy  { border-left-color: var(--deputy); }
     .kpi.admin   { border-left-color: var(--admin); }
-    .kpi .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
-    .kpi .kpi-value { font-size: 26px; font-weight: 700; }
+    .kpi .kpi-label { font-size: 12px; color: var(--muted); font-weight: 600;
+                      margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi .kpi-value { font-size: 28px; font-weight: 800; }
 
-    /* Charts */
+    /* ---------- Charts ---------- */
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
     @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
     .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
     .bar-label { width: 200px; flex-shrink: 0; font-size: 12px; line-height: 1.3; }
-    .bar-track { flex: 1; height: 20px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
-    .bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .4s; }
-    .bar-value { width: 30px; text-align: right; font-weight: 600; font-size: 12px; }
+    .bar-track { flex: 1; height: 20px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #3b82f6 100%);
+                border-radius: 5px; transition: width .4s; }
+    .bar-value { width: 30px; text-align: right; font-weight: 700; font-size: 12px; }
     .donut-wrap { display: flex; align-items: center; gap: 20px; }
     .donut { width: 130px; height: 130px; border-radius: 50%; flex-shrink: 0; position: relative; }
     .donut::after { content: ''; position: absolute; inset: 26px; background: #fff; border-radius: 50%; }
     .legend { font-size: 13px; line-height: 1.9; }
     .legend-item { display: flex; align-items: center; gap: 8px; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
 
-    /* Progress */
+    /* ---------- Progress ---------- */
     .progress {
-        height: 20px; background: #f1f5f9; border-radius: 999px;
+        height: 22px; background: #f1f5f9; border-radius: 999px;
         overflow: hidden; position: relative; min-width: 110px;
     }
     .progress-fill {
         height: 100%; border-radius: 999px; display: flex; align-items: center;
-        justify-content: center; font-size: 11px; font-weight: 600; color: #fff;
+        justify-content: center; font-size: 11px; font-weight: 700; color: #fff;
         transition: width .4s; white-space: nowrap; padding: 0 6px;
     }
-    .progress-fill.success { background: var(--success); }
-    .progress-fill.warning { background: var(--warning); }
-    .progress-fill.danger  { background: var(--danger); }
+    .progress-fill.success { background: linear-gradient(90deg, var(--success) 0%, #22c55e 100%); }
+    .progress-fill.warning { background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%); }
+    .progress-fill.danger  { background: linear-gradient(90deg, var(--danger) 0%, #f87171 100%); }
 
-    /* Students grid */
+    /* ---------- Alerts ---------- */
+    .alert { padding: 13px 17px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }
+    .alert-success { background: var(--success-l); color: #166534; }
+    .alert-error   { background: var(--danger-l); color: #991b1b; }
+    .alert-info    { background: var(--primary-l); color: #1e40af; }
+    .alert-warning { background: var(--warning-l); color: #92400e; }
+    .empty {
+        padding: 44px 20px; text-align: center; color: var(--muted);
+        font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .empty .empty-icon { font-size: 42px; opacity: .4; }
+
+    /* ---------- Section title ---------- */
+    .section-title {
+        font-size: 16px; font-weight: 700; margin: 24px 0 14px;
+        padding-bottom: 8px; border-bottom: 2px solid var(--border);
+        display: flex; align-items: center; gap: 8px;
+    }
+    .inline-form {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px; align-items: end;
+    }
+    .inline-form .form-group { margin-bottom: 0; }
+
+    /* ---------- Log ---------- */
+    .log-entry {
+        padding: 11px 17px; border-bottom: 1px solid var(--border);
+        font-size: 13px; display: flex; gap: 14px; align-items: flex-start;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-time { color: var(--muted); font-size: 12px; white-space: nowrap;
+                min-width: 135px; font-family: monospace; }
+    .log-user { font-weight: 700; }
+
+    /* ---------- Schedule ---------- */
+    .day-section { margin-bottom: 20px; }
+    .day-section:last-child { margin-bottom: 0; }
+    .day-header {
+        font-weight: 700; font-size: 15px; margin-bottom: 10px;
+        padding-bottom: 8px; border-bottom: 2px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .day-header .day-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .lesson-row {
+        display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+        background: #f8fafc; border-radius: 8px; margin-bottom: 6px;
+        font-size: 14px;
+    }
+    .lesson-num {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+        color: #fff; width: 26px; height: 26px; border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 800; flex-shrink: 0;
+    }
+    .lesson-time { color: var(--muted); font-size: 13px; font-family: monospace;
+                   min-width: 105px; }
+    .lesson-subject { font-weight: 600; flex: 1; }
+    .lesson-teacher { color: var(--muted); font-size: 13px; }
+
+    /* ---------- Attendance ---------- */
+    .attendance-row td { transition: background .15s; }
+    .attendance-row.active { background: var(--danger-l) !important; }
+    .attendance-check { width: 20px; height: 20px; cursor: pointer; accent-color: var(--danger); }
+    .attendance-row .input, .attendance-row .select { padding: 7px 10px; font-size: 13px; }
+    .quick-info {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px; margin-bottom: 16px; padding: 16px 18px;
+        background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+        border-radius: 10px; font-size: 13px;
+    }
+    .quick-info .qi-item { display: flex; flex-direction: column; }
+    .quick-info .qi-label { color: var(--muted); font-size: 11px;
+                            text-transform: uppercase; letter-spacing: .05em;
+                            font-weight: 700; margin-bottom: 3px; }
+    .quick-info .qi-value { font-weight: 700; font-size: 16px; color: var(--text); }
+
+    /* ---------- Calendar ---------- */
+    .calendar-nav {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; margin-bottom: 16px;
+    }
+    .calendar-month { font-size: 18px; font-weight: 700; text-transform: capitalize; }
+    .calendar {
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+    .cal-header {
+        font-size: 11px; text-align: center; padding: 10px 4px;
+        color: var(--muted); font-weight: 700; text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+    .cal-day {
+        min-height: 78px; padding: 8px; border-radius: 9px;
+        background: #f8fafc; position: relative; cursor: pointer;
+        transition: all .15s; display: flex; flex-direction: column;
+        font-size: 13px; border: 2px solid transparent;
+    }
+    .cal-day.other-month { opacity: .35; }
+    .cal-day.today { background: var(--primary-l); border-color: var(--primary); }
+    .cal-day.selected { border-color: var(--primary-d); background: rgba(37,99,235,.14); }
+    .cal-day:hover:not(.other-month) { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .cal-day .day-num { font-weight: 700; margin-bottom: 6px; font-size: 13px; }
+    .cal-day .cal-badges { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
+    .cal-day .cal-badge {
+        font-size: 10px; padding: 1px 6px; border-radius: 5px;
+        background: var(--danger); color: #fff; font-weight: 700;
+    }
+    .cal-day .cal-badge.pending { background: var(--warning); }
+    .cal-day .cal-badge.rejected { background: var(--secondary); }
+    @media (max-width: 640px) {
+        .cal-day { min-height: 58px; padding: 5px; font-size: 11px; }
+        .cal-day .day-num { font-size: 11px; }
+    }
+
+    /* ---------- Pending request ---------- */
+    .request-card {
+        padding: 14px 18px; border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .request-card:last-child { border-bottom: none; }
+    .request-main { flex: 1; min-width: 200px; }
+    .request-name { font-weight: 700; margin-bottom: 3px; }
+    .request-meta { font-size: 12px; color: var(--muted); }
+    .request-actions { display: flex; gap: 6px; }
+
+    /* ---------- Attention list ---------- */
     .students-grid {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 10px;
     }
     .student-chip {
-        padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+        padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px;
         font-size: 14px; background: #fafbfc; display: flex; align-items: center; gap: 8px;
     }
     .student-chip::before {
         content: ''; width: 8px; height: 8px; background: var(--primary);
         border-radius: 50%; flex-shrink: 0;
     }
-
-    /* Alerts */
-    .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
-    .alert-success { background: #dcfce7; color: #166534; }
-    .alert-error   { background: #fef2f2; color: #991b1b; }
-    .alert-info    { background: #eff6ff; color: #1e40af; }
-    .alert-warning { background: #fef3c7; color: #92400e; }
-    .empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 14px; }
-
-    /* Section */
-    .section-title {
-        font-size: 16px; font-weight: 600; margin: 24px 0 12px;
-        padding-bottom: 8px; border-bottom: 2px solid var(--border);
-        display: flex; align-items: center; gap: 8px;
-    }
-    .inline-form {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 10px; align-items: end;
-    }
-    .inline-form .form-group { margin-bottom: 0; }
-
-    /* Log */
-    .log-entry {
-        padding: 10px 16px; border-bottom: 1px solid var(--border);
-        font-size: 13px; display: flex; gap: 12px; align-items: flex-start;
-    }
-    .log-entry:last-child { border-bottom: none; }
-    .log-time { color: var(--muted); font-size: 12px; white-space: nowrap; min-width: 130px; }
-    .log-user { font-weight: 600; }
-
-    /* ============= SCHEDULE ============= */
-    .day-section { margin-bottom: 20px; }
-    .day-header {
-        font-weight: 600; font-size: 15px; margin-bottom: 10px;
-        padding-bottom: 6px; border-bottom: 2px solid var(--border);
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .day-header .day-count {
-        font-size: 12px; color: var(--muted); font-weight: 500;
-    }
-    .lesson-row {
-        display: flex; align-items: center; gap: 10px; padding: 8px 12px;
-        background: #f8fafc; border-radius: 6px; margin-bottom: 6px;
-        font-size: 14px;
-    }
-    .lesson-num {
-        background: var(--primary); color: #fff;
-        width: 24px; height: 24px; border-radius: 4px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 600; flex-shrink: 0;
-    }
-    .lesson-time { color: var(--muted); font-size: 13px; font-family: monospace; min-width: 100px; }
-    .lesson-subject { font-weight: 500; flex: 1; }
-    .lesson-teacher { color: var(--muted); font-size: 13px; }
-
-    /* ============= QUICK-ADD ROSTER ============= */
-    .attendance-row td { transition: background .15s; }
-    .attendance-row.active { background: #fef2f2; }
-    .attendance-check { width: 18px; height: 18px; cursor: pointer; accent-color: var(--danger); }
-    .attendance-row .input, .attendance-row .select { padding: 6px 10px; font-size: 13px; }
-    .quick-info {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px; margin-bottom: 16px; padding: 14px 16px;
-        background: #eff6ff; border-radius: 8px; font-size: 13px;
-    }
-    .quick-info .qi-item { display: flex; flex-direction: column; }
-    .quick-info .qi-label { color: var(--muted); font-size: 11px; text-transform: uppercase;
-                            letter-spacing: .04em; font-weight: 600; margin-bottom: 2px; }
-    .quick-info .qi-value { font-weight: 600; font-size: 15px; color: var(--text); }
 </style>
 </head>
 <body>
 
 <!-- ============ LOGIN ============ -->
 <div id="login-screen">
-    <div class="login-card">
+    <div class="login-card" id="login-main">
         <h1><span class="icon">✓</span> Посещаемость</h1>
         <div id="login-error" class="error-msg hidden"></div>
         <form id="login-form">
@@ -307,15 +434,57 @@
                 <label class="form-label" for="login-pass">Пароль</label>
                 <input class="input" type="password" id="login-pass" required autocomplete="current-password">
             </div>
-            <button class="btn" style="width:100%; justify-content:center;" type="submit">Войти</button>
+            <button class="btn" style="width:100%;" type="submit">Войти</button>
         </form>
+        <div style="text-align:center; margin-top:14px;">
+            <a href="#" id="forgot-link" class="link-text">Забыли пароль?</a>
+        </div>
         <div class="demo-box">
             <b>Демо-аккаунты:</b><br>
             администратор: <code>admin / admin123</code><br>
-            директор:      <code>director / director123</code><br>
-            завуч:         <code>deputy / deputy123</code><br>
-            учитель:       <code>teacher / teacher123</code><br>
-            ученик:        <code>student / student123</code>
+            директор: <code>director / director123</code><br>
+            завуч: <code>deputy / deputy123</code><br>
+            учитель: <code>teacher / teacher123</code><br>
+            ученик: <code>student / student123</code>
+        </div>
+    </div>
+
+    <div class="login-card hidden" id="forgot-card">
+        <h1><span class="icon warn">?</span> Восстановление</h1>
+
+        <div id="forgot-step1">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+                Введите логин — мы сгенерируем код для сброса пароля.
+                <br><i style="font-size:12px;">(в демо-режиме код будет показан здесь же)</i>
+            </p>
+            <div class="form-group">
+                <label class="form-label">Логин</label>
+                <input class="input" id="forgot-user" placeholder="например, teacher">
+            </div>
+            <button class="btn" style="width:100%;" id="forgot-gen-btn">Получить код</button>
+        </div>
+
+        <div id="forgot-step2" class="hidden">
+            <div id="forgot-code-info" style="margin-bottom:16px;"></div>
+            <div class="form-group">
+                <label class="form-label">Код</label>
+                <input class="input" id="forgot-code" placeholder="6 цифр" maxlength="6">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Новый пароль</label>
+                <input class="input" type="password" id="forgot-newpass">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Повторите пароль</label>
+                <input class="input" type="password" id="forgot-newpass2">
+            </div>
+            <button class="btn btn-success" style="width:100%;" id="forgot-save-btn">Сбросить пароль</button>
+        </div>
+
+        <div id="forgot-msg" style="margin-top:12px;"></div>
+
+        <div style="text-align:center; margin-top:18px;">
+            <a href="#" id="back-to-login" class="link-text">← Вернуться ко входу</a>
         </div>
     </div>
 </div>
@@ -323,7 +492,7 @@
 <!-- ============ APP ============ -->
 <div id="app-screen" class="hidden">
     <header class="app-header">
-        <div class="logo">✓ Посещаемость</div>
+        <div class="logo"><span class="logo-mark">✓</span> Посещаемость</div>
         <nav class="app-nav" id="app-nav"></nav>
         <div class="user-info">
             <span class="name" id="user-name"></span>
@@ -333,7 +502,9 @@
     </header>
     <main class="container">
         <div id="page-home"></div>
+        <div id="page-my-request" class="hidden"></div>
         <div id="page-quick-add" class="hidden"></div>
+        <div id="page-calendar" class="hidden"></div>
         <div id="page-schedule" class="hidden"></div>
         <div id="page-reports" class="hidden"></div>
         <div id="page-manage" class="hidden"></div>
@@ -354,26 +525,29 @@ function dateOffset(days) {
 
 function generateDemoAbsences() {
     return [
-        { id: 1,  studentId: 1, date: dateOffset(-2),  reasonId: 1, comment: 'Справка от педиатра' },
-        { id: 2,  studentId: 2, date: dateOffset(-3),  reasonId: 5, comment: '' },
-        { id: 3,  studentId: 3, date: dateOffset(-3),  reasonId: 2, comment: '' },
-        { id: 4,  studentId: 2, date: dateOffset(-7),  reasonId: 6, comment: 'Опоздал на 15 минут' },
-        { id: 5,  studentId: 4, date: dateOffset(-8),  reasonId: 3, comment: 'Олимпиада по физике' },
-        { id: 6,  studentId: 1, date: dateOffset(-10), reasonId: 1, comment: '' },
-        { id: 7,  studentId: 5, date: dateOffset(-11), reasonId: 2, comment: '' },
-        { id: 8,  studentId: 7, date: dateOffset(-12), reasonId: 5, comment: '' },
-        { id: 9,  studentId: 2, date: dateOffset(-15), reasonId: 5, comment: 'Без предупреждения' },
-        { id: 10, studentId: 6, date: dateOffset(-16), reasonId: 8, comment: 'Поездка с родителями' },
-        { id: 11, studentId: 3, date: dateOffset(-18), reasonId: 4, comment: 'Плановый медосмотр' },
-        { id: 12, studentId: 8, date: dateOffset(-20), reasonId: 1, comment: '' },
-        { id: 13, studentId: 2, date: dateOffset(-22), reasonId: 7, comment: '' },
-        { id: 14, studentId: 5, date: dateOffset(-25), reasonId: 3, comment: 'Конкурс чтецов' },
-        { id: 15, studentId: 1, date: dateOffset(-27), reasonId: 2, comment: '' },
-        { id: 16, studentId: 9,  date: dateOffset(-4),  reasonId: 1, comment: '' },
-        { id: 17, studentId: 10, date: dateOffset(-9),  reasonId: 5, comment: '' },
-        { id: 18, studentId: 11, date: dateOffset(-14), reasonId: 3, comment: 'Соревнования' },
-        { id: 19, studentId: 12, date: dateOffset(-5),  reasonId: 2, comment: '' },
-        { id: 20, studentId: 13, date: dateOffset(-13), reasonId: 6, comment: 'Опоздание' }
+        { id: 1,  studentId: 1, date: dateOffset(-2),  reasonId: 1, comment: 'Справка от педиатра', status: 'approved' },
+        { id: 2,  studentId: 2, date: dateOffset(-3),  reasonId: 5, comment: '', status: 'approved' },
+        { id: 3,  studentId: 3, date: dateOffset(-3),  reasonId: 2, comment: '', status: 'approved' },
+        { id: 4,  studentId: 2, date: dateOffset(-7),  reasonId: 6, comment: 'Опоздал на 15 минут', status: 'approved' },
+        { id: 5,  studentId: 4, date: dateOffset(-8),  reasonId: 3, comment: 'Олимпиада по физике', status: 'approved' },
+        { id: 6,  studentId: 1, date: dateOffset(-10), reasonId: 1, comment: '', status: 'approved' },
+        { id: 7,  studentId: 5, date: dateOffset(-11), reasonId: 2, comment: '', status: 'approved' },
+        { id: 8,  studentId: 7, date: dateOffset(-12), reasonId: 5, comment: '', status: 'approved' },
+        { id: 9,  studentId: 2, date: dateOffset(-15), reasonId: 5, comment: 'Без предупреждения', status: 'approved' },
+        { id: 10, studentId: 6, date: dateOffset(-16), reasonId: 8, comment: 'Поездка с родителями', status: 'approved' },
+        { id: 11, studentId: 3, date: dateOffset(-18), reasonId: 4, comment: 'Плановый медосмотр', status: 'approved' },
+        { id: 12, studentId: 8, date: dateOffset(-20), reasonId: 1, comment: '', status: 'approved' },
+        { id: 13, studentId: 2, date: dateOffset(-22), reasonId: 7, comment: '', status: 'approved' },
+        { id: 14, studentId: 5, date: dateOffset(-25), reasonId: 3, comment: 'Конкурс чтецов', status: 'approved' },
+        { id: 15, studentId: 1, date: dateOffset(-27), reasonId: 2, comment: '', status: 'approved' },
+        { id: 16, studentId: 9,  date: dateOffset(-4),  reasonId: 1, comment: '', status: 'approved' },
+        { id: 17, studentId: 10, date: dateOffset(-9),  reasonId: 5, comment: '', status: 'approved' },
+        { id: 18, studentId: 11, date: dateOffset(-14), reasonId: 3, comment: 'Соревнования', status: 'approved' },
+        { id: 19, studentId: 12, date: dateOffset(-5),  reasonId: 2, comment: '', status: 'approved' },
+        { id: 20, studentId: 13, date: dateOffset(-13), reasonId: 6, comment: 'Опоздание', status: 'approved' },
+        // Демо-заявки от учеников на рассмотрение
+        { id: 21, studentId: 1, date: dateOffset(1),  reasonId: 2, comment: 'Семейные обстоятельства', status: 'pending', createdAt: Date.now() - 3600000 },
+        { id: 22, studentId: 5, date: dateOffset(2),  reasonId: 4, comment: 'Записан к врачу', status: 'pending', createdAt: Date.now() - 7200000 }
     ];
 }
 
@@ -418,36 +592,31 @@ const SEED = {
     ],
     absences: [],
     schedule: [
-        // 10А — понедельник
         { id: 1,  classId: 1, dayOfWeek: 1, lessonNumber: 1, subject: 'Математика',      teacherId: 4, startTime: '08:30', endTime: '09:15' },
         { id: 2,  classId: 1, dayOfWeek: 1, lessonNumber: 2, subject: 'Русский язык',    teacherId: 5, startTime: '09:25', endTime: '10:10' },
         { id: 3,  classId: 1, dayOfWeek: 1, lessonNumber: 3, subject: 'Физика',          teacherId: null, startTime: '10:25', endTime: '11:10' },
-        // 10А — вторник
         { id: 4,  classId: 1, dayOfWeek: 2, lessonNumber: 1, subject: 'История',         teacherId: null, startTime: '08:30', endTime: '09:15' },
         { id: 5,  classId: 1, dayOfWeek: 2, lessonNumber: 2, subject: 'Математика',      teacherId: 4, startTime: '09:25', endTime: '10:10' },
         { id: 6,  classId: 1, dayOfWeek: 2, lessonNumber: 3, subject: 'Литература',      teacherId: 5, startTime: '10:25', endTime: '11:10' },
-        // 10А — среда
         { id: 7,  classId: 1, dayOfWeek: 3, lessonNumber: 1, subject: 'Английский язык', teacherId: null, startTime: '08:30', endTime: '09:15' },
         { id: 8,  classId: 1, dayOfWeek: 3, lessonNumber: 2, subject: 'Химия',           teacherId: null, startTime: '09:25', endTime: '10:10' },
         { id: 9,  classId: 1, dayOfWeek: 3, lessonNumber: 3, subject: 'Биология',        teacherId: null, startTime: '10:25', endTime: '11:10' },
-        // 10А — четверг
         { id: 10, classId: 1, dayOfWeek: 4, lessonNumber: 1, subject: 'Математика',      teacherId: 4, startTime: '08:30', endTime: '09:15' },
         { id: 11, classId: 1, dayOfWeek: 4, lessonNumber: 2, subject: 'Русский язык',    teacherId: 5, startTime: '09:25', endTime: '10:10' },
-        // 10А — пятница
         { id: 12, classId: 1, dayOfWeek: 5, lessonNumber: 1, subject: 'Физкультура',     teacherId: null, startTime: '08:30', endTime: '09:15' },
         { id: 13, classId: 1, dayOfWeek: 5, lessonNumber: 2, subject: 'Математика',      teacherId: 4, startTime: '09:25', endTime: '10:10' },
-        // 10Б — понедельник
         { id: 14, classId: 2, dayOfWeek: 1, lessonNumber: 1, subject: 'Физика',          teacherId: 5, startTime: '08:30', endTime: '09:15' },
         { id: 15, classId: 2, dayOfWeek: 1, lessonNumber: 2, subject: 'Математика',      teacherId: null, startTime: '09:25', endTime: '10:10' },
-        // 10Б — вторник
         { id: 16, classId: 2, dayOfWeek: 2, lessonNumber: 1, subject: 'История',         teacherId: null, startTime: '08:30', endTime: '09:15' }
     ],
-    log: []
+    log: [],
+    resetTokens: []
 };
 
-const STORAGE_KEY = 'school_attendance_v3';
-const SESSION_KEY = 'school_attendance_session_v3';
+const STORAGE_KEY = 'school_attendance_v4';
+const SESSION_KEY = 'school_attendance_session_v4';
 const DAYS = { 1: 'Понедельник', 2: 'Вторник', 3: 'Среда', 4: 'Четверг', 5: 'Пятница', 6: 'Суббота', 7: 'Воскресенье' };
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
 let state = null;
 let session = null;
@@ -458,6 +627,13 @@ let session = null;
 function initStorage() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) { try { state = JSON.parse(raw); } catch { state = null; } }
+
+    // Миграция: все отсутствующие поля status → approved
+    if (state && state.absences) {
+        state.absences.forEach(a => { if (!a.status) a.status = 'approved'; });
+    }
+    if (state && !state.resetTokens) state.resetTokens = [];
+
     if (!state || !state.users || !state.schedule) {
         state = JSON.parse(JSON.stringify(SEED));
         state.absences = generateDemoAbsences();
@@ -528,13 +704,23 @@ function categoryBadge(cat) {
     if (cat === 'неуважительная') return '<span class="badge badge-warning">неуважительная</span>';
     return '<span class="badge badge-secondary">' + esc(cat) + '</span>';
 }
+function statusBadge(st) {
+    if (st === 'pending')  return '<span class="badge badge-warning">на рассмотрении</span>';
+    if (st === 'rejected') return '<span class="badge badge-danger">отклонён</span>';
+    return '<span class="badge badge-success">подтверждён</span>';
+}
 function roleLabel(role) {
     return { director: 'директор', deputy: 'завуч', teacher: 'учитель', student: 'ученик', admin: 'администратор' }[role] || role;
 }
 function roleBadgeClass(role) { return 'role-' + role; }
+
+// Учитываем только подтверждённые пропуски
+function getApprovedAbsences() {
+    return state.absences.filter(a => (a.status || 'approved') === 'approved');
+}
 function calcAttendance(studentId, startIso, endIso) {
     const workdays = workdaysBetween(startIso, endIso);
-    const absences = state.absences.filter(a =>
+    const absences = getApprovedAbsences().filter(a =>
         a.studentId === studentId && a.date >= startIso && a.date <= endIso
     ).length;
     return workdays > 0 ? Math.max(0, ((workdays - absences) / workdays) * 100) : 100;
@@ -552,21 +738,25 @@ function getMyClass() {
     }
     return null;
 }
+function getPendingForClass(classId) {
+    const ids = getStudentsOfClass(classId).map(s => s.id);
+    return state.absences.filter(a => a.status === 'pending' && ids.includes(a.studentId));
+}
 
 /* ================================================================
-   4. ЖУРНАЛ ДЕЙСТВИЙ
+   4. ЖУРНАЛ
    ================================================================ */
 function logAction(action) {
     if (!session) return;
     state.log.push({
         id: nextId(state.log), ts: Date.now(),
-        user: session.name, role: session.role, action: action
+        user: session.name, role: session.role, action
     });
     save();
 }
 
 /* ================================================================
-   5. АВТОРИЗАЦИЯ
+   5. АВТОРИЗАЦИЯ + ВОССТАНОВЛЕНИЕ ПАРОЛЯ
    ================================================================ */
 function handleLogin(e) {
     e.preventDefault();
@@ -596,10 +786,108 @@ function renderLogin() {
     document.getElementById('app-screen').classList.add('hidden');
     document.getElementById('login-error').classList.add('hidden');
     document.getElementById('login-form').reset();
+    showLoginPanel('main');
+}
+
+function showLoginPanel(panel) {
+    document.getElementById('login-main').classList.toggle('hidden', panel !== 'main');
+    document.getElementById('forgot-card').classList.toggle('hidden', panel !== 'forgot');
+    document.getElementById('forgot-step1').classList.toggle('hidden', panel !== 'forgot');
+    document.getElementById('forgot-step2').classList.add('hidden');
+    document.getElementById('forgot-msg').innerHTML = '';
+    document.getElementById('forgot-user').value = '';
+}
+
+let resetFlowUser = null;   // логин, для которого генерируется код
+
+function forgotGenerate() {
+    const username = document.getElementById('forgot-user').value.trim();
+    const msgEl = document.getElementById('forgot-msg');
+    msgEl.innerHTML = '';
+    if (!username) {
+        msgEl.innerHTML = '<div class="alert alert-error">Введите логин</div>';
+        return;
+    }
+    const user = state.users.find(u => u.username === username);
+    if (!user) {
+        msgEl.innerHTML = '<div class="alert alert-error">Пользователь с таким логином не найден</div>';
+        return;
+    }
+    // Генерируем 6-значный код
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    // Удаляем старые токены этого пользователя
+    state.resetTokens = state.resetTokens.filter(t => t.username !== username);
+    state.resetTokens.push({
+        username,
+        code,
+        expiresAt: Date.now() + 15 * 60 * 1000  // 15 минут
+    });
+    save();
+    resetFlowUser = username;
+
+    document.getElementById('forgot-code-info').innerHTML = `
+        <div class="alert alert-info">
+            <b>Демо-режим:</b> код восстановления для <b>${esc(username)}</b> — 
+            <code style="font-size:16px; background:white; padding:2px 8px; border-radius:4px; letter-spacing:2px;">${code}</code>
+            <br><small style="opacity:.75;">В реальной системе код отправляется на email или SMS.</small>
+        </div>
+    `;
+    document.getElementById('forgot-step2').classList.remove('hidden');
+    document.getElementById('forgot-code').focus();
+}
+
+function forgotSave() {
+    const code = document.getElementById('forgot-code').value.trim();
+    const p1 = document.getElementById('forgot-newpass').value;
+    const p2 = document.getElementById('forgot-newpass2').value;
+    const msgEl = document.getElementById('forgot-msg');
+    msgEl.innerHTML = '';
+
+    if (!resetFlowUser) {
+        msgEl.innerHTML = '<div class="alert alert-error">Сначала запросите код</div>';
+        return;
+    }
+    if (!code) { msgEl.innerHTML = '<div class="alert alert-error">Введите код</div>'; return; }
+    if (!p1) { msgEl.innerHTML = '<div class="alert alert-error">Введите новый пароль</div>'; return; }
+    if (p1 !== p2) { msgEl.innerHTML = '<div class="alert alert-error">Пароли не совпадают</div>'; return; }
+    if (p1.length < 4) { msgEl.innerHTML = '<div class="alert alert-error">Пароль должен быть не короче 4 символов</div>'; return; }
+
+    const token = state.resetTokens.find(t => t.username === resetFlowUser);
+    if (!token) {
+        msgEl.innerHTML = '<div class="alert alert-error">Код не найден. Запросите новый.</div>';
+        return;
+    }
+    if (token.code !== code) {
+        msgEl.innerHTML = '<div class="alert alert-error">Неверный код</div>';
+        return;
+    }
+    if (token.expiresAt < Date.now()) {
+        msgEl.innerHTML = '<div class="alert alert-error">Код истёк. Запросите новый.</div>';
+        return;
+    }
+
+    const user = state.users.find(u => u.username === resetFlowUser);
+    if (user) user.password = p1;
+
+    state.resetTokens = state.resetTokens.filter(t => t.username !== resetFlowUser);
+    save();
+    resetFlowUser = null;
+
+    showLoginPanel('main');
+    document.getElementById('login-error').classList.remove('hidden');
+    document.getElementById('login-error').style.background = 'var(--success-l)';
+    document.getElementById('login-error').style.color = '#166534';
+    document.getElementById('login-error').style.borderColor = '#86efac';
+    document.getElementById('login-error').textContent = 'Пароль изменён. Войдите с новым паролем.';
+    setTimeout(() => {
+        const el = document.getElementById('login-error');
+        el.classList.add('hidden');
+        el.style.background = ''; el.style.color = ''; el.style.borderColor = '';
+    }, 4000);
 }
 
 /* ================================================================
-   6. ОБОЛОЧКА ПРИЛОЖЕНИЯ
+   6. ОБОЛОЧКА
    ================================================================ */
 let currentPage = 'home';
 
@@ -617,23 +905,41 @@ function renderApp() {
 
 function getTabs() {
     const r = session.role;
-    if (r === 'student')  return [['home','Мои пропуски'], ['schedule','Расписание']];
-    if (r === 'teacher')  return [
-        ['home','Мой класс'], ['quick-add','Посещаемость'],
-        ['schedule','Расписание'], ['reports','Отчёты']
-    ];
-    if (r === 'deputy')   return [
-        ['home','Обзор школы'], ['quick-add','Посещаемость'],
-        ['schedule','Расписание'], ['reports','Отчёты'], ['reasons','Причины']
+    if (r === 'student') {
+        const myPending = state.absences.filter(a =>
+            a.studentId === session.studentId && a.status === 'pending').length;
+        return [
+            ['home', 'Мои пропуски'],
+            ['my-request', 'Сообщить'],
+            ['calendar', 'Календарь'],
+            ['schedule', 'Расписание']
+        ];
+    }
+    if (r === 'teacher') {
+        const cls = getMyClass();
+        const pending = cls ? getPendingForClass(cls.id).length : 0;
+        return [
+            ['home', 'Мой класс'],
+            ['quick-add', 'Посещаемость'],
+            ['calendar', 'Календарь'],
+            ['schedule', 'Расписание'],
+            ['reports', 'Отчёты']
+        ];
+    }
+    if (r === 'deputy')  return [
+        ['home', 'Обзор школы'], ['quick-add', 'Посещаемость'],
+        ['calendar', 'Календарь'], ['schedule', 'Расписание'],
+        ['reports', 'Отчёты'], ['reasons', 'Причины']
     ];
     if (r === 'director') return [
-        ['home','Обзор школы'], ['quick-add','Посещаемость'],
-        ['schedule','Расписание'], ['reports','Отчёты'],
-        ['manage','Структура'], ['reasons','Причины'], ['log','Журнал']
+        ['home', 'Обзор школы'], ['quick-add', 'Посещаемость'],
+        ['calendar', 'Календарь'], ['schedule', 'Расписание'],
+        ['reports', 'Отчёты'], ['manage', 'Структура'],
+        ['reasons', 'Причины'], ['log', 'Журнал']
     ];
-    if (r === 'admin')    return [
-        ['home','Система'], ['accounts','Аккаунты'],
-        ['reasons','Причины'], ['log','Журнал']
+    if (r === 'admin') return [
+        ['home', 'Система'], ['accounts', 'Аккаунты'],
+        ['calendar', 'Календарь'], ['reasons', 'Причины'], ['log', 'Журнал']
     ];
     return [];
 }
@@ -642,9 +948,22 @@ function renderNav() {
     const nav = document.getElementById('app-nav');
     const tabs = getTabs();
     if (!tabs.some(t => t[0] === currentPage)) currentPage = 'home';
-    nav.innerHTML = tabs.map(([key, label]) => `
-        <button data-page="${key}" class="${currentPage === key ? 'active' : ''}">${esc(label)}</button>
-    `).join('');
+
+    // Счётчик заявок у учителя
+    let pendingCount = 0;
+    if (session.role === 'teacher') {
+        const cls = getMyClass();
+        if (cls) pendingCount = getPendingForClass(cls.id).length;
+    }
+
+    nav.innerHTML = tabs.map(([key, label]) => {
+        let badge = '';
+        if (pendingCount > 0 && key === 'home') {
+            badge = `<span class="tab-badge">${pendingCount}</span>`;
+        }
+        return `<button data-page="${key}" class="${currentPage === key ? 'active' : ''}">${esc(label)}${badge}</button>`;
+    }).join('');
+
     nav.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
             currentPage = btn.dataset.page; renderApp();
@@ -652,13 +971,15 @@ function renderNav() {
     });
 }
 
-const PAGES = ['home', 'quick-add', 'schedule', 'reports', 'manage', 'accounts', 'reasons', 'log'];
+const PAGES = ['home', 'my-request', 'quick-add', 'calendar', 'schedule', 'reports', 'manage', 'accounts', 'reasons', 'log'];
 
 function renderPage(page) {
     PAGES.forEach(p => document.getElementById('page-' + p).classList.add('hidden'));
     document.getElementById('page-' + page).classList.remove('hidden');
     if (page === 'home') renderHomePage();
+    else if (page === 'my-request') renderMyRequestPage();
     else if (page === 'quick-add') renderQuickAddPage();
+    else if (page === 'calendar') renderCalendarPage();
     else if (page === 'schedule') renderSchedulePage();
     else if (page === 'reports') renderReportsPage();
     else if (page === 'manage') renderManagePage();
@@ -683,7 +1004,7 @@ function todayScheduleCard(cls) {
     if (!cls) return '';
     if (lessons.length === 0) {
         return `<div class="card"><div class="card-header">Расписание на сегодня</div>
-                <div class="empty">На сегодня уроков нет или расписание не задано</div></div>`;
+                <div class="empty"><div class="empty-icon">📅</div>На сегодня уроков нет</div></div>`;
     }
     return `<div class="card">
         <div class="card-header">Расписание на сегодня · ${esc(dayName(getDayOfWeek(today)))}, ${formatDate(today)}</div>
@@ -704,34 +1025,51 @@ function todayScheduleCard(cls) {
 function renderStudentHome() {
     const student = getStudent(session.studentId);
     const cls = student ? getClass(student.classId) : null;
-    const absences = state.absences
+    const myAbsences = state.absences
         .filter(a => a.studentId === session.studentId)
         .sort((a, b) => b.date.localeCompare(a.date));
+
+    const pending = myAbsences.filter(a => a.status === 'pending').length;
 
     document.getElementById('page-home').innerHTML = `
         <h1 class="page-title">Мои пропуски</h1>
         <p class="page-subtitle">${esc(student?.fullName || '')} · класс ${esc(cls?.name || '—')}</p>
+
+        <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-label">Всего записей</div><div class="kpi-value">${myAbsences.length}</div></div>
+            <div class="kpi warning"><div class="kpi-label">На рассмотрении</div><div class="kpi-value">${pending}</div></div>
+            <div class="kpi success"><div class="kpi-label">Подтверждено</div><div class="kpi-value">${myAbsences.filter(a => a.status === 'approved').length}</div></div>
+        </div>
+
         ${todayScheduleCard(cls)}
+
         <div class="card">
+            <div class="card-header">
+                <span>История пропусков</span>
+                <button class="btn btn-sm" id="go-my-request">+ Сообщить о пропуске</button>
+            </div>
             <div class="card-body p-0">
-                ${absences.length ? `
+                ${myAbsences.length ? `
                 <div class="table-wrap"><table>
-                    <thead><tr><th>Дата</th><th>Причина</th><th>Категория</th><th>Комментарий</th></tr></thead>
-                    <tbody>
-                        ${absences.map(a => {
-                            const r = getReason(a.reasonId);
-                            return `<tr>
-                                <td>${formatDate(a.date)}</td>
-                                <td>${esc(r?.name || '—')}</td>
-                                <td>${r ? categoryBadge(r.category) : ''}</td>
-                                <td>${a.comment ? esc(a.comment) : '—'}</td>
-                            </tr>`;
-                        }).join('')}
-                    </tbody>
-                </table></div>` : '<div class="empty">У вас нет пропусков. Так держать! 🎉</div>'}
+                    <thead><tr>
+                        <th>Дата</th><th>Причина</th><th>Категория</th>
+                        <th>Комментарий</th><th>Статус</th>
+                    </tr></thead>
+                    <tbody>${myAbsences.map(a => {
+                        const r = getReason(a.reasonId);
+                        return `<tr>
+                            <td>${formatDate(a.date)}</td>
+                            <td>${esc(r?.name || '—')}</td>
+                            <td>${r ? categoryBadge(r.category) : ''}</td>
+                            <td>${a.comment ? esc(a.comment) : '—'}</td>
+                            <td>${statusBadge(a.status)}</td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table></div>` : '<div class="empty"><div class="empty-icon">🎉</div>У вас нет пропусков. Так держать!</div>'}
             </div>
         </div>
     `;
+    document.getElementById('go-my-request').onclick = () => { currentPage = 'my-request'; renderApp(); };
 }
 
 function renderTeacherHome() {
@@ -743,9 +1081,13 @@ function renderTeacherHome() {
         return;
     }
     const students = getStudentsOfClass(cls.id);
-    const absences = state.absences
-        .filter(a => students.some(s => s.id === a.studentId))
+    const studentIds = students.map(s => s.id);
+    const absences = getApprovedAbsences()
+        .filter(a => studentIds.includes(a.studentId))
         .sort((a, b) => b.date.localeCompare(a.date));
+
+    const pendingReqs = getPendingForClass(cls.id).sort((a, b) =>
+        (b.createdAt || 0) - (a.createdAt || 0));
 
     const endIso = new Date().toISOString().slice(0, 10);
     const s = new Date(); s.setDate(s.getDate() - 29);
@@ -762,7 +1104,37 @@ function renderTeacherHome() {
                 <div class="kpi-value">${absences.filter(a => a.date >= startIso).length}</div></div>
             <div class="kpi success"><div class="kpi-label">Средняя посещаемость</div>
                 <div class="kpi-value">${avg}%</div></div>
+            <div class="kpi ${pendingReqs.length ? 'danger' : ''}">
+                <div class="kpi-label">Заявок на рассмотрении</div>
+                <div class="kpi-value">${pendingReqs.length}</div>
+            </div>
         </div>
+
+        ${pendingReqs.length ? `
+        <div class="card">
+            <div class="card-header" style="color:var(--warning);">
+                ⏳ Заявки от учеников — требуют решения
+            </div>
+            <div class="card-body p-0">
+                ${pendingReqs.map(a => {
+                    const st = getStudent(a.studentId);
+                    const r = getReason(a.reasonId);
+                    return `<div class="request-card">
+                        <div class="request-main">
+                            <div class="request-name">${esc(st.fullName)}</div>
+                            <div class="request-meta">
+                                ${formatDate(a.date)} · ${esc(r?.name || '—')} ${r ? categoryBadge(r.category) : ''}
+                                ${a.comment ? ' · ' + esc(a.comment) : ''}
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn-sm btn-success" data-approve="${a.id}">✓ Подтвердить</button>
+                            <button class="btn btn-sm btn-danger" data-reject="${a.id}">✕ Отклонить</button>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>` : ''}
 
         ${todayScheduleCard(cls)}
 
@@ -775,19 +1147,17 @@ function renderTeacherHome() {
                 ${absences.length ? `
                 <div class="table-wrap"><table>
                     <thead><tr><th>Дата</th><th>Ученик</th><th>Причина</th><th>Категория</th></tr></thead>
-                    <tbody>
-                        ${absences.slice(0, 10).map(a => {
-                            const st = getStudent(a.studentId);
-                            const r = getReason(a.reasonId);
-                            return `<tr>
-                                <td>${formatDate(a.date)}</td>
-                                <td>${esc(st.fullName)}</td>
-                                <td>${esc(r.name)}</td>
-                                <td>${categoryBadge(r.category)}</td>
-                            </tr>`;
-                        }).join('')}
-                    </tbody>
-                </table></div>` : '<div class="empty">Пока нет записей о пропусках.</div>'}
+                    <tbody>${absences.slice(0, 10).map(a => {
+                        const st = getStudent(a.studentId);
+                        const r = getReason(a.reasonId);
+                        return `<tr>
+                            <td>${formatDate(a.date)}</td>
+                            <td>${esc(st.fullName)}</td>
+                            <td>${esc(r?.name || '—')}</td>
+                            <td>${r ? categoryBadge(r.category) : ''}</td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table></div>` : '<div class="empty"><div class="empty-icon">📋</div>Пока нет записей о пропусках</div>'}
             </div>
         </div>
 
@@ -800,8 +1170,39 @@ function renderTeacherHome() {
             </div>
         </div>
     `;
-    document.getElementById('go-quick').addEventListener('click', () => {
-        currentPage = 'quick-add'; renderApp();
+
+    document.getElementById('go-quick').onclick = () => { currentPage = 'quick-add'; renderApp(); };
+
+    document.querySelectorAll('[data-approve]').forEach(btn => {
+        btn.onclick = () => {
+            const id = Number(btn.dataset.approve);
+            const a = state.absences.find(x => x.id === id);
+            if (!a) return;
+            a.status = 'approved';
+            a.reviewedBy = session.userId;
+            a.reviewedAt = Date.now();
+            save();
+            const st = getStudent(a.studentId);
+            logAction(`Подтвердил(а) заявку: ${st.fullName}, ${formatDate(a.date)}`);
+            renderTeacherHome();
+            renderNav();
+        };
+    });
+    document.querySelectorAll('[data-reject]').forEach(btn => {
+        btn.onclick = () => {
+            const id = Number(btn.dataset.reject);
+            const a = state.absences.find(x => x.id === id);
+            if (!a) return;
+            if (!confirm('Отклонить заявку ученика?')) return;
+            a.status = 'rejected';
+            a.reviewedBy = session.userId;
+            a.reviewedAt = Date.now();
+            save();
+            const st = getStudent(a.studentId);
+            logAction(`Отклонил(а) заявку: ${st.fullName}, ${formatDate(a.date)}`);
+            renderTeacherHome();
+            renderNav();
+        };
     });
 }
 
@@ -810,13 +1211,14 @@ function renderAdminSchoolHome() {
     const s = new Date(); s.setDate(s.getDate() - 29);
     const startIso = s.toISOString().slice(0, 10);
 
-    const totalAbsences = state.absences.filter(a => a.date >= startIso).length;
+    const totalAbsences = getApprovedAbsences().filter(a => a.date >= startIso).length;
+    const pendingAll = state.absences.filter(a => a.status === 'pending').length;
     const teachersCount = allTeachers().length;
 
     const classStats = state.classes.map(c => {
         const students = getStudentsOfClass(c.id);
         const teacher = getTeacherOfClass(c.id);
-        const absCount = state.absences.filter(a =>
+        const absCount = getApprovedAbsences().filter(a =>
             a.date >= startIso && students.some(s => s.id === a.studentId)
         ).length;
         return { cls: c, teacher, students: students.length, absences: absCount,
@@ -840,6 +1242,7 @@ function renderAdminSchoolHome() {
             <div class="kpi ${badgeClass}"><div class="kpi-label">Учителей</div><div class="kpi-value">${teachersCount}</div></div>
             <div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">${state.students.length}</div></div>
             <div class="kpi warning"><div class="kpi-label">Пропусков за 30 дней</div><div class="kpi-value">${totalAbsences}</div></div>
+            ${pendingAll ? `<div class="kpi danger"><div class="kpi-label">Заявок на рассмотрении</div><div class="kpi-value">${pendingAll}</div></div>` : ''}
         </div>
 
         ${attention.length ? `
@@ -877,8 +1280,7 @@ function renderAdminSchoolHome() {
                             <td class="td-center">${cs.absences}</td>
                             <td><div class="progress"><div class="progress-fill ${bar}" style="width:${cs.avg}%">${cs.avg}%</div></div></td>
                         </tr>`;
-                    }).join('')}
-                    </tbody>
+                    }).join('')}</tbody>
                 </table></div>
             </div>
         </div>
@@ -904,16 +1306,18 @@ function renderAdminHome() {
     const byRole = { admin: 0, director: 0, deputy: 0, teacher: 0, student: 0 };
     state.users.forEach(u => { byRole[u.role] = (byRole[u.role] || 0) + 1; });
     const recentLog = [...state.log].sort((a, b) => b.ts - a.ts).slice(0, 8);
+    const pendingAll = state.absences.filter(a => a.status === 'pending').length;
 
     document.getElementById('page-home').innerHTML = `
         <h1 class="page-title">Система</h1>
         <p class="page-subtitle">Техническая панель администратора</p>
 
         <div class="kpi-grid">
-            <div class="kpi admin"><div class="kpi-label">Учётных записей</div><div class="kpi-value">${state.users.length}</div></div>
+            <div class="kpi admin"><div class="kpi-label">Аккаунтов</div><div class="kpi-value">${state.users.length}</div></div>
             <div class="kpi"><div class="kpi-label">Учителей</div><div class="kpi-value">${byRole.teacher}</div></div>
             <div class="kpi success"><div class="kpi-label">Классов</div><div class="kpi-value">${state.classes.length}</div></div>
             <div class="kpi warning"><div class="kpi-label">Учеников</div><div class="kpi-value">${state.students.length}</div></div>
+            ${pendingAll ? `<div class="kpi danger"><div class="kpi-label">Заявок на рассмотрении</div><div class="kpi-value">${pendingAll}</div></div>` : ''}
         </div>
 
         <div class="card">
@@ -930,13 +1334,11 @@ function renderAdminHome() {
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <span>Быстрые действия</span>
-            </div>
-            <div class="card-body">
+            <div class="card-header">Быстрые действия</div>
+            <div class="card-body" style="display:flex; gap:8px; flex-wrap:wrap;">
                 <button class="btn" id="go-accounts">Управление аккаунтами</button>
-                <button class="btn btn-outline" id="go-reasons" style="margin-left:8px;">Справочник причин</button>
-                <button class="btn btn-ghost" id="go-log" style="margin-left:8px;">Журнал</button>
+                <button class="btn btn-outline" id="go-reasons">Справочник причин</button>
+                <button class="btn btn-ghost" id="go-log">Журнал действий</button>
             </div>
         </div>
 
@@ -961,7 +1363,105 @@ function renderAdminHome() {
 }
 
 /* ================================================================
-   8. ПОСЕЩАЕМОСТЬ (QUICK-ADD)
+   8. УЧЕНИК — ПОДАЧА ЗАЯВКИ
+   ================================================================ */
+function renderMyRequestPage() {
+    const student = getStudent(session.studentId);
+    const cls = student ? getClass(student.classId) : null;
+    const teacher = cls ? getTeacherOfClass(cls.id) : null;
+    const today = new Date().toISOString().slice(0, 10);
+
+    const myReqs = state.absences
+        .filter(a => a.studentId === session.studentId && a.status !== 'approved')
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+    document.getElementById('page-my-request').innerHTML = `
+        <h1 class="page-title">Сообщить о пропуске</h1>
+        <p class="page-subtitle">
+            Заявка поступит ${teacher ? 'классному руководителю — ' + esc(teacher.name) : 'классному руководителю'} на рассмотрение
+        </p>
+
+        <div class="card">
+            <div class="card-body">
+                <div id="req-msg"></div>
+                <form id="form-my-request">
+                    <div class="form-group">
+                        <label class="form-label">Дата пропуска *</label>
+                        <input class="input" type="date" name="date" value="${today}" required max="${today}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Причина *</label>
+                        <select class="select" name="reasonId" required>
+                            <option value="">— выберите причину —</option>
+                            ${state.reasons.map(r =>
+                                `<option value="${r.id}">[${esc(r.category)}] ${esc(r.name)}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Комментарий для учителя</label>
+                        <textarea class="textarea" name="comment"
+                            placeholder="Например: был у врача, справку принесу завтра"></textarea>
+                    </div>
+                    <button class="btn" type="submit">Отправить на рассмотрение</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Мои заявки (не подтверждённые)</div>
+            <div class="card-body p-0">
+                ${myReqs.length ? `
+                <div class="table-wrap"><table>
+                    <thead><tr>
+                        <th>Дата</th><th>Причина</th><th>Категория</th>
+                        <th>Комментарий</th><th>Статус</th>
+                    </tr></thead>
+                    <tbody>${myReqs.map(a => {
+                        const r = getReason(a.reasonId);
+                        return `<tr>
+                            <td>${formatDate(a.date)}</td>
+                            <td>${esc(r?.name || '—')}</td>
+                            <td>${r ? categoryBadge(r.category) : ''}</td>
+                            <td>${a.comment ? esc(a.comment) : '—'}</td>
+                            <td>${statusBadge(a.status)}</td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table></div>` : '<div class="empty"><div class="empty-icon">📭</div>Нет активных заявок</div>'}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('form-my-request').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const date = fd.get('date');
+        const reasonId = Number(fd.get('reasonId'));
+        const comment = (fd.get('comment') || '').trim();
+
+        if (!date || !reasonId) return;
+
+        state.absences.push({
+            id: nextId(state.absences),
+            studentId: session.studentId,
+            date, reasonId, comment,
+            status: 'pending',
+            createdAt: Date.now()
+        });
+        save();
+        logAction(`Подал(а) заявку о пропуске: ${formatDate(date)}`);
+
+        document.getElementById('req-msg').innerHTML =
+            '<div class="alert alert-success">Заявка отправлена классному руководителю на рассмотрение</div>';
+        e.target.reset();
+        e.target.querySelector('[name="date"]').value = today;
+
+        setTimeout(() => renderMyRequestPage(), 800);
+    });
+}
+
+/* ================================================================
+   9. ПОСЕЩАЕМОСТЬ (QUICK-ADD)
    ================================================================ */
 let quickAddState = { classId: null, date: null };
 
@@ -989,21 +1489,28 @@ function renderQuickAddPage() {
     const date = quickAddState.date;
     const lessons = getLessonsForDay(cls.id, date);
     const students = getStudentsOfClass(cls.id).sort((a, b) => a.fullName.localeCompare(b.fullName));
-    const existingAbsences = state.absences.filter(a =>
-        a.date === date && students.some(s => s.id === a.studentId)
+    const approvedToday = state.absences.filter(a =>
+        a.date === date && a.status === 'approved' &&
+        students.some(s => s.id === a.studentId)
     );
-    const existingByStudent = {};
-    existingAbsences.forEach(a => { existingByStudent[a.studentId] = a; });
+    const pendingToday = state.absences.filter(a =>
+        a.date === date && a.status === 'pending' &&
+        students.some(s => s.id === a.studentId)
+    );
+    const approvedByStudent = {};
+    approvedToday.forEach(a => { approvedByStudent[a.studentId] = a; });
+    const pendingByStudent = {};
+    pendingToday.forEach(a => { pendingByStudent[a.studentId] = a; });
 
     const dayLabel = dayName(getDayOfWeek(date));
 
     document.getElementById('page-quick-add').innerHTML = `
         <h1 class="page-title">Отметить посещаемость</h1>
-        <p class="page-subtitle">Отметьте отсутствующих — учитель может сразу сохранить всех</p>
+        <p class="page-subtitle">Отметьте отсутствующих — сохраните всех сразу одной кнопкой</p>
 
         <div class="card">
             <div class="card-body">
-                <div class="inline-form" style="grid-template-columns: ${isTeacher ? '1fr 1fr' : '1fr 1fr'};">
+                <div class="inline-form" style="grid-template-columns: ${isTeacher ? '1fr' : '1fr 1fr'};">
                     ${!isTeacher ? `
                     <div class="form-group">
                         <label class="form-label">Класс</label>
@@ -1025,30 +1532,15 @@ function renderQuickAddPage() {
             <div class="qi-item"><div class="qi-label">Класс</div><div class="qi-value">${esc(cls.name)}</div></div>
             <div class="qi-item"><div class="qi-label">День</div><div class="qi-value">${esc(dayLabel)}</div></div>
             <div class="qi-item"><div class="qi-label">Учеников</div><div class="qi-value">${students.length}</div></div>
-            <div class="qi-item"><div class="qi-label">Уроков в расписании</div><div class="qi-value">${lessons.length}</div></div>
-            <div class="qi-item"><div class="qi-label">Уже отмечено отсутствующих</div><div class="qi-value">${existingAbsences.length}</div></div>
+            <div class="qi-item"><div class="qi-label">Уроков</div><div class="qi-value">${lessons.length}</div></div>
+            <div class="qi-item"><div class="qi-label">Отмечено отсутствующих</div><div class="qi-value">${approvedToday.length}</div></div>
+            ${pendingToday.length ? `<div class="qi-item"><div class="qi-label" style="color:var(--warning);">Заявок на рассмотрении</div><div class="qi-value" style="color:var(--warning);">${pendingToday.length}</div></div>` : ''}
         </div>
-
-        ${lessons.length ? `
-        <div class="card">
-            <div class="card-header">Расписание на ${esc(dayLabel.toLowerCase())}</div>
-            <div class="card-body">
-                ${lessons.map(l => {
-                    const t = l.teacherId ? getUser(l.teacherId) : null;
-                    return `<div class="lesson-row">
-                        <div class="lesson-num">${l.lessonNumber}</div>
-                        <div class="lesson-time">${esc(l.startTime)}–${esc(l.endTime)}</div>
-                        <div class="lesson-subject">${esc(l.subject)}</div>
-                        <div class="lesson-teacher">${t ? esc(t.name) : ''}</div>
-                    </div>`;
-                }).join('')}
-            </div>
-        </div>` : `<div class="alert alert-info">На ${esc(dayLabel.toLowerCase())} уроков нет. Но вы всё равно можете отметить отсутствующих.</div>`}
 
         <div class="card">
             <div class="card-header">
-                <span>Отметки на ${formatDate(date)}</span>
-                <button class="btn btn-sm" id="qa-save">💾 Сохранить</button>
+                <span>Кого отметить отсутствующим на ${formatDate(date)}</span>
+                <button class="btn btn-sm btn-success" id="qa-save">💾 Сохранить</button>
             </div>
             <div class="card-body p-0">
                 ${students.length ? `
@@ -1061,22 +1553,24 @@ function renderQuickAddPage() {
                     </tr></thead>
                     <tbody>
                         ${students.map(st => {
-                            const existing = existingByStudent[st.id];
-                            const isMarked = !!existing;
+                            const ex = approvedByStudent[st.id];
+                            const isMarked = !!ex;
+                            const pend = pendingByStudent[st.id];
+                            const pendBadge = pend ? ` <span class="badge badge-warning" style="margin-left:6px;">есть заявка</span>` : '';
                             return `<tr class="attendance-row ${isMarked ? 'active' : ''}" data-row-sid="${st.id}">
                                 <td><input type="checkbox" class="attendance-check" data-sid="${st.id}" ${isMarked ? 'checked' : ''}></td>
-                                <td>${esc(st.fullName)}</td>
+                                <td>${esc(st.fullName)}${pendBadge}</td>
                                 <td>
                                     <select class="select" data-reason-for="${st.id}" ${isMarked ? '' : 'disabled'}>
                                         <option value="">— выберите —</option>
                                         ${state.reasons.map(r =>
-                                            `<option value="${r.id}" ${existing && existing.reasonId === r.id ? 'selected' : ''}>[${esc(r.category)}] ${esc(r.name)}</option>`
+                                            `<option value="${r.id}" ${ex && ex.reasonId === r.id ? 'selected' : ''}>[${esc(r.category)}] ${esc(r.name)}</option>`
                                         ).join('')}
                                     </select>
                                 </td>
                                 <td>
                                     <input type="text" class="input" data-comment-for="${st.id}"
-                                           value="${existing?.comment ? esc(existing.comment) : ''}"
+                                           value="${ex?.comment ? esc(ex.comment) : ''}"
                                            ${isMarked ? '' : 'disabled'}
                                            placeholder="необязательно">
                                 </td>
@@ -1087,10 +1581,31 @@ function renderQuickAddPage() {
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-header">Таблица пропусков на ${formatDate(date)}</div>
+            <div class="card-body p-0">
+                ${approvedToday.length ? `
+                <div class="table-wrap"><table>
+                    <thead><tr>
+                        <th>Ученик</th><th>Причина</th><th>Категория</th><th>Комментарий</th>
+                    </tr></thead>
+                    <tbody>${approvedToday.map(a => {
+                        const st = getStudent(a.studentId);
+                        const r = getReason(a.reasonId);
+                        return `<tr>
+                            <td>${esc(st.fullName)}</td>
+                            <td>${esc(r?.name || '—')}</td>
+                            <td>${r ? categoryBadge(r.category) : ''}</td>
+                            <td>${a.comment ? esc(a.comment) : '—'}</td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table></div>` : '<div class="empty"><div class="empty-icon">✨</div>На эту дату пропусков не зафиксировано</div>'}
+            </div>
+        </div>
+
         <div id="qa-msg"></div>
     `;
 
-    // Обработчики смены класса и даты
     const classSel = document.getElementById('qa-class');
     if (classSel) {
         classSel.addEventListener('change', () => {
@@ -1103,7 +1618,6 @@ function renderQuickAddPage() {
         renderQuickAddPage();
     });
 
-    // Чекбоксы
     document.querySelectorAll('.attendance-check').forEach(cb => {
         cb.addEventListener('change', () => {
             const sid = Number(cb.dataset.sid);
@@ -1116,11 +1630,9 @@ function renderQuickAddPage() {
         });
     });
 
-    // Сохранить
     document.getElementById('qa-save').addEventListener('click', () => {
         const checked = [...document.querySelectorAll('.attendance-check:checked')].map(cb => Number(cb.dataset.sid));
 
-        // Валидация: у каждого отмеченного должна быть причина
         let errorMsg = '';
         checked.forEach(sid => {
             const r = document.querySelector(`[data-reason-for="${sid}"]`).value;
@@ -1135,10 +1647,14 @@ function renderQuickAddPage() {
             return;
         }
 
-        // Upsert: удалить существующие записи для отмеченных и добавить заново
         const checkedSet = new Set(checked);
+        // Удаляем существующие записи только для отмеченных; заявки на рассмотрении оставляем в покое
         state.absences = state.absences.filter(a =>
-            !(a.date === date && checkedSet.has(a.studentId))
+            !(a.date === date && checkedSet.has(a.studentId) && a.status !== 'pending')
+        );
+        // Удаляем pending-заявки для тех, кого учитель сам отметил
+        state.absences = state.absences.filter(a =>
+            !(a.date === date && checkedSet.has(a.studentId) && a.status === 'pending')
         );
 
         let idCounter = nextId(state.absences);
@@ -1146,7 +1662,8 @@ function renderQuickAddPage() {
             const reasonId = Number(document.querySelector(`[data-reason-for="${sid}"]`).value);
             const comment = document.querySelector(`[data-comment-for="${sid}"]`).value.trim();
             state.absences.push({
-                id: idCounter++, studentId: sid, date, reasonId, comment
+                id: idCounter++, studentId: sid, date, reasonId, comment,
+                status: 'approved', reviewedBy: session.userId, reviewedAt: Date.now()
             });
         });
 
@@ -1154,24 +1671,185 @@ function renderQuickAddPage() {
         logAction(`Отметил(а) посещаемость ${cls.name} на ${formatDate(date)}: отсутствует ${checked.length}`);
 
         document.getElementById('qa-msg').innerHTML =
-            `<div class="alert alert-success">Сохранено: ${checked.length} отсутствующих на ${formatDate(date)}</div>`;
-
-        // Перерисовка через мгновение, чтобы сообщение было видно
-        setTimeout(() => renderQuickAddPage(), 600);
+            `<div class="alert alert-success">Сохранено: ${checked.length} отсутствующих</div>`;
+        setTimeout(() => renderQuickAddPage(), 500);
     });
 }
 
 /* ================================================================
-   9. РАСПИСАНИЕ
+   10. КАЛЕНДАРЬ
+   ================================================================ */
+let calState = { year: null, month: null, selectedDay: null };
+
+function renderCalendarPage() {
+    const today = new Date();
+    if (calState.year === null)  calState.year = today.getFullYear();
+    if (calState.month === null) calState.month = today.getMonth();
+
+    const { year, month } = calState;
+
+    // Определяем, какие absences показывать
+    let absences = state.absences;
+    if (session.role === 'student') {
+        absences = absences.filter(a => a.studentId === session.studentId);
+    } else if (session.role === 'teacher') {
+        const cls = getMyClass();
+        if (cls) {
+            const ids = getStudentsOfClass(cls.id).map(s => s.id);
+            absences = absences.filter(a => ids.includes(a.studentId));
+        }
+    }
+
+    // Группируем по дате
+    const byDate = {};
+    absences.forEach(a => {
+        if (!byDate[a.date]) byDate[a.date] = [];
+        byDate[a.date].push(a);
+    });
+
+    // Первый день месяца и его день недели (Пн=0)
+    const first = new Date(year, month, 1);
+    const firstDayOfWeek = (first.getDay() + 6) % 7; // Пн=0, Вс=6
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const cells = [];
+    // Дни предыдущего месяца
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+        const d = daysInPrevMonth - i;
+        const m = month === 0 ? 11 : month - 1;
+        const y = month === 0 ? year - 1 : year;
+        cells.push({ day: d, month: m, year: y, otherMonth: true });
+    }
+    // Дни текущего месяца
+    for (let d = 1; d <= daysInMonth; d++) {
+        cells.push({ day: d, month, year, otherMonth: false });
+    }
+    // Дни следующего месяца — до полной недели (минимум 35 ячеек)
+    while (cells.length % 7 !== 0 || cells.length < 35) {
+        const idx = cells.length - firstDayOfWeek - daysInMonth + 1;
+        const m = month === 11 ? 0 : month + 1;
+        const y = month === 11 ? year + 1 : year;
+        cells.push({ day: idx, month: m, year: y, otherMonth: true });
+    }
+
+    const todayIso = today.toISOString().slice(0, 10);
+
+    const dayCellsHTML = cells.map(cell => {
+        const iso = `${cell.year}-${String(cell.month + 1).padStart(2, '0')}-${String(cell.day).padStart(2, '0')}`;
+        const list = byDate[iso] || [];
+        const approvedCount = list.filter(a => a.status === 'approved').length;
+        const pendingCount = list.filter(a => a.status === 'pending').length;
+        const rejectedCount = list.filter(a => a.status === 'rejected').length;
+
+        let badges = '';
+        if (approvedCount) badges += `<span class="cal-badge">${approvedCount}</span>`;
+        if (pendingCount)  badges += `<span class="cal-badge pending">${pendingCount}?</span>`;
+        if (rejectedCount) badges += `<span class="cal-badge rejected">${rejectedCount}✕</span>`;
+
+        const isToday = iso === todayIso;
+        const isSelected = iso === calState.selectedDay;
+
+        return `<div class="cal-day ${cell.otherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-date="${iso}">
+            <div class="day-num">${cell.day}</div>
+            <div class="cal-badges">${badges}</div>
+        </div>`;
+    }).join('');
+
+    // Детали выбранного дня
+    let detailsHTML = '';
+    if (calState.selectedDay) {
+        const list = (byDate[calState.selectedDay] || [])
+            .sort((a, b) => a.status === 'approved' ? -1 : 1);
+        if (list.length === 0) {
+            detailsHTML = `<div class="card">
+                <div class="card-header">${formatDate(calState.selectedDay)}</div>
+                <div class="empty"><div class="empty-icon">✨</div>Пропусков в этот день нет</div>
+            </div>`;
+        } else {
+            detailsHTML = `<div class="card">
+                <div class="card-header">${formatDate(calState.selectedDay)} · ${list.length} записей</div>
+                <div class="card-body p-0">
+                    <div class="table-wrap"><table>
+                        <thead><tr>
+                            <th>Ученик</th><th>Причина</th><th>Категория</th>
+                            <th>Комментарий</th><th>Статус</th>
+                        </tr></thead>
+                        <tbody>${list.map(a => {
+                            const st = getStudent(a.studentId);
+                            const r = getReason(a.reasonId);
+                            return `<tr>
+                                <td>${esc(st?.fullName || '—')}</td>
+                                <td>${esc(r?.name || '—')}</td>
+                                <td>${r ? categoryBadge(r.category) : ''}</td>
+                                <td>${a.comment ? esc(a.comment) : '—'}</td>
+                                <td>${statusBadge(a.status)}</td>
+                            </tr>`;
+                        }).join('')}</tbody>
+                    </table></div>
+                </div>
+            </div>`;
+        }
+    }
+
+    const monthName = MONTHS[month] + ' ' + year;
+
+    document.getElementById('page-calendar').innerHTML = `
+        <h1 class="page-title">Календарь пропусков</h1>
+        <p class="page-subtitle">
+            ${session.role === 'student' ? 'Ваши пропуски' :
+              session.role === 'teacher' ? 'Ваш класс' : 'Все классы'}
+        </p>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="calendar-nav">
+                    <button class="btn btn-ghost btn-sm" id="cal-prev">← Назад</button>
+                    <div class="calendar-month">${monthName}</div>
+                    <button class="btn btn-ghost btn-sm" id="cal-next">Вперёд →</button>
+                </div>
+                <div class="calendar">
+                    ${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d => `<div class="cal-header">${d}</div>`).join('')}
+                    ${dayCellsHTML}
+                </div>
+                <div style="margin-top:14px; font-size:12px; color:var(--muted); display:flex; gap:16px; flex-wrap:wrap;">
+                    <span><span class="cal-badge" style="display:inline-block;">n</span> — подтверждённых</span>
+                    <span><span class="cal-badge pending" style="display:inline-block;">n?</span> — на рассмотрении</span>
+                    <span><span class="cal-badge rejected" style="display:inline-block;">n✕</span> — отклонённых</span>
+                </div>
+            </div>
+        </div>
+
+        ${detailsHTML}
+    `;
+
+    document.getElementById('cal-prev').onclick = () => {
+        if (calState.month === 0) { calState.month = 11; calState.year--; }
+        else calState.month--;
+        renderCalendarPage();
+    };
+    document.getElementById('cal-next').onclick = () => {
+        if (calState.month === 11) { calState.month = 0; calState.year++; }
+        else calState.month++;
+        renderCalendarPage();
+    };
+    document.querySelectorAll('.cal-day').forEach(cell => {
+        cell.addEventListener('click', () => {
+            calState.selectedDay = cell.dataset.date;
+            renderCalendarPage();
+        });
+    });
+}
+
+/* ================================================================
+   11. РАСПИСАНИЕ
    ================================================================ */
 let schedState = { classId: null };
 
 function renderSchedulePage() {
     const isTeacher = session.role === 'teacher';
     const isStudent = session.role === 'student';
-    const isDirector = session.role === 'director';
-    const isDeputy = session.role === 'deputy';
-    const canEdit = isDirector || isDeputy;
+    const canEdit = session.role === 'director' || session.role === 'deputy';
 
     let allowedClasses;
     if (isTeacher || isStudent) {
@@ -1253,16 +1931,13 @@ function renderSchedulePage() {
                         <label class="form-label">Конец *</label>
                         <input class="input" type="time" name="endTime" value="09:15" required>
                     </div>
-                    <div class="form-group">
-                        <button class="btn" type="submit">+ Добавить</button>
-                    </div>
+                    <div class="form-group"><button class="btn" type="submit">+ Добавить</button></div>
                 </form>
                 <div id="sched-msg" style="margin-top:12px;"></div>
             </div>
         </div>`;
     }
 
-    // Группировка по дням
     const byDay = {};
     for (let d = 1; d <= 6; d++) byDay[d] = [];
     state.schedule.filter(l => l.classId === cls.id).forEach(l => {
@@ -1271,10 +1946,8 @@ function renderSchedulePage() {
     Object.values(byDay).forEach(arr => arr.sort((a, b) => a.lessonNumber - b.lessonNumber));
 
     html += `<div class="card"><div class="card-body">`;
-    let totalLessons = 0;
     for (let d = 1; d <= 6; d++) {
         const lessons = byDay[d];
-        totalLessons += lessons.length;
         html += `<div class="day-section">
             <div class="day-header">
                 <span>${DAYS[d]}</span>
@@ -1296,7 +1969,6 @@ function renderSchedulePage() {
 
     document.getElementById('page-schedule').innerHTML = html;
 
-    // Обработчики
     const classSel = document.getElementById('sched-class');
     if (classSel) {
         classSel.addEventListener('change', () => {
@@ -1315,17 +1987,13 @@ function renderSchedulePage() {
             const teacherId = fd.get('teacherId') ? Number(fd.get('teacherId')) : null;
             const startTime = fd.get('startTime');
             const endTime = fd.get('endTime');
-
             if (!subject) return;
-
-            // Проверка: нет ли уже урока в этот день на это место
             if (state.schedule.some(l => l.classId === cls.id &&
                 l.dayOfWeek === dayOfWeek && l.lessonNumber === lessonNumber)) {
                 document.getElementById('sched-msg').innerHTML =
                     `<div class="alert alert-error">На ${DAYS[dayOfWeek]} уже есть урок №${lessonNumber}</div>`;
                 return;
             }
-
             state.schedule.push({
                 id: nextId(state.schedule), classId: cls.id,
                 dayOfWeek, lessonNumber, subject, teacherId, startTime, endTime
@@ -1334,12 +2002,11 @@ function renderSchedulePage() {
             logAction(`Добавил(а) урок: ${cls.name}, ${DAYS[dayOfWeek]}, №${lessonNumber}, ${subject}`);
             renderSchedulePage();
         });
-
         document.querySelectorAll('[data-del-lesson]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = Number(btn.dataset.delLesson);
                 const l = state.schedule.find(x => x.id === id);
-                if (!confirm(`Удалить урок «${l.subject}» (${DAYS[l.dayOfWeek]}, №${l.lessonNumber})?`)) return;
+                if (!confirm(`Удалить урок «${l.subject}»?`)) return;
                 state.schedule = state.schedule.filter(x => x.id !== id);
                 save();
                 logAction(`Удалил(а) урок: ${cls.name}, ${DAYS[l.dayOfWeek]}, №${l.lessonNumber}, ${l.subject}`);
@@ -1350,7 +2017,7 @@ function renderSchedulePage() {
 }
 
 /* ================================================================
-   10. ОТЧЁТЫ
+   12. ОТЧЁТЫ
    ================================================================ */
 let reportsState = { classFilter: 'all', start: null, end: null };
 
@@ -1375,11 +2042,11 @@ function renderReportsPage() {
 
     let absencesInPeriod;
     if (classFilter === 'all') {
-        absencesInPeriod = state.absences.filter(a => a.date >= start && a.date <= end);
+        absencesInPeriod = getApprovedAbsences().filter(a => a.date >= start && a.date <= end);
     } else {
         const cid = Number(classFilter);
         const studentIds = getStudentsOfClass(cid).map(x => x.id);
-        absencesInPeriod = state.absences.filter(a =>
+        absencesInPeriod = getApprovedAbsences().filter(a =>
             a.date >= start && a.date <= end && studentIds.includes(a.studentId)
         );
     }
@@ -1401,7 +2068,7 @@ function renderReportsPage() {
         const classRows = allowedClasses.map(c => {
             const students = getStudentsOfClass(c.id);
             const avg = classAvgAttendance(c.id, start, end);
-            const abs = state.absences.filter(a =>
+            const abs = getApprovedAbsences().filter(a =>
                 a.date >= start && a.date <= end && students.some(s2 => s2.id === a.studentId)
             ).length;
             return { cls: c, teacher: getTeacherOfClass(c.id), students: students.length, abs, avg };
@@ -1459,7 +2126,7 @@ function renderReportsPage() {
 
     document.getElementById('page-reports').innerHTML = `
         <h1 class="page-title">Отчёты</h1>
-        <p class="page-subtitle">Период: ${formatDate(start)} — ${formatDate(end)}</p>
+        <p class="page-subtitle">Период: ${formatDate(start)} — ${formatDate(end)} · учитываются только подтверждённые пропуски</p>
 
         <div class="card">
             <div class="card-body">
@@ -1559,7 +2226,7 @@ function donutHTML(catCount) {
 }
 
 /* ================================================================
-   11. СТРУКТУРА (ДИРЕКТОР)
+   13. СТРУКТУРА (ДИРЕКТОР)
    ================================================================ */
 function renderManagePage() {
     const teachers = allTeachers();
@@ -1577,9 +2244,7 @@ function renderManagePage() {
                 </select>
             </td>
             <td class="td-center">${count}</td>
-            <td class="td-end">
-                <button class="btn btn-ghost btn-sm" data-del-class="${c.id}">✕</button>
-            </td>
+            <td class="td-end"><button class="btn btn-ghost btn-sm" data-del-class="${c.id}">✕</button></td>
         </tr>`;
     }).join('');
 
@@ -1614,7 +2279,6 @@ function renderManagePage() {
                     </div>
                     <div class="form-group"><button class="btn" type="submit">+ Добавить</button></div>
                 </form>
-                ${teachers.length === 0 ? '<div class="alert alert-info" style="margin-top:12px;margin-bottom:0;">В системе нет учителей. Попросите администратора создать учётные записи для учителей.</div>' : ''}
             </div>
             <div class="card-body p-0">
                 <div class="table-wrap"><table>
@@ -1697,7 +2361,7 @@ function renderManagePage() {
             save();
             const t = tid ? getUser(tid) : null;
             logAction(`Назначил(а) ${t ? t.name : '—'} классным руководителем ${c.name}`);
-            msg(`Учитель обновлён для класса ${esc(c.name)}`);
+            msg(`Классный руководитель класса ${esc(c.name)} обновлён`);
         });
     });
 
@@ -1722,7 +2386,6 @@ function renderManagePage() {
             if (!confirm(`Удалить ученика «${s.fullName}»?`)) return;
             state.students = state.students.filter(x => x.id !== id);
             state.absences = state.absences.filter(a => a.studentId !== id);
-            // Отвязать аккаунт, если есть
             state.users.forEach(u => { if (u.studentId === id) u.studentId = null; });
             save();
             logAction(`Удалил(а) ученика: ${s.fullName}`);
@@ -1732,7 +2395,7 @@ function renderManagePage() {
 }
 
 /* ================================================================
-   12. АККАУНТЫ (АДМИНИСТРАТОР)
+   14. АККАУНТЫ
    ================================================================ */
 function renderAccountsPage() {
     const userRows = state.users.map(u => {
@@ -1744,7 +2407,7 @@ function renderAccountsPage() {
             <td>${roleBadge}</td>
             <td>${linkedStudent ? esc(linkedStudent.fullName) : '—'}</td>
             <td class="td-end">
-                <div class="action-btns" style="justify-content:flex-end;">
+                <div style="display:flex; gap:4px; justify-content:flex-end;">
                     <button class="btn btn-ghost btn-sm" data-reset-pass="${u.id}" title="Сменить пароль">🔑</button>
                     <button class="btn btn-ghost btn-sm" data-del-user="${u.id}" title="Удалить">✕</button>
                 </div>
@@ -1795,9 +2458,6 @@ function renderAccountsPage() {
                     </div>
                     <div class="form-group"><button class="btn" type="submit">+ Создать</button></div>
                 </form>
-                <div style="font-size:12px; color:var(--muted); margin-top:12px;">
-                    ℹ️ После создания аккаунта учителя директор сможет назначить его классным руководителем в разделе «Структура».
-                </div>
             </div>
         </div>
 
@@ -1820,7 +2480,6 @@ function renderAccountsPage() {
             `<div class="alert alert-${type}">${text}</div>`;
     };
 
-    // Показ поля "связанный ученик" только для роли ученика
     const roleSel = document.getElementById('new-user-role');
     const studentWrap = document.getElementById('new-user-student-wrap');
     roleSel.addEventListener('change', () => {
@@ -1835,19 +2494,14 @@ function renderAccountsPage() {
         const password = (fd.get('password') || '').trim();
         const role = fd.get('role');
         const studentId = role === 'student' && fd.get('studentId') ? Number(fd.get('studentId')) : null;
-
         if (!name || !username || !password) { msg('Заполните все поля', 'error'); return; }
         if (state.users.some(u => u.username === username)) {
-            msg('Пользователь с таким логином уже существует', 'error'); return;
+            msg('Логин уже занят', 'error'); return;
         }
         if (role === 'student' && !studentId) {
-            msg('Для роли «ученик» выберите связанного ученика', 'error'); return;
+            msg('Выберите связанного ученика для роли «ученик»', 'error'); return;
         }
-
-        state.users.push({
-            id: nextId(state.users), username, password, role, name,
-            studentId: studentId
-        });
+        state.users.push({ id: nextId(state.users), username, password, role, name, studentId });
         save();
         logAction(`Создал(а) аккаунт: ${name} (${roleLabel(role)}, логин: ${username})`);
         renderAccountsPage();
@@ -1861,7 +2515,7 @@ function renderAccountsPage() {
             if (newPass === null || !newPass.trim()) return;
             u.password = newPass.trim();
             save();
-            logAction(`Сменил(а) пароль пользователя: ${u.name}`);
+            logAction(`Сменил(а) пароль: ${u.name}`);
             msg(`Пароль для «${esc(u.name)}» изменён`);
         });
     });
@@ -1869,11 +2523,10 @@ function renderAccountsPage() {
     document.querySelectorAll('[data-del-user]').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = Number(btn.dataset.delUser);
-            if (id === session.userId) { msg('Нельзя удалить собственный аккаунт', 'error'); return; }
+            if (id === session.userId) { msg('Нельзя удалить свой аккаунт', 'error'); return; }
             const u = getUser(id);
             if (!confirm(`Удалить аккаунт «${u.name}»?`)) return;
             state.users = state.users.filter(x => x.id !== id);
-            // Если это был учитель класса — отвязать
             state.classes.forEach(c => { if (c.teacherId === id) c.teacherId = null; });
             save();
             logAction(`Удалил(а) аккаунт: ${u.name}`);
@@ -1883,7 +2536,7 @@ function renderAccountsPage() {
 }
 
 /* ================================================================
-   13. ПРИЧИНЫ
+   15. ПРИЧИНЫ
    ================================================================ */
 function renderReasonsPage() {
     const reasonRows = state.reasons.map(r => {
@@ -1898,7 +2551,7 @@ function renderReasonsPage() {
 
     document.getElementById('page-reasons').innerHTML = `
         <h1 class="page-title">Справочник причин</h1>
-        <p class="page-subtitle">Используется при отметке посещаемости</p>
+        <p class="page-subtitle">Используется при отметке пропусков и заявках</p>
         <div id="reasons-msg"></div>
 
         <div class="card">
@@ -1965,7 +2618,7 @@ function renderReasonsPage() {
 }
 
 /* ================================================================
-   14. ЖУРНАЛ
+   16. ЖУРНАЛ
    ================================================================ */
 function renderLogPage() {
     const items = [...state.log].sort((a, b) => b.ts - a.ts);
@@ -1989,15 +2642,16 @@ function renderLogPage() {
 }
 
 /* ================================================================
-   15. ЭКСПОРТ CSV
+   17. CSV
    ================================================================ */
 function exportCSV() {
-    const rows = [['Класс', 'Ученик', 'Дата', 'Причина', 'Категория', 'Комментарий']];
-    [...state.absences].sort((a, b) => b.date.localeCompare(a.date)).forEach(a => {
+    const rows = [['Класс', 'Ученик', 'Дата', 'Причина', 'Категория', 'Статус', 'Комментарий']];
+    [...getApprovedAbsences()].sort((a, b) => b.date.localeCompare(a.date)).forEach(a => {
         const s = getStudent(a.studentId);
         const r = getReason(a.reasonId);
         const c = s ? getClass(s.classId) : null;
-        rows.push([c ? c.name : '', s ? s.fullName : '', a.date, r?.name || '', r?.category || '', a.comment || '']);
+        rows.push([c ? c.name : '', s ? s.fullName : '', a.date, r?.name || '', r?.category || '',
+                   a.status || 'approved', a.comment || '']);
     });
     const csv = '\ufeff' + rows.map(row =>
         row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')
@@ -2011,13 +2665,31 @@ function exportCSV() {
 }
 
 /* ================================================================
-   16. СТАРТ
+   18. СТАРТ
    ================================================================ */
 document.addEventListener('DOMContentLoaded', () => {
     initStorage();
     loadSession();
+
+    // Логин
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+    // Восстановление пароля
+    document.getElementById('forgot-link').addEventListener('click', e => {
+        e.preventDefault();
+        showLoginPanel('forgot');
+    });
+    document.getElementById('back-to-login').addEventListener('click', e => {
+        e.preventDefault();
+        showLoginPanel('main');
+    });
+    document.getElementById('forgot-gen-btn').addEventListener('click', forgotGenerate);
+    document.getElementById('forgot-save-btn').addEventListener('click', forgotSave);
+    document.getElementById('forgot-user').addEventListener('keypress', e => {
+        if (e.key === 'Enter') { e.preventDefault(); forgotGenerate(); }
+    });
+
     if (session) renderApp();
     else renderLogin();
 });
