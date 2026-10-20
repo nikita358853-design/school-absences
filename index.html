@@ -122,6 +122,7 @@ tbody tr:hover{background:#f8fafc}
 .cal-badge{font-size:10px;padding:1px 6px;border-radius:5px;background:#dc2626;color:#fff;font-weight:700}
 .cal-badge.late{background:#f97316}
 .cal-badge.pending{background:#f59e0b}
+.cal-badge.checkin{background:#16a34a}
 .cert-yes{color:#16a34a;font-weight:700}
 .cert-no{color:#dc2626;font-weight:700}
 .cert-na{color:#64748b}
@@ -143,6 +144,10 @@ tbody tr:hover{background:#f8fafc}
 .checkin-processing .big-icon{font-size:64px;line-height:1}
 .checkin-processing h2{color:#1e293b;font-size:22px;font-weight:700}
 .session-note{font-size:11px;color:#94a3b8;margin-top:14px;text-align:center}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-card{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:24px;max-height:90vh;overflow-y:auto}
+.modal-card h3{margin-bottom:18px;font-size:18px}
+.action-btns{display:flex;gap:4px;justify-content:flex-end}
 @media(max-width:768px){
 .container{padding:12px}.app-header{padding:0 12px;gap:8px;height:54px}.logo{font-size:14px}
 .app-nav button{padding:6px 11px;font-size:13px}.user-name{display:none}
@@ -216,6 +221,8 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
         <div id="page-sync" class="hidden"></div>
     </main>
 </div>
+
+<div id="modal-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-database-compat.js"></script>
@@ -384,13 +391,20 @@ function save(){
 }
 
 function onDataReady(){
-    // Валидация сохранённой сессии — вдруг пользователя удалили
+    // Валидация сессии — вдруг пользователя удалили/изменили
     if(session&&state&&state.users){
         const user=state.users.find(u=>u.id===session.userId);
         if(!user){
             console.log('[session] Пользователь не существует — сбрасываю');
             session=null;
             localStorage.removeItem(SESSION_KEY);
+        }else{
+            // Синхронизация имени/логина если изменили
+            session.name=user.name;
+            session.username=user.username;
+            session.role=user.role;
+            session.studentId=user.studentId||null;
+            localStorage.setItem(SESSION_KEY,JSON.stringify(session));
         }
     }
 
@@ -398,7 +412,6 @@ function onDataReady(){
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
 
-    // Если сессия есть + пришли по QR → автоматически отмечаемся
     if(session&&pendingCheckinToken){
         document.getElementById('checkin-banner').classList.add('hidden');
         processCheckin(pendingCheckinToken);
@@ -421,33 +434,22 @@ function updateLoginStatus(){
         el.className='login-status wait';
         el.textContent='⏳ Загрузка данных...';
     }
-
-    // Подсказка "вы уже входили"
     const note=document.getElementById('session-note');
     if(note){
-        if(session){
-            note.textContent='✓ Вы уже входили как '+session.name+' — вход выполнится автоматически';
-        }else{
-            note.textContent='';
-        }
+        if(session)note.textContent='✓ Вы уже входили как '+session.name+' — вход выполнится автоматически';
+        else note.textContent='';
     }
 }
 
-/* ============ СЕССИЯ (теперь localStorage — постоянная) ============ */
+/* ============ СЕССИЯ ============ */
 function loadSession(){
-    // ВАЖНО: localStorage вместо sessionStorage — сессия сохраняется между визитами
     const raw=localStorage.getItem(SESSION_KEY);
     if(raw){try{session=JSON.parse(raw);}catch(e){session=null;}}
-    if(session)console.log('[session] Загружена:',session.name,'('+session.role+')');
+    if(session)console.log('[session] Загружена:',session.name);
 }
 function saveSession(){
-    if(session){
-        localStorage.setItem(SESSION_KEY,JSON.stringify(session));
-        console.log('[session] Сохранена:',session.name);
-    }else{
-        localStorage.removeItem(SESSION_KEY);
-        console.log('[session] Очищена');
-    }
+    if(session)localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
 }
 
 /* ============ УТИЛИТЫ ============ */
@@ -477,7 +479,7 @@ function getMyClass(){if(session.role==='teacher')return state.classes.find(c=>c
 function getPendingForClass(cid){const ids=getStudentsOfClass(cid).map(s=>s.id);return state.absences.filter(a=>a.status==='pending'&&ids.includes(a.studentId));}
 function logAction(action){if(!session)return;state.log.push({id:nextId(state.log),ts:Date.now(),user:session.name,role:session.role,action});save();}
 
-/* ============ QR ОТМЕТКА ============ */
+/* ============ QR ОТМЕТКА — автоматически меняет посещаемость ============ */
 function processCheckin(token){
     try{
         const rec=state.qrTokens.find(t=>t.token===token);
@@ -485,9 +487,7 @@ function processCheckin(token){
         if(rec.expiresAt<Date.now()){showToast('QR-код истёк','error');pendingCheckinToken=null;renderApp();return;}
         if(session.role!=='student'){
             showToast('Вы вошли как '+roleLabel(session.role)+'. Выйдите и войдите как ученик.','error');
-            pendingCheckinToken=null;
-            renderApp();
-            return;
+            pendingCheckinToken=null;renderApp();return;
         }
         const student=getStudent(session.studentId);
         if(!student){showToast('Ученик не найден','error');pendingCheckinToken=null;renderApp();return;}
@@ -497,15 +497,40 @@ function processCheckin(token){
         const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId);
         if(existing){
             showToast('Вы уже отметились сегодня в '+existing.time,'info');
-            pendingCheckinToken=null;
-            renderApp();
-            return;
+            pendingCheckinToken=null;renderApp();return;
         }
+
         const time=new Date().toTimeString().slice(0,5);
-        state.checkins.push({id:nextId(state.checkins),studentId:session.studentId,classId:rec.classId,date:today,time,token});
+
+        // 1. Добавляем checkin
+        state.checkins.push({
+            id:nextId(state.checkins),
+            studentId:session.studentId,
+            classId:rec.classId,
+            date:today,
+            time,
+            token
+        });
+
+        // 2. УДАЛЯЕМ записи об отсутствии этого ученика на этот день
+        //    (ученик пришёл — значит присутствует)
+        const beforeCount=state.absences.length;
+        state.absences=state.absences.filter(a=>!(
+            a.studentId===session.studentId &&
+            a.date===today &&
+            a.status==='approved' &&
+            a.type==='absent'
+        ));
+        const removedCount=beforeCount-state.absences.length;
+
+        // 3. Сохраняем
         save();
-        logAction(`QR-отметка: ${student.fullName}`);
-        showToast(`✓ Отметились в ${time}`,'success');
+        logAction(`QR-отметка: ${student.fullName}${removedCount?' (снято отсутствие)':''}`);
+
+        let msg=`✓ Отметились в ${time}`;
+        if(removedCount>0)msg+=` · отсутствие снято`;
+        showToast(msg,'success');
+
         pendingCheckinToken=null;
         renderApp();
     }catch(err){
@@ -521,8 +546,110 @@ function showToast(msg,type='info'){
     el.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${colors[type]};color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:10000;max-width:90vw;text-align:center`;
     el.textContent=msg;
     document.body.appendChild(el);
-    setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';},2500);
-    setTimeout(()=>el.remove(),2900);
+    setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';},3000);
+    setTimeout(()=>el.remove(),3400);
+}
+
+/* ============ МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ АККАУНТА ============ */
+function openEditUserModal(userId){
+    const u=getUser(userId);
+    if(!u)return;
+    const container=document.getElementById('modal-container');
+    container.classList.remove('hidden');
+    container.innerHTML=`
+        <div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-container').classList.add('hidden')">
+            <div class="modal-card">
+                <h3>✎ Редактировать аккаунт</h3>
+                <div class="form-group">
+                    <label class="form-label">ФИО</label>
+                    <input class="input" id="eu-name" value="${esc(u.name)}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Логин</label>
+                    <input class="input" id="eu-username" value="${esc(u.username)}" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Новый пароль</label>
+                    <input class="input" type="password" id="eu-password" placeholder="оставьте пустым — не менять" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Роль</label>
+                    <select class="select" id="eu-role" ${u.id===session.userId?'disabled':''}>
+                        <option value="teacher" ${u.role==='teacher'?'selected':''}>учитель</option>
+                        <option value="deputy" ${u.role==='deputy'?'selected':''}>завуч</option>
+                        <option value="director" ${u.role==='director'?'selected':''}>директор</option>
+                        <option value="admin" ${u.role==='admin'?'selected':''}>админ</option>
+                        <option value="student" ${u.role==='student'?'selected':''}>ученик</option>
+                    </select>
+                    ${u.id===session.userId?'<small style="color:#94a3b8;font-size:11px">Свою роль менять нельзя</small>':''}
+                </div>
+                <div class="form-group ${u.role==='student'?'':'hidden'}" id="eu-student-wrap">
+                    <label class="form-label">Связанный ученик</label>
+                    <select class="select" id="eu-student">
+                        <option value="">—</option>
+                        ${state.students.map(s=>`<option value="${s.id}" ${u.studentId===s.id?'selected':''}>${esc(s.fullName)}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="eu-msg"></div>
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                    <button class="btn btn-ghost" id="eu-cancel">Отмена</button>
+                    <button class="btn" id="eu-save">Сохранить</button>
+                </div>
+            </div>
+        </div>`;
+
+    document.getElementById('eu-cancel').onclick=()=>container.classList.add('hidden');
+    const roleSel=document.getElementById('eu-role');
+    roleSel.onchange=()=>{document.getElementById('eu-student-wrap').classList.toggle('hidden',roleSel.value!=='student');};
+
+    document.getElementById('eu-save').onclick=async()=>{
+        const msg=document.getElementById('eu-msg');
+        msg.innerHTML='';
+        const newName=document.getElementById('eu-name').value.trim();
+        const newUsername=document.getElementById('eu-username').value.trim();
+        const newPassword=document.getElementById('eu-password').value;
+        const newRole=roleSel.value;
+        const newStudentId=newRole==='student'&&document.getElementById('eu-student').value
+            ?Number(document.getElementById('eu-student').value):null;
+
+        if(!newName){msg.innerHTML='<div class="alert alert-error">ФИО обязательно</div>';return;}
+        if(!newUsername){msg.innerHTML='<div class="alert alert-error">Логин обязателен</div>';return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(newUsername)){
+            msg.innerHTML='<div class="alert alert-error">Логин: только латиница, цифры, _ . -</div>';return;
+        }
+        if(state.users.some(x=>x.id!==u.id&&x.username===newUsername)){
+            msg.innerHTML='<div class="alert alert-error">Логин уже занят</div>';return;
+        }
+        if(newRole==='student'&&!newStudentId){
+            msg.innerHTML='<div class="alert alert-error">Выберите ученика</div>';return;
+        }
+
+        const oldUsername=u.username;
+        u.name=newName;
+        u.username=newUsername;
+        if(newRole!==u.role&&u.id!==session.userId)u.role=newRole;
+        u.studentId=newRole==='student'?newStudentId:(u.studentId||null);
+
+        if(newPassword){
+            if(newPassword.length<3){msg.innerHTML='<div class="alert alert-error">Пароль слишком короткий</div>';return;}
+            u.password=await hashPassword(newPassword);
+        }
+
+        // Если меняем свой аккаунт — обновляем сессию
+        if(u.id===session.userId){
+            session.name=newName;
+            session.username=newUsername;
+            saveSession();
+            document.getElementById('user-name').textContent=newName;
+            document.getElementById('user-role').textContent=roleLabel(session.role);
+        }
+
+        save();
+        logAction(`Изменён аккаунт: ${oldUsername} → ${newUsername}${newPassword?' (пароль)':''}`);
+        container.classList.add('hidden');
+        renderAccounts();
+        showToast('Аккаунт обновлён','success');
+    };
 }
 
 /* ============ LOGIN ============ */
@@ -547,7 +674,6 @@ async function handleLogin(e){
         session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
         saveSession();
         logAction('Вход');
-        // Если пришли по QR — отмечаемся
         if(pendingCheckinToken){
             document.getElementById('checkin-banner').classList.add('hidden');
             processCheckin(pendingCheckinToken);
@@ -584,7 +710,6 @@ function renderLogin(){
 
 /* ============ ОБОЛОЧКА ============ */
 let currentPage='home';
-
 function navigateTo(p){currentPage=p;renderApp();}
 
 function renderApp(){
@@ -682,11 +807,8 @@ function renderQR(){
         t.classId===qrClassId && t.date===today && t.expiresAt>Date.now()
     );
 
-    if(existing){
-        drawQRImage(existing.token);
-    }else{
-        generateQRToken(qrClassId);
-    }
+    if(existing)drawQRImage(existing.token);
+    else generateQRToken(qrClassId);
 }
 
 function generateQRToken(classId){
@@ -731,9 +853,7 @@ function drawQRImage(token){
     info.innerHTML=`<div class="qr-timer">⏱ Действует 5 минут</div><div style="margin-top:12px;color:#64748b;font-size:11px">${esc(checkinUrl)}</div>`;
     wrap.appendChild(info);
     qrTimer=setTimeout(()=>{
-        if(currentPage==='qr'&&qrClassId){
-            generateQRToken(qrClassId);
-        }
+        if(currentPage==='qr'&&qrClassId)generateQRToken(qrClassId);
     },5*60*1000);
 }
 
@@ -938,6 +1058,8 @@ function renderQuickAdd(){
             if(!r)err=`«${getStudent(Number(sid)).fullName}» — причина`;
         });
         if(err){document.getElementById('qa-msg').innerHTML=`<div class="alert alert-error">${esc(err)}</div>`;return;}
+
+        // Удаляем старые записи
         state.absences=state.absences.filter(a=>!(a.date===date&&students.some(s=>s.id===a.studentId)));
         let idc=nextId(state.absences);
         Object.entries(sts).forEach(([sid,st])=>{
@@ -945,6 +1067,11 @@ function renderQuickAdd(){
             const reasonId=Number(document.querySelector(`[data-reason-for="${sid}"]`).value);
             state.absences.push({id:idc++,studentId:Number(sid),date,reasonId,comment:'',status:'approved',type:st,hasCertificate:false});
         });
+
+        // Обновляем checkins: если ученик отмечен отсутствующим — удалить его QR
+        const absentIds=new Set(Object.entries(sts).filter(([sid,st])=>st!=='present').map(([sid])=>Number(sid)));
+        state.checkins=state.checkins.filter(c=>!(c.date===date&&absentIds.has(c.studentId)));
+
         save();
         const absN=Object.values(sts).filter(s=>s==='absent').length;
         const lateN=Object.values(sts).filter(s=>s==='late').length;
@@ -1078,20 +1205,33 @@ function renderManage(){
     document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=()=>{const s=getStudent(Number(b.dataset.ds));if(!confirm(`Удалить «${s.fullName}»?`))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
 }
 
-/* ============ АККАУНТЫ ============ */
+/* ============ АККАУНТЫ (с редактированием) ============ */
 function renderAccounts(){
-    const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return`<tr><td>${esc(u.name)}</td><td><code>${esc(u.username)}</code></td><td><span class="badge badge-secondary">${roleLabel(u.role)}</span></td><td>${ls?esc(ls.fullName):'—'}</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-rp="${u.id}">🔑</button><button class="btn btn-ghost btn-sm" data-du="${u.id}">✕</button></td></tr>`;}).join('');
+    const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return`<tr>
+        <td>${esc(u.name)}</td>
+        <td><code>${esc(u.username)}</code></td>
+        <td><span class="badge badge-secondary">${roleLabel(u.role)}</span></td>
+        <td>${ls?esc(ls.fullName):'—'}</td>
+        <td class="td-end">
+            <div class="action-btns">
+                <button class="btn btn-ghost btn-sm" data-eu="${u.id}" title="Редактировать">✎</button>
+                <button class="btn btn-ghost btn-sm" data-du="${u.id}" title="Удалить">✕</button>
+            </div>
+        </td>
+    </tr>`;}).join('');
     document.getElementById('page-accounts').innerHTML=`
         <h1 class="page-title">Аккаунты</h1>
+        <p class="page-subtitle">Можно менять ФИО, логин, пароль и роль</p>
         <div id="acc-msg"></div>
-        <div class="card"><div class="card-header">Добавить</div><div class="card-body"><form id="fu" class="inline-form">
+        <div class="card"><div class="card-header">Добавить аккаунт</div><div class="card-body"><form id="fu" class="inline-form">
             <div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div>
             <div class="form-group"><label class="form-label">Логин</label><input class="input" name="username" required></div>
             <div class="form-group"><label class="form-label">Пароль</label><input class="input" name="password" required></div>
             <div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option></select></div>
             <div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>${state.students.map(s=>`<option value="${s.id}">${esc(s.fullName)}</option>`).join('')}</select></div>
-            <div class="form-group"><button class="btn" type="submit">+</button></div>
-        </form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+            <div class="form-group"><button class="btn" type="submit">+ Создать</button></div>
+        </form></div>
+        <div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
     const msg=(t,ty='success')=>{document.getElementById('acc-msg').innerHTML=`<div class="alert alert-${ty}">${t}</div>`;};
     document.getElementById('nr').onchange=e=>{document.getElementById('sw').classList.toggle('hidden',e.target.value!=='student');};
     document.getElementById('fu').onsubmit=async(e)=>{
@@ -1099,12 +1239,14 @@ function renderAccounts(){
         const name=(fd.get('name')||'').trim();const username=(fd.get('username')||'').trim();const password=(fd.get('password')||'').trim();
         const role=fd.get('role');const studentId=role==='student'&&fd.get('studentId')?Number(fd.get('studentId')):null;
         if(!name||!username||!password){msg('Заполните','error');return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(username)){msg('Логин: только латиница, цифры, _ . -','error');return;}
         if(state.users.some(u=>u.username===username)){msg('Логин занят','error');return;}
+        if(role==='student'&&!studentId){msg('Выберите ученика','error');return;}
         const hash=await hashPassword(password);
         state.users.push({id:nextId(state.users),username,password:hash,role,name,studentId});
         save();renderAccounts();
     };
-    document.querySelectorAll('[data-rp]').forEach(b=>{b.onclick=async()=>{const u=getUser(Number(b.dataset.rp));const np=prompt(`Новый пароль для «${u.name}»:`,'');if(!np)return;u.password=await hashPassword(np);save();msg(`Пароль для «${esc(u.name)}» изменён`);};});
+    document.querySelectorAll('[data-eu]').forEach(b=>{b.onclick=()=>openEditUserModal(Number(b.dataset.eu));});
     document.querySelectorAll('[data-du]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.du);if(id===session.userId){msg('Свой нельзя','error');return;}const u=getUser(id);if(!confirm(`Удалить «${u.name}»?`))return;state.users=state.users.filter(x=>x.id!==id);state.classes.forEach(c=>{if(c.teacherId===id)c.teacherId=null;});save();renderAccounts();};});
 }
 
@@ -1169,7 +1311,6 @@ function initApp(){
         try{window.history.replaceState({},'',window.location.pathname);}catch(e){}
     }
 
-    // Если есть сохранённая сессия + пришли по QR — НЕ показываем экран логина
     if(session && pendingCheckinToken){
         console.log('[app] Сессия есть + QR — показываю "Отмечаемся..."');
         document.getElementById('login-screen').classList.add('hidden');
@@ -1188,7 +1329,6 @@ function initApp(){
                 <p>Подождите, идёт проверка</p>
             </div>`;
     }else if(pendingCheckinToken){
-        // Есть QR, но не вошли — показываем баннер "войдите"
         document.getElementById('checkin-banner').classList.remove('hidden');
     }
 
