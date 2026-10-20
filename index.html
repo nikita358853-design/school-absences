@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Посещаемость</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M28 52l16 16l30-34' stroke='white' stroke-width='11' stroke-linecap='round' fill='none'/></svg>">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f6fb;color:#1e293b;line-height:1.5;min-height:100vh}
@@ -32,6 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .login-status.ok{color:#166534;background:#dcfce7}
 .login-status.wait{color:#92400e;background:#fef3c7}
 .login-status.err{color:#991b1b;background:#fee2e2}
+.login-status.checkin{color:#1e40af;background:#dbeafe;font-weight:600}
 .error-msg{background:#fee2e2;color:#991b1b;padding:11px 15px;border-radius:9px;font-size:13px;margin-bottom:16px}
 .demo-box{margin-top:18px;padding:12px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:9px;font-size:12px;color:#64748b;line-height:1.8}
 .demo-box code{background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #e2e8f0;font-family:monospace;font-size:11px;color:#1e293b}
@@ -62,6 +64,7 @@ tbody tr:hover{background:#f8fafc}
 .badge-warning{background:#fef3c7;color:#92400e}
 .badge-danger{background:#fee2e2;color:#991b1b}
 .badge-secondary{background:#e2e8f0;color:#475569}
+.badge-info{background:#dbeafe;color:#1e40af}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
 .kpi{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:18px 20px;border-left:4px solid #2563eb}
 .kpi.success{border-left-color:#16a34a}
@@ -132,6 +135,12 @@ tbody tr:hover{background:#f8fafc}
 .log-time{color:#64748b;font-size:12px;white-space:nowrap;min-width:135px;font-family:monospace}
 .log-user{font-weight:700}
 .late-tag{display:inline-block;padding:2px 8px;border-radius:5px;background:#fed7aa;color:#9a3412;font-size:11px;font-weight:700}
+/* QR */
+.qr-wrap{text-align:center;padding:24px;background:#f8fafc;border-radius:12px;border:2px dashed #e2e8f0;margin:16px 0;min-height:280px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.qr-wrap img,.qr-wrap canvas{display:block;border-radius:8px}
+.qr-info{font-size:12px;color:#64748b;word-break:break-all;margin-top:12px;font-family:monospace;max-width:100%}
+.qr-timer{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:#fef3c7;color:#92400e;font-weight:700;font-size:13px}
+.checkin-notice{background:#dbeafe;border:2px solid #93c5fd;color:#1e40af;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-weight:600}
 @media(max-width:768px){
 .container{padding:12px}.app-header{padding:0 12px;gap:8px;height:54px}.logo{font-size:14px}
 .app-nav button{padding:6px 11px;font-size:13px}.user-name{display:none}
@@ -153,6 +162,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
     <div class="login-card">
         <h1>✓ Посещаемость</h1>
         <div class="login-status wait" id="login-status">⏳ Загрузка данных...</div>
+        <div id="checkin-banner" class="checkin-notice hidden">📱 Отметка по QR — войдите, чтобы отметиться</div>
         <div id="login-error" class="error-msg hidden"></div>
         <form id="login-form">
             <div class="form-group">
@@ -193,6 +203,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
         <div id="page-home"></div>
         <div id="page-my-request" class="hidden"></div>
         <div id="page-quick-add" class="hidden"></div>
+        <div id="page-qr" class="hidden"></div>
         <div id="page-calendar" class="hidden"></div>
         <div id="page-reports" class="hidden"></div>
         <div id="page-manage" class="hidden"></div>
@@ -229,11 +240,9 @@ try{
         fbDb=firebase.database();
         console.log('[firebase] ✓ SDK инициализирован');
     }else{
-        console.warn('[firebase] ✗ SDK не загрузился (нет интернета?)');
+        console.warn('[firebase] ✗ SDK не загрузился');
     }
-}catch(e){
-    console.error('[firebase] ✗ Ошибка:',e);
-}
+}catch(e){console.error('[firebase]',e);}
 
 /* ============ ДЕМО-ДАННЫЕ ============ */
 function dateOffset(d){const x=new Date();x.setDate(x.getDate()+d);return x.toISOString().slice(0,10);}
@@ -275,16 +284,19 @@ const SEED={
         {id:5,studentId:4,date:dateOffset(-8),reasonId:3,status:'approved',type:'absent'},
         {id:6,studentId:2,date:dateOffset(-10),reasonId:1,status:'pending',type:'absent',hasCertificate:false,createdAt:Date.now()-3600000}
     ],
-    log:[]
+    log:[],
+    qrTokens:[],
+    checkins:[]
 };
 
-const STORAGE_KEY='school_attendance_v7';
-const SESSION_KEY='school_attendance_session_v7';
+const STORAGE_KEY='school_attendance_v8';
+const SESSION_KEY='school_attendance_session_v8';
 const DAYS={1:'Пн',2:'Вт',3:'Ср',4:'Чт',5:'Пт',6:'Сб',7:'Вс'};
 const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
 let state=null;
 let session=null;
+let pendingCheckinToken=null;
 
 /* ============ ХЭШ ============ */
 function simpleHash(str){
@@ -298,7 +310,7 @@ async function hashPassword(pwd){
             const data=new TextEncoder().encode('salt_'+pwd);
             const buf=await window.crypto.subtle.digest('SHA-256',data);
             return 'sha256:'+Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-        }catch(e){console.warn('[hash]',e);}
+        }catch(e){}
     }
     return simpleHash(pwd);
 }
@@ -312,15 +324,10 @@ async function verifyPassword(input,stored){
 
 /* ============ SYNC ============ */
 function startFirebaseSync(){
-    if(!fbDb){
-        console.warn('[sync] Firebase недоступен, локально');
-        loadLocal();
-        return;
-    }
+    if(!fbDb){console.warn('[sync] Firebase недоступен');loadLocal();return;}
     console.log('[sync] Подписка на Firebase');
     fbDb.ref('school_attendance').on('value',(snap)=>{
         const data=snap.val();
-        console.log('[sync] Данные получены:',data?'есть':'пусто');
         if(data&&data.students&&data.classes){
             state=data;
             migrate();
@@ -328,16 +335,15 @@ function startFirebaseSync(){
             firebaseReady=true;
             onDataReady();
         }else{
-            console.log('[sync] Firebase пуст, загружаю SEED');
             state=JSON.parse(JSON.stringify(SEED));
             migrate();
             localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-            fbDb.ref('school_attendance').set(state).catch(e=>console.error('[sync] set error:',e));
+            fbDb.ref('school_attendance').set(state).catch(e=>console.error(e));
             firebaseReady=true;
             onDataReady();
         }
     },(err)=>{
-        console.error('[sync] Ошибка Firebase:',err);
+        console.error('[sync]',err);
         loadLocal();
     });
 }
@@ -350,13 +356,12 @@ function loadLocal(){
         localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
     }
     migrate();
-    console.log('[sync] Локально, учеников:',state.students?.length||0);
     onDataReady();
 }
 
 function migrate(){
     if(!state)return;
-    ['absences','log','reasons','students','classes','users'].forEach(k=>{if(!state[k])state[k]=[];});
+    ['absences','log','reasons','students','classes','users','qrTokens','checkins'].forEach(k=>{if(!state[k])state[k]=[];});
     state.absences.forEach(a=>{
         if(!a.status)a.status='approved';
         if(!a.type)a.type='absent';
@@ -365,21 +370,27 @@ function migrate(){
     state.reasons.forEach(r=>{
         if(r.requiresCertificate===undefined){const n=(r.name||'').toLowerCase();r.requiresCertificate=n.includes('болезн');}
     });
+    // Чистим старые QR-токены (старше суток)
+    const dayAgo=Date.now()-24*60*60*1000;
+    state.qrTokens=state.qrTokens.filter(t=>t.expiresAt>dayAgo);
 }
 
 function save(){
     if(!state)return;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-    if(firebaseReady&&fbDb){
-        fbDb.ref('school_attendance').set(state).catch(e=>console.error('[save]',e));
-    }
+    if(firebaseReady&&fbDb){fbDb.ref('school_attendance').set(state).catch(e=>console.error('[save]',e));}
 }
 
 function onDataReady(){
     updateLoginStatus();
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
-    if(session)renderApp();
+    // Если пришли по QR-ссылке и уже вошли как ученик — отмечаем
+    if(session&&pendingCheckinToken){
+        processCheckin(pendingCheckinToken);
+    }else if(session){
+        renderApp();
+    }
 }
 
 function updateLoginStatus(){
@@ -391,7 +402,7 @@ function updateLoginStatus(){
         el.textContent=`${src} · пользователей: ${state.users.length}`;
     }else if(state&&state.users){
         el.className='login-status err';
-        el.textContent='⚠ База пуста (0 пользователей)';
+        el.textContent='⚠ База пуста';
     }else{
         el.className='login-status wait';
         el.textContent='⏳ Загрузка данных...';
@@ -435,6 +446,81 @@ function getMyClass(){if(session.role==='teacher')return state.classes.find(c=>c
 function getPendingForClass(cid){const ids=getStudentsOfClass(cid).map(s=>s.id);return state.absences.filter(a=>a.status==='pending'&&ids.includes(a.studentId));}
 function logAction(action){if(!session)return;state.log.push({id:nextId(state.log),ts:Date.now(),user:session.name,role:session.role,action});save();}
 
+/* ============ QR ОТМЕТКА ============ */
+function processCheckin(token){
+    const rec=state.qrTokens.find(t=>t.token===token);
+    if(!rec){
+        showToast('QR-код не найден или устарел','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    if(rec.expiresAt<Date.now()){
+        showToast('QR-код истёк. Попросите учителя обновить.','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    if(session.role!=='student'){
+        showToast('Отметиться может только ученик','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    const student=getStudent(session.studentId);
+    if(!student){
+        showToast('Ученик не найден','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    if(student.classId!==rec.classId){
+        showToast('Это QR-код другого класса','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    const today=new Date().toISOString().slice(0,10);
+    if(rec.date!==today){
+        showToast('QR-код не на сегодня','error');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId);
+    if(existing){
+        showToast('Вы уже отметились сегодня','info');
+        pendingCheckinToken=null;
+        renderApp();
+        return;
+    }
+    const now=new Date();
+    const time=now.toTimeString().slice(0,5);
+    state.checkins.push({
+        id:nextId(state.checkins),
+        studentId:session.studentId,
+        classId:rec.classId,
+        date:today,
+        time,
+        token
+    });
+    save();
+    logAction(`QR-отметка: ${student.fullName}`);
+    showToast(`✓ Отметились в ${time}`,'success');
+    pendingCheckinToken=null;
+    renderApp();
+}
+
+function showToast(msg,type='info'){
+    const colors={success:'#16a34a',error:'#dc2626',warning:'#f59e0b',info:'#2563eb'};
+    const el=document.createElement('div');
+    el.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${colors[type]};color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:10000;max-width:90vw;text-align:center`;
+    el.textContent=msg;
+    document.body.appendChild(el);
+    setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';},2500);
+    setTimeout(()=>el.remove(),2900);
+}
+
 /* ============ LOGIN ============ */
 async function handleLogin(e){
     e.preventDefault();
@@ -442,15 +528,13 @@ async function handleLogin(e){
     const btn=document.getElementById('login-submit');
 
     if(!state){
-        err.textContent='Данные не загружены. Подождите 2 секунды или нажмите «Сбросить кэш».';
+        err.textContent='Данные не загружены. Подождите 2 секунды.';
         err.classList.remove('hidden');
-        console.warn('[login] state=null');
         return;
     }
-    if(!state.users||!Array.isArray(state.users)||state.users.length===0){
-        err.textContent='База пуста. Проверьте Firebase или нажмите «Сбросить кэш».';
+    if(!state.users||state.users.length===0){
+        err.textContent='База пуста. Проверьте Firebase.';
         err.classList.remove('hidden');
-        console.warn('[login] users пуст');
         return;
     }
 
@@ -460,8 +544,6 @@ async function handleLogin(e){
 
         const u=document.getElementById('login-user').value.trim();
         const p=document.getElementById('login-pass').value;
-        console.log('[login] попытка:',u,'| пользователей:',state.users.length);
-
         const user=state.users.find(x=>x.username===u);
         if(!user){
             err.textContent='Неверный логин или пароль';
@@ -469,7 +551,6 @@ async function handleLogin(e){
             return;
         }
         const ok=await verifyPassword(p,user.password);
-        console.log('[login] пароль верный:',ok);
         if(!ok){
             err.textContent='Неверный логин или пароль';
             err.classList.remove('hidden');
@@ -481,11 +562,17 @@ async function handleLogin(e){
         session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
         saveSession();
         logAction('Вход');
-        console.log('[login] ✓ Вход выполнен:',user.name);
-        renderApp();
+
+        // Если пришли по QR
+        if(pendingCheckinToken){
+            document.getElementById('checkin-banner').classList.add('hidden');
+            processCheckin(pendingCheckinToken);
+        }else{
+            renderApp();
+        }
     }catch(ex){
-        console.error('[login] ✗ Ошибка:',ex);
-        err.textContent='Ошибка входа: '+ex.message+' (подробности в F12)';
+        console.error('[login]',ex);
+        err.textContent='Ошибка: '+ex.message;
         err.classList.remove('hidden');
     }finally{
         btn.disabled=false;btn.textContent='Войти';
@@ -519,6 +606,7 @@ function renderApp(){
     if(!session||!state)return;
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app-screen').classList.remove('hidden');
+    document.getElementById('checkin-banner').classList.add('hidden');
     document.getElementById('user-name').textContent=session.name;
     document.getElementById('user-role').textContent=roleLabel(session.role);
     renderNav();
@@ -528,9 +616,9 @@ function renderApp(){
 function getTabs(){
     const r=session.role;
     if(r==='student')return[['home','Мои пропуски'],['my-request','Сообщить'],['calendar','Календарь']];
-    if(r==='teacher')return[['home','Мой класс'],['quick-add','Посещаемость'],['calendar','Календарь'],['reports','Отчёты']];
-    if(r==='deputy')return[['home','Обзор'],['quick-add','Посещаемость'],['calendar','Календарь'],['reports','Отчёты'],['reasons','Причины']];
-    if(r==='director')return[['home','Обзор'],['quick-add','Посещаемость'],['calendar','Календарь'],['reports','Отчёты'],['manage','Структура'],['reasons','Причины'],['log','Журнал'],['sync','Синхр.']];
+    if(r==='teacher')return[['home','Мой класс'],['quick-add','Посещаемость'],['qr','QR-код'],['calendar','Календарь'],['reports','Отчёты']];
+    if(r==='deputy')return[['home','Обзор'],['quick-add','Посещаемость'],['qr','QR-код'],['calendar','Календарь'],['reports','Отчёты'],['reasons','Причины']];
+    if(r==='director')return[['home','Обзор'],['quick-add','Посещаемость'],['qr','QR-код'],['calendar','Календарь'],['reports','Отчёты'],['manage','Структура'],['reasons','Причины'],['log','Журнал'],['sync','Синхр.']];
     if(r==='admin')return[['home','Система'],['accounts','Аккаунты'],['calendar','Календарь'],['reasons','Причины'],['log','Журнал'],['sync','Синхр.']];
     return[];
 }
@@ -543,7 +631,7 @@ function renderNav(){
     nav.querySelectorAll('button').forEach(b=>b.onclick=()=>navigateTo(b.dataset.page));
 }
 
-const PAGES=['home','my-request','quick-add','calendar','reports','manage','accounts','reasons','log','sync'];
+const PAGES=['home','my-request','quick-add','qr','calendar','reports','manage','accounts','reasons','log','sync'];
 
 function renderPage(page){
     PAGES.forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
@@ -551,6 +639,7 @@ function renderPage(page){
     if(page==='home')renderHome();
     else if(page==='my-request')renderMyRequest();
     else if(page==='quick-add')renderQuickAdd();
+    else if(page==='qr')renderQR();
     else if(page==='calendar')renderCalendar();
     else if(page==='reports')renderReports();
     else if(page==='manage')renderManage();
@@ -558,6 +647,97 @@ function renderPage(page){
     else if(page==='reasons')renderReasons();
     else if(page==='log')renderLog();
     else if(page==='sync')renderSync();
+}
+
+/* ============ QR-СТРАНИЦА ============ */
+let qrTimer=null;
+let qrClassId=null;
+
+function renderQR(){
+    const isT=session.role==='teacher';
+    const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
+    if(!allowed.length){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
+    if(!qrClassId||!allowed.some(c=>c.id===qrClassId))qrClassId=allowed[0].id;
+    const cls=getClass(qrClassId);
+    const today=new Date().toISOString().slice(0,10);
+    const checkins=state.checkins.filter(c=>c.date===today&&c.classId===qrClassId).sort((a,b)=>a.time.localeCompare(b.time));
+
+    document.getElementById('page-qr').innerHTML=`
+        <h1 class="page-title">QR-код для отметки</h1>
+        <p class="page-subtitle">Ученики сканируют и автоматически отмечаются</p>
+        <div class="card"><div class="card-body"><div class="inline-form">
+            ${!isT?`<div class="form-group"><label class="form-label">Класс</label><select class="select" id="qr-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===qrClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}
+            <div class="form-group"><button class="btn" id="qr-refresh">🔄 Обновить QR</button></div>
+        </div></div></div>
+        <div class="card"><div class="card-header">QR · ${esc(cls.name)} · ${formatDate(today)}</div>
+            <div class="card-body">
+                <div class="qr-wrap" id="qr-wrap">
+                    <div style="color:#64748b">Генерация QR...</div>
+                </div>
+            </div>
+        </div>
+        <div class="card"><div class="card-header">Отметились сегодня (${checkins.length})</div>
+            <div class="card-body p-0">
+                ${checkins.length?`<div class="table-wrap"><table>
+                    <thead><tr><th>Ученик</th><th>Время</th></tr></thead>
+                    <tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time)}</td></tr>`;}).join('')}</tbody>
+                </table></div>`:'<div class="empty"><div class="empty-icon">📱</div>Пока никто не отметился</div>'}
+            </div>
+        </div>`;
+
+    const cs=document.getElementById('qr-class');
+    if(cs)cs.onchange=()=>{qrClassId=Number(cs.value);renderQR();};
+    document.getElementById('qr-refresh').onclick=()=>generateQR(qrClassId);
+    generateQR(qrClassId);
+}
+
+function generateQR(classId){
+    // Удаляем старые токены этого класса на сегодня
+    const today=new Date().toISOString().slice(0,10);
+    state.qrTokens=state.qrTokens.filter(t=>!(t.classId===classId&&t.date===today));
+    const token='qr_'+Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,10);
+    const expiresAt=Date.now()+5*60*1000; // 5 минут
+    state.qrTokens.push({token,classId,date:today,expiresAt,createdAt:Date.now(),createdBy:session.userId});
+    save();
+
+    const baseUrl=window.location.href.split('?')[0].split('#')[0];
+    const checkinUrl=baseUrl+'?checkin='+token;
+    const wrap=document.getElementById('qr-wrap');
+    if(!wrap)return;
+    wrap.innerHTML='';
+
+    if(typeof QRCode==='undefined'){
+        wrap.innerHTML='<div class="alert alert-error">Не удалось загрузить библиотеку QR. Проверьте интернет и обновите страницу.</div>';
+        return;
+    }
+
+    try{
+        new QRCode(wrap,{
+            text:checkinUrl,
+            width:240,
+            height:240,
+            colorDark:'#1e293b',
+            colorLight:'#ffffff',
+            correctLevel:QRCode.CorrectLevel.H
+        });
+    }catch(err){
+        wrap.innerHTML='<div class="alert alert-error">Ошибка создания QR: '+esc(err.message)+'</div>';
+        return;
+    }
+
+    const info=document.createElement('div');
+    info.className='qr-info';
+    info.innerHTML=`<div class="qr-timer">⏱ Действует 5 минут</div>
+        <div style="margin-top:12px;color:#64748b;font-size:11px">${esc(checkinUrl)}</div>`;
+    wrap.appendChild(info);
+
+    if(qrTimer)clearTimeout(qrTimer);
+    qrTimer=setTimeout(()=>{
+        if(currentPage==='qr'&&qrClassId===classId){
+            showToast('QR-код обновлён','info');
+            generateQR(classId);
+        }
+    },5*60*1000);
 }
 
 /* ============ ГЛАВНАЯ ============ */
@@ -573,9 +753,12 @@ function renderStudentHome(){
     const cls=student?getClass(student.classId):null;
     const my=state.absences.filter(a=>a.studentId===session.studentId).sort((a,b)=>b.date.localeCompare(a.date));
     const pending=my.filter(a=>a.status==='pending').length;
+    const today=new Date().toISOString().slice(0,10);
+    const todayCheckin=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today);
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Мои пропуски</h1>
         <p class="page-subtitle">${esc(student?.fullName||'')} · класс ${esc(cls?.name||'—')}</p>
+        ${todayCheckin?`<div class="alert alert-success">✓ Вы отметились по QR сегодня в ${esc(todayCheckin.time)}</div>`:''}
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Всего</div><div class="kpi-value">${my.length}</div></div>
             <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${my.filter(a=>a.type==='absent'&&a.status==='approved').length}</div></div>
@@ -596,6 +779,8 @@ function renderTeacherHome(){
     const pending=getPendingForClass(cls.id).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     const end=new Date().toISOString().slice(0,10);const st=new Date();st.setDate(st.getDate()-29);const start=st.toISOString().slice(0,10);
     const avg=classAvg(cls.id,start,end);
+    const today=new Date().toISOString().slice(0,10);
+    const todayCheckins=state.checkins.filter(c=>c.date===today&&c.classId===cls.id);
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Мой класс — ${esc(cls.name)}</h1>
         <p class="page-subtitle">${esc(session.name)} · учеников: ${ss.length}</p>
@@ -605,9 +790,11 @@ function renderTeacherHome(){
             <div class="kpi success"><div class="kpi-label">Посещаемость</div><div class="kpi-value">${avg}%</div></div>
             <div class="kpi ${pending.length?'danger':''}"><div class="kpi-label">Заявок</div><div class="kpi-value">${pending.length}</div></div>
         </div>
+        ${todayCheckins.length?`<div class="alert alert-info">📱 Сегодня по QR отметились: <b>${todayCheckins.length}</b> из ${ss.length}</div>`:''}
         ${pending.length?`<div class="card"><div class="card-header" style="color:#f59e0b">⏳ Заявки от учеников</div><div class="card-body p-0">${pending.map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);const needCert=r?.requiresCertificate&&!a.hasCertificate;return`<div class="request-card"><div class="request-main"><div class="request-name">${esc(s.fullName)}</div><div class="request-meta">${formatDate(a.date)} · ${esc(r?.name||'—')}${needCert?' <span class="badge badge-danger">нет справки</span>':''}</div></div><div class="request-actions"><button class="btn btn-sm btn-success" data-approve="${a.id}">✓</button><button class="btn btn-sm btn-danger" data-reject="${a.id}">✕</button></div></div>`;}).join('')}</div></div>`:''}
-        <div class="card"><div class="card-header"><span>Последние пропуски</span><button class="btn btn-sm" id="go-quick">+ Отметить</button></div><div class="card-body p-0">${abs.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тип</th><th>Причина</th></tr></thead><tbody>${abs.slice(0,10).map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(s.fullName)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока нет записей</div>'}</div></div>`;
+        <div class="card"><div class="card-header"><span>Последние пропуски</span><div style="display:flex;gap:6px"><button class="btn btn-sm btn-ghost" id="go-qr">📱 QR</button><button class="btn btn-sm" id="go-quick">+ Отметить</button></div></div><div class="card-body p-0">${abs.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тип</th><th>Причина</th></tr></thead><tbody>${abs.slice(0,10).map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(s.fullName)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока нет записей</div>'}</div></div>`;
     document.getElementById('go-quick').onclick=()=>navigateTo('quick-add');
+    document.getElementById('go-qr').onclick=()=>navigateTo('qr');
     document.querySelectorAll('[data-approve]').forEach(b=>{b.onclick=()=>{const a=state.absences.find(x=>x.id===Number(b.dataset.approve));if(!a)return;a.status='approved';a.reviewedAt=Date.now();save();logAction('Подтверждение');renderTeacherHome();renderNav();};});
     document.querySelectorAll('[data-reject]').forEach(b=>{b.onclick=()=>{const a=state.absences.find(x=>x.id===Number(b.dataset.reject));if(!a)return;if(!confirm('Отклонить?'))return;a.status='rejected';save();logAction('Отклонение');renderTeacherHome();renderNav();};});
 }
@@ -703,6 +890,8 @@ function renderQuickAdd(){
     const students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
     const todayAbs=state.absences.filter(a=>a.date===date&&a.status==='approved'&&students.some(s=>s.id===a.studentId));
     const byS={};todayAbs.forEach(a=>{byS[a.studentId]=a;});
+    const checkins=state.checkins.filter(c=>c.date===date&&c.classId===cls.id);
+    const checkinByS={};checkins.forEach(c=>{checkinByS[c.studentId]=c;});
     const absCount=todayAbs.filter(a=>a.type==='absent').length;
     const lateCount=todayAbs.filter(a=>a.type==='late').length;
     document.getElementById('page-quick-add').innerHTML=`
@@ -718,13 +907,16 @@ function renderQuickAdd(){
             <div><div class="qi-label">Учеников</div><div class="qi-value">${students.length}</div></div>
             <div><div class="qi-label" style="color:#dc2626">Отсутствуют</div><div class="qi-value" style="color:#dc2626">${absCount}</div></div>
             <div><div class="qi-label" style="color:#f59e0b">Опоздали</div><div class="qi-value" style="color:#f59e0b">${lateCount}</div></div>
+            <div><div class="qi-label" style="color:#16a34a">QR-отметок</div><div class="qi-value" style="color:#16a34a">${checkins.length}</div></div>
         </div>
         <div class="card"><div class="card-header">Отметки на ${formatDate(date)}</div>
         <div class="card-body p-0">${students.length?`<div class="table-wrap"><table><thead><tr><th>Ученик</th><th style="width:220px">Статус</th><th>Причина</th></tr></thead><tbody>${students.map(st=>{
             const ex=byS[st.id];
             const status=ex?ex.type:'present';
+            const chk=checkinByS[st.id];
+            const qrBadge=chk?` <span class="badge badge-info" style="font-size:10px">QR ${esc(chk.time)}</span>`:'';
             return`<tr class="attendance-row ${status==='absent'?'row-absent':status==='late'?'row-late':''}" data-row-sid="${st.id}">
-                <td>${esc(st.fullName)}</td>
+                <td>${esc(st.fullName)}${qrBadge}</td>
                 <td><div class="status-switch" data-switch="${st.id}">
                     <button data-status="present" class="${status==='present'?'active-present':''}">✓</button>
                     <button data-status="late" class="${status==='late'?'active-late':''}">⏰</button>
@@ -948,7 +1140,7 @@ function renderSync(){
         <div class="card"><div class="card-header">Firebase</div><div class="card-body">
             <div class="alert alert-${firebaseReady?'success':'warning'}"><b>${firebaseReady?'✓ Синхронизация активна':'⚠ Локальный режим'}</b><br>${firebaseReady?'Данные сохраняются в Firebase.':'Данные только в этом браузере.'}</div>
             <p style="color:#64748b;font-size:13px;margin-top:12px">Проект: <code>school-absences-71570</code></p>
-            <p style="color:#64748b;font-size:13px">Классов: <b>${state.classes.length}</b> · Учеников: <b>${state.students.length}</b> · Пропусков: <b>${state.absences.length}</b> · Аккаунтов: <b>${state.users.length}</b></p>
+            <p style="color:#64748b;font-size:13px">Классов: <b>${state.classes.length}</b> · Учеников: <b>${state.students.length}</b> · Пропусков: <b>${state.absences.length}</b> · Аккаунтов: <b>${state.users.length}</b> · QR-отметок: <b>${state.checkins.length}</b></p>
         </div></div>`;
 }
 
@@ -969,8 +1161,21 @@ function exportCSV(){
 
 /* ============ INIT ============ */
 function initApp(){
-    console.log('[app] Старт инициализации');
+    console.log('[app] Старт');
     loadSession();
+
+    // Проверяем ?checkin=ТОКЕН
+    const params=new URLSearchParams(window.location.search);
+    const token=params.get('checkin');
+    if(token){
+        pendingCheckinToken=token;
+        console.log('[app] Обнаружен QR-токен:',token);
+        // Показываем баннер на экране входа
+        document.getElementById('checkin-banner').classList.remove('hidden');
+        // Очищаем URL, чтобы при обновлении не отправить повторно
+        try{window.history.replaceState({},'',window.location.pathname);}catch(e){}
+    }
+
     document.getElementById('login-form').addEventListener('submit',handleLogin);
     document.getElementById('logout-btn').addEventListener('click',handleLogout);
     document.getElementById('reset-cache').addEventListener('click',(e)=>{
@@ -984,29 +1189,19 @@ function initApp(){
 
     let waited=0;
     (function waitForFirebase(){
-        if(fbDb){
-            console.log('[app] Firebase SDK готов, стартую синхронизацию');
-            startFirebaseSync();
-            return;
-        }
+        if(fbDb){startFirebaseSync();return;}
         waited+=100;
-        if(waited>=2500){
-            console.warn('[app] Firebase timeout (2.5с) — локально');
-            loadLocal();
-            return;
-        }
+        if(waited>=2500){loadLocal();return;}
         setTimeout(waitForFirebase,100);
     })();
 
-    setTimeout(()=>{
-        if(!state){
-            console.warn('[app] Форс-загрузка через 5 сек');
-            loadLocal();
-        }
-    },5000);
+    setTimeout(()=>{if(!state){loadLocal();}},5000);
 
     if(session){
-        setTimeout(()=>{if(state)renderApp();},600);
+        setTimeout(()=>{if(state)onDataReady();},600);
+    }else{
+        // Ничего не делаем — останемся на экране входа
+        setTimeout(()=>{if(state)updateLoginStatus();},700);
     }
 }
 
