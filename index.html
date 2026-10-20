@@ -5,12 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Посещаемость">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Посещаемость</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M28 52l16 16l30-34' stroke='white' stroke-width='11' stroke-linecap='round' fill='none'/></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M28 52l16 16l30-34' stroke='white' stroke-width='11' stroke-linecap='round' fill='none'/></svg>">
-<link rel="manifest" href='data:application/manifest+json,{"name":"Посещаемость","short_name":"Посещаемость","start_url":".","display":"standalone","background_color":"%23f4f6fb","theme_color":"%232563eb","icons":[{"src":"data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2724%27%20fill=%27%232563eb%27/%3E%3Cpath%20d=%27M28%2052l16%2016l30%20-34%27%20stroke=%27white%27%20stroke-width=%2711%27%20stroke-linecap=%27round%27%20fill=%27none%27/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml","purpose":"any"}]}'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Посещаемость","short_name":"Посещаемость","start_url":".","display":"standalone","background_color":"%23f4f6fb","theme_color":"%232563eb"}'>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -146,7 +143,6 @@ tbody tr:hover{background:#f8fafc}
 .checkin-processing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center;color:#64748b;padding:40px}
 .checkin-processing .big-icon{font-size:64px;line-height:1}
 .checkin-processing h2{color:#1e293b;font-size:22px;font-weight:700}
-.session-note{font-size:11px;color:#94a3b8;margin-top:14px;text-align:center}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .modal-card{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:24px;max-height:90vh;overflow-y:auto}
 .modal-card h3{margin-bottom:18px;font-size:18px}
@@ -173,7 +169,6 @@ tbody tr:hover{background:#f8fafc}
 .student-info{flex:1;min-width:0}
 .student-info-name{font-weight:600;font-size:14px;color:#1e293b}
 .student-info-meta{font-size:12px;color:#64748b;margin-top:2px}
-/* === БЫСТРЫЕ ДЕЙСТВИЯ === */
 .quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
 .qa-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:all .2s;border:2px solid transparent;display:flex;align-items:center;gap:14px}
 .qa-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-2px);border-color:#93c5fd}
@@ -184,8 +179,6 @@ tbody tr:hover{background:#f8fafc}
 .qa-text{flex:1;min-width:0}
 .qa-title{font-weight:700;font-size:14px;margin-bottom:2px}
 .qa-sub{font-size:12px;opacity:.75}
-.qa-badge{background:#dc2626;color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;align-self:flex-start}
-/* === ПОИСК === */
 .search-bar{position:relative;margin-bottom:12px}
 .search-bar input{width:100%;padding:10px 14px 10px 38px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;font-size:14px;font-family:inherit;color:#1e293b}
 .search-bar input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
@@ -194,13 +187,11 @@ tbody tr:hover{background:#f8fafc}
 .filter-btns button{padding:6px 12px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;color:#64748b;font-weight:500;transition:all .15s}
 .filter-btns button:hover{background:#f1f5f9;color:#1e293b}
 .filter-btns button.active{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:600}
-/* === ПЕЧАТЬ === */
 @media print{
     body{background:#fff}
     .app-header,.app-nav,.user-info,.btn,.no-print,.filter-btns,.search-bar{display:none!important}
     .container{padding:0;max-width:100%}
     .card{box-shadow:none;border:1px solid #e2e8f0;page-break-inside:avoid;margin-bottom:12px}
-    .card:hover{box-shadow:none}
     .kpi{box-shadow:none;border:1px solid #e2e8f0}
     .print-header{display:block!important;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1e293b}
     .print-header h1{font-size:20px;margin-bottom:4px}
@@ -264,7 +255,6 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
     </div>
 </div>
 
-<!-- 2FA экран -->
 <div id="2fa-screen" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
     <div class="login-card">
         <h1>🔐 Подтверждение</h1>
@@ -282,7 +272,6 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
     </div>
 </div>
 
-<!-- Забыли пароль -->
 <div id="forgot-screen" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
     <div class="login-card">
         <h1>🔑 Восстановление</h1>
@@ -358,8 +347,8 @@ try{
         firebase.initializeApp(firebaseConfig);
         fbDb=firebase.database();
         try{fbAuth=firebase.auth();}catch(e){console.warn('[auth]',e);}
-        console.log('[firebase] ✓ SDK инициализирован');
-    }else console.warn('[firebase] ✗ SDK не загрузился');
+        console.log('[firebase] OK');
+    }
 }catch(e){console.error('[firebase]',e);}
 
 function dateOffset(d){const x=new Date();x.setDate(x.getDate()+d);return x.toISOString().slice(0,10);}
@@ -401,31 +390,23 @@ const SEED={
         {id:1,classId:1,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4,startTime:'08:30',endTime:'09:15'},
         {id:2,classId:1,dayOfWeek:1,lessonNumber:2,subject:'Русский язык',teacherId:5,startTime:'09:25',endTime:'10:10'},
         {id:3,classId:1,dayOfWeek:1,lessonNumber:3,subject:'Физика',teacherId:4,startTime:'10:25',endTime:'11:10'},
-        {id:4,classId:1,dayOfWeek:1,lessonNumber:4,subject:'История',teacherId:5,startTime:'11:25',endTime:'12:10'},
-        {id:5,classId:1,dayOfWeek:2,lessonNumber:1,subject:'Английский',teacherId:5,startTime:'08:30',endTime:'09:15'},
-        {id:6,classId:1,dayOfWeek:2,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
-        {id:7,classId:1,dayOfWeek:2,lessonNumber:3,subject:'Литература',teacherId:5,startTime:'10:25',endTime:'11:10'},
-        {id:8,classId:1,dayOfWeek:3,lessonNumber:1,subject:'Химия',teacherId:4,startTime:'08:30',endTime:'09:15'},
-        {id:9,classId:1,dayOfWeek:3,lessonNumber:2,subject:'Биология',teacherId:5,startTime:'09:25',endTime:'10:10'},
-        {id:10,classId:1,dayOfWeek:3,lessonNumber:3,subject:'Математика',teacherId:4,startTime:'10:25',endTime:'11:10'},
-        {id:11,classId:1,dayOfWeek:4,lessonNumber:1,subject:'Физика',teacherId:4,startTime:'08:30',endTime:'09:15'},
-        {id:12,classId:1,dayOfWeek:4,lessonNumber:2,subject:'Русский язык',teacherId:5,startTime:'09:25',endTime:'10:10'},
-        {id:13,classId:1,dayOfWeek:4,lessonNumber:3,subject:'История',teacherId:4,startTime:'10:25',endTime:'11:10'},
-        {id:14,classId:1,dayOfWeek:5,lessonNumber:1,subject:'Физкультура',teacherId:4,startTime:'08:30',endTime:'09:15'},
-        {id:15,classId:1,dayOfWeek:5,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
-        {id:16,classId:1,dayOfWeek:5,lessonNumber:3,subject:'Информатика',teacherId:5,startTime:'10:25',endTime:'11:10'},
-        {id:17,classId:2,dayOfWeek:1,lessonNumber:1,subject:'Физика',teacherId:5,startTime:'08:30',endTime:'09:15'},
-        {id:18,classId:2,dayOfWeek:1,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
-        {id:19,classId:3,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4,startTime:'08:30',endTime:'09:15'}
-    ],
-    templates:[
-        {id:1,classId:1,name:'Обычный день',description:'Все присутствуют'},
-        {id:2,classId:1,name:'День контрольной',description:'Все присутствуют, кроме опоздавших'}
+        {id:4,classId:1,dayOfWeek:2,lessonNumber:1,subject:'Английский',teacherId:5,startTime:'08:30',endTime:'09:15'},
+        {id:5,classId:1,dayOfWeek:2,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
+        {id:6,classId:1,dayOfWeek:3,lessonNumber:1,subject:'Химия',teacherId:4,startTime:'08:30',endTime:'09:15'},
+        {id:7,classId:1,dayOfWeek:3,lessonNumber:2,subject:'Биология',teacherId:5,startTime:'09:25',endTime:'10:10'},
+        {id:8,classId:1,dayOfWeek:4,lessonNumber:1,subject:'Физика',teacherId:4,startTime:'08:30',endTime:'09:15'},
+        {id:9,classId:1,dayOfWeek:4,lessonNumber:2,subject:'История',teacherId:5,startTime:'09:25',endTime:'10:10'},
+        {id:10,classId:1,dayOfWeek:5,lessonNumber:1,subject:'Физкультура',teacherId:4,startTime:'08:30',endTime:'09:15'},
+        {id:11,classId:1,dayOfWeek:5,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
+        {id:12,classId:2,dayOfWeek:1,lessonNumber:1,subject:'Физика',teacherId:5,startTime:'08:30',endTime:'09:15'},
+        {id:13,classId:2,dayOfWeek:1,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
+        {id:14,classId:3,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4,startTime:'08:30',endTime:'09:15'}
     ],
     log:[],
     qrTokens:[],
     checkins:[],
-    pending2fa:[]
+    pending2fa:[],
+    resetTokens:[]
 };
 
 const STORAGE_KEY='school_attendance_v12';
@@ -456,7 +437,6 @@ async function verifyPassword(input,stored){
 
 function startFirebaseSync(){
     if(!fbDb){loadLocal();return;}
-    console.log('[sync] Подписка на Firebase');
     fbDb.ref('school_attendance').on('value',(snap)=>{
         const data=snap.val();
         if(data&&data.students&&data.classes){
@@ -479,7 +459,7 @@ function loadLocal(){
 
 function migrate(){
     if(!state)return;
-    ['absences','log','reasons','students','classes','users','qrTokens','checkins','schedule','templates','pending2fa'].forEach(k=>{if(!state[k])state[k]=[];});
+    ['absences','log','reasons','students','classes','users','qrTokens','checkins','schedule','pending2fa','resetTokens'].forEach(k=>{if(!state[k])state[k]=[];});
     state.absences.forEach(a=>{
         if(!a.status)a.status='approved';
         if(!a.type)a.type='absent';
@@ -548,7 +528,6 @@ function logAction(action){if(!session)return;state.log.push({id:nextId(state.lo
 function initials(name){return (name||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
 function getDayOfWeek(iso){const d=new Date(iso+'T00:00:00');return d.getDay()===0?7:d.getDay();}
 
-/* ============ УЧЕБНЫЕ СУТКИ (8:00 → 8:00) ============ */
 function getSchoolDay(){
     const now=new Date();
     const h=now.getHours();
@@ -566,7 +545,6 @@ function getSchoolDay(){
     return{date,validFrom:validFrom.getTime(),validUntil:validUntil.getTime()};
 }
 
-/* ============ QR (с определением опоздания) ============ */
 function processCheckin(token){
     try{
         const rec=state.qrTokens.find(t=>t.token===token);
@@ -583,7 +561,6 @@ function processCheckin(token){
         const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===date&&c.classId===rec.classId);
         if(existing){showToast('Вы уже отметились за '+formatDate(date)+' в '+existing.time,'info');pendingCheckinToken=null;renderApp();return;}
 
-        // Определение опоздания по первому уроку
         const dow=getDayOfWeek(date);
         const firstLesson=state.schedule.find(l=>l.classId===rec.classId&&l.dayOfWeek===dow&&l.lessonNumber===1);
         const firstStart=firstLesson?firstLesson.startTime:'08:30';
@@ -596,14 +573,10 @@ function processCheckin(token){
             date,time:nowTime,token,isLate
         });
 
-        // Убираем старое отсутствие, если было
-        state.absences=state.absences.filter(a=>!(a.studentId===session.studentId&&a.date===date&&a.status==='approved'&&a.type==='absent'));
+        state.absences=state.absences.filter(a=>!(a.studentId===session.studentId&&a.date===date&&a.status==='approved'&&(a.type==='absent'||a.type==='late')));
 
-        // Если опоздал — добавляем запись "опоздание"
-        let lateReason=state.reasons.find(r=>r.name.toLowerCase().includes('опоздан'))?.id||5;
         if(isLate){
-            // Убираем старое опоздание если было
-            state.absences=state.absences.filter(a=>!(a.studentId===session.studentId&&a.date===date&&a.status==='approved'&&a.type==='late'));
+            const lateReason=state.reasons.find(r=>r.name.toLowerCase().includes('опоздан'))?.id||5;
             state.absences.push({
                 id:nextId(state.absences),studentId:session.studentId,date,
                 reasonId:lateReason,comment:'автоматически по QR',status:'approved',type:'late',hasCertificate:false
@@ -622,14 +595,13 @@ function processCheckin(token){
 function showToast(msg,type='info'){
     const colors={success:'#16a34a',error:'#dc2626',warning:'#f59e0b',info:'#2563eb'};
     const el=document.createElement('div');
-    el.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${colors[type]};color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:10000;max-width:90vw;text-align:center`;
+    el.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:'+colors[type]+';color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:10000;max-width:90vw;text-align:center';
     el.textContent=msg;
     document.body.appendChild(el);
     setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';},3500);
     setTimeout(()=>el.remove(),3900);
 }
 
-/* ============ 2FA ============ */
 let pending2faUser=null;
 
 function start2FA(user){
@@ -657,7 +629,6 @@ function verify2FA(){
     pending2faUser=null;
 }
 
-/* ============ LOGIN ============ */
 function completeLogin(user){
     session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
     saveSession();
@@ -685,7 +656,6 @@ async function handleLogin(e){
         if(!ok){err.textContent='Неверный логин или пароль';err.classList.remove('hidden');return;}
         if(!user.password.startsWith('sha256:')&&!user.password.startsWith('h:')){user.password=await hashPassword(p);save();}
 
-        // 2FA для директора и админа
         if(user.role==='director'||user.role==='admin'){
             start2FA(user);
             return;
@@ -710,7 +680,6 @@ function renderLogin(){
     else{btn.disabled=true;btn.textContent='Загрузка...';}
 }
 
-/* ============ FORGOT PASSWORD ============ */
 async function handleForgot(){
     const username=document.getElementById('forgot-user').value.trim();
     const info=document.getElementById('forgot-info');
@@ -720,25 +689,20 @@ async function handleForgot(){
 
     info.innerHTML='<div class="alert alert-info">Отправляем...</div>';
 
-    // Попытка через Firebase Auth (если настроен email)
     if(user.email&&fbAuth){
         try{
             await fbAuth.sendPasswordResetEmail(user.email);
-            info.innerHTML=`<div class="alert alert-success">Письмо со ссылкой отправлено на <b>${esc(user.email)}</b>. Проверьте почту.</div>`;
+            info.innerHTML='<div class="alert alert-success">Письмо со ссылкой отправлено на <b>'+esc(user.email)+'</b>.</div>';
             return;
-        }catch(e){
-            console.warn('[auth]',e);
-            // fallback ниже
-        }
+        }catch(e){console.warn('[auth]',e);}
     }
 
-    // Fallback — показываем код на экране
     const code=String(Math.floor(100000+Math.random()*900000));
     state.resetTokens=state.resetTokens||[];
     state.resetTokens=state.resetTokens.filter(t=>t.username!==username);
     state.resetTokens.push({username,code,expiresAt:Date.now()+15*60*1000});
     save();
-    info.innerHTML=`<div class="alert alert-warning"><b>Демо-режим:</b> код для <b>${esc(username)}</b> — <code style="font-size:16px;background:#fff;padding:2px 8px;border-radius:4px;letter-spacing:2px">${code}</code><br><small>Действует 15 минут. Для реальной отправки на email укажите email в профиле (Firebase Auth).</small></div><div class="form-group" style="margin-top:12px"><label class="form-label">Код</label><input class="input" id="forgot-code" maxlength="6"></div><div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="forgot-newpass"></div><button class="btn btn-success btn-block" onclick="applyPasswordReset('${esc(username)}')">Сбросить пароль</button>`;
+    info.innerHTML='<div class="alert alert-warning"><b>Демо-режим:</b> код для <b>'+esc(username)+'</b> — <code style="font-size:16px;background:#fff;padding:2px 8px;border-radius:4px;letter-spacing:2px">'+code+'</code><br><small>Действует 15 минут.</small></div><div class="form-group" style="margin-top:12px"><label class="form-label">Код</label><input class="input" id="forgot-code" maxlength="6"></div><div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="forgot-newpass"></div><button class="btn btn-success btn-block" onclick="applyPasswordReset(\''+esc(username)+'\')">Сбросить пароль</button>';
 }
 
 async function applyPasswordReset(username){
@@ -754,11 +718,10 @@ async function applyPasswordReset(username){
     user.password=await hashPassword(newPass);
     state.resetTokens=state.resetTokens.filter(t=>t.username!==username);
     save();
-    info.innerHTML='<div class="alert alert-success">Пароль изменён! Возвращаемся...</div>';
+    info.innerHTML='<div class="alert alert-success">Пароль изменён!</div>';
     setTimeout(()=>renderLogin(),1200);
 }
 
-/* ============ МОДАЛЬНОЕ ОКНО ============ */
 function openEditUserModal(userId){
     const u=getUser(userId);
     if(!u)return;
@@ -769,7 +732,7 @@ function openEditUserModal(userId){
             <div class="modal-card">
                 <h3>✎ Редактировать аккаунт</h3>
                 <div class="form-group"><label class="form-label">ФИО</label><input class="input" id="eu-name" value="${esc(u.name)}"></div>
-                <div class="form-group"><label class="form-label">Email (для восстановления пароля)</label><input class="input" type="email" id="eu-email" value="${esc(u.email||'')}" placeholder="example@mail.ru"></div>
+                <div class="form-group"><label class="form-label">Email</label><input class="input" type="email" id="eu-email" value="${esc(u.email||'')}" placeholder="example@mail.ru"></div>
                 <div class="form-group"><label class="form-label">Логин</label><input class="input" id="eu-username" value="${esc(u.username)}"></div>
                 <div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="eu-password" placeholder="оставьте пустым — не менять"></div>
                 <div class="form-group"><label class="form-label">Роль</label>
@@ -804,21 +767,21 @@ function openEditUserModal(userId){
         const newRole=roleSel.value;
         const newStudentId=newRole==='student'&&document.getElementById('eu-student').value?Number(document.getElementById('eu-student').value):null;
         if(!newName||!newUsername){msg.innerHTML='<div class="alert alert-error">Заполните ФИО и логин</div>';return;}
-        if(!/^[a-zA-Z0-9_.-]+$/.test(newUsername)){msg.innerHTML='<div class="alert alert-error">Логин: только латиница, цифры, _ . -</div>';return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(newUsername)){msg.innerHTML='<div class="alert alert-error">Логин: только латиница, цифры</div>';return;}
         if(state.users.some(x=>x.id!==u.id&&x.username===newUsername)){msg.innerHTML='<div class="alert alert-error">Логин занят</div>';return;}
         if(newRole==='student'&&!newStudentId){msg.innerHTML='<div class="alert alert-error">Выберите ученика</div>';return;}
         u.name=newName;u.username=newUsername;u.email=newEmail;
         if(newRole!==u.role&&u.id!==session.userId)u.role=newRole;
         u.studentId=newRole==='student'?newStudentId:(u.studentId||null);
         if(newPassword){
-            if(newPassword.length<3){msg.innerHTML='<div class="alert alert-error">Пароль слишком короткий</div>';return;}
+            if(newPassword.length<3){msg.innerHTML='<div class="alert alert-error">Пароль короткий</div>';return;}
             u.password=await hashPassword(newPassword);
         }
         if(u.id===session.userId){
             session.name=newName;session.username=newUsername;saveSession();
             document.getElementById('user-name').textContent=newName;
         }
-        save();logAction(`Изменён аккаунт: ${newUsername}`);
+        save();logAction('Изменён аккаунт: '+newUsername);
         c.classList.add('hidden');
         renderAccounts();
         showToast('Аккаунт обновлён','success');
@@ -837,7 +800,8 @@ function renderApp(){
     document.getElementById('checkin-banner').classList.add('hidden');
     document.getElementById('user-name').textContent=session.name;
     document.getElementById('user-role').textContent=roleLabel(session.role);
-    document.getElementById('print-date').textContent=new Date().toLocaleString('ru-RU');
+    const pd=document.getElementById('print-date');
+    if(pd)pd.textContent=new Date().toLocaleString('ru-RU');
     renderNav();
     renderPage(currentPage);
 }
@@ -881,11 +845,10 @@ function renderPage(page){
         else if(page==='sync')renderSync();
     }catch(err){
         console.error('[render '+page+']',err);
-        document.getElementById('page-'+page).innerHTML=`<div class="alert alert-error"><b>Ошибка:</b> ${esc(err.message)}</div>`;
+        document.getElementById('page-'+page).innerHTML='<div class="alert alert-error"><b>Ошибка:</b> '+esc(err.message)+'</div>';
     }
 }
 
-/* ============ QR СТРАНИЦА ============ */
 let qrTimer=null;
 let qrClassId=null;
 let qrGenerating=false;
@@ -893,7 +856,7 @@ let qrGenerating=false;
 function renderQR(){
     const isT=session.role==='teacher';
     const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
-    if(!allowed.length){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
+    if(!allowed.length){document.getElementById('page-qr').innerHTML='<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>';return;}
     if(!qrClassId||!allowed.some(c=>c.id===qrClassId))qrClassId=allowed[0].id;
     const cls=getClass(qrClassId);
     if(!cls)return;
@@ -904,7 +867,7 @@ function renderQR(){
     const validUntilStr=activeToken?new Date(activeToken.validUntil).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
     document.getElementById('page-qr').innerHTML=`
         <h1 class="page-title">QR-код для отметки</h1>
-        <p class="page-subtitle">Обновляется автоматически в 08:00 · действует до 08:00 следующего дня</p>
+        <p class="page-subtitle">Действует с 08:00 до 08:00 следующего дня</p>
         <div class="card"><div class="card-body"><div class="inline-form" style="grid-template-columns:${isT?'1fr auto':'1fr 1fr auto'}">
             ${!isT?`<div class="form-group"><label class="form-label">Класс</label><select class="select" id="qr-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===qrClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}
             <div class="form-group"><label class="form-label">Учебный день</label><div class="input" style="background:#f8fafc;font-weight:600">${formatDate(schoolDay.date)}</div></div>
@@ -958,7 +921,7 @@ function drawQRImage(token,validUntil){
     catch(err){wrap.innerHTML='<div class="alert alert-error">Ошибка: '+esc(err.message)+'</div>';return;}
     const info=document.createElement('div');
     info.className='qr-info';
-    info.innerHTML=`<div class="qr-timer">⏱ 24 часа (с 8:00 до 8:00)</div><div style="margin-top:12px;color:#64748b;font-size:11px">${esc(url)}</div>`;
+    info.innerHTML='<div class="qr-timer">⏱ 24 часа (с 8:00 до 8:00)</div><div style="margin-top:12px;color:#64748b;font-size:11px">'+esc(url)+'</div>';
     wrap.appendChild(info);
     if(validUntil){
         const ms=validUntil-Date.now()+5000;
@@ -966,20 +929,18 @@ function drawQRImage(token,validUntil){
     }
 }
 
-/* ============ ПОСЕЩАЕМОСТЬ (с шаблонами и поиском) ============ */
 let qaState={classId:null,date:null,search:'',filter:'all'};
 
 function renderQuickAdd(){
     const isT=session.role==='teacher';
     const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
-    if(!allowed.length){document.getElementById('page-quick-add').innerHTML=`<h1 class="page-title">Посещаемость</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
+    if(!allowed.length){document.getElementById('page-quick-add').innerHTML='<h1 class="page-title">Посещаемость</h1><div class="alert alert-warning">Не назначен класс</div>';return;}
     if(!qaState.classId||!allowed.some(c=>c.id===qaState.classId))qaState.classId=allowed[0].id;
     if(!qaState.date)qaState.date=new Date().toISOString().slice(0,10);
     const cls=getClass(qaState.classId);
     const date=qaState.date;
     let students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
 
-    // Фильтры
     const todayAbs=state.absences.filter(a=>a.date===date&&a.status==='approved'&&students.some(s=>s.id===a.studentId));
     const byS={};todayAbs.forEach(a=>{byS[a.studentId]=a;});
     const checkins=state.checkins.filter(c=>c.date===date&&c.classId===cls.id);
@@ -1018,7 +979,7 @@ function renderQuickAdd(){
             const ex=byS[st.id];
             const status=ex?ex.type:'present';
             const chk=checkinByS[st.id];
-            const qrBadge=chk?` <span class="badge badge-info" style="font-size:10px">QR ${esc(chk.time)}${chk.isLate?' ⚠':''}</span>`:'';
+            const qrBadge=chk?' <span class="badge badge-info" style="font-size:10px">QR '+esc(chk.time)+(chk.isLate?' ⚠':'')+'</span>':'';
             return`<tr class="attendance-row ${status==='absent'?'row-absent':status==='late'?'row-late':''}" data-row-sid="${st.id}">
                 <td>${esc(st.fullName)}${qrBadge}</td>
                 <td><div class="status-switch" data-switch="${st.id}">
@@ -1044,39 +1005,37 @@ function renderQuickAdd(){
         let err='';
         Object.entries(sts).forEach(([sid,st])=>{
             if(st==='present')return;
-            const r=Number(document.querySelector(`[data-reason-for="${sid}"]`).value);
-            if(!r)err=`«${getStudent(Number(sid)).fullName}» — причина`;
+            const r=Number(document.querySelector('[data-reason-for="'+sid+'"]').value);
+            if(!r)err='«'+getStudent(Number(sid)).fullName+'» — причина';
         });
-        if(err){document.getElementById('qa-msg').innerHTML=`<div class="alert alert-error">${esc(err)}</div>`;return;}
-        // Удаляем старые записи для этих учеников на эту дату
+        if(err){document.getElementById('qa-msg').innerHTML='<div class="alert alert-error">'+esc(err)+'</div>';return;}
         const ids=Object.keys(sts).map(Number);
         state.absences=state.absences.filter(a=>!(a.date===date&&ids.includes(a.studentId)));
         let idc=nextId(state.absences);
         Object.entries(sts).forEach(([sid,st])=>{
             if(st==='present')return;
-            const reasonId=Number(document.querySelector(`[data-reason-for="${sid}"]`).value);
+            const reasonId=Number(document.querySelector('[data-reason-for="'+sid+'"]').value);
             state.absences.push({id:idc++,studentId:Number(sid),date,reasonId,comment:'',status:'approved',type:st,hasCertificate:false});
         });
-        save();logAction(`Посещаемость ${cls.name}`);
+        save();logAction('Посещаемость '+cls.name);
         const absN=Object.values(sts).filter(s=>s==='absent').length;
         const lateN=Object.values(sts).filter(s=>s==='late').length;
-        document.getElementById('qa-msg').innerHTML=`<div class="alert alert-success">Сохранено: ${absN} отсутств., ${lateN} опозд.</div>`;
+        document.getElementById('qa-msg').innerHTML='<div class="alert alert-success">Сохранено: '+absN+' отсутств., '+lateN+' опозд.</div>';
     };
 }
 
 function updateStatus(sid,st){
-    const sw=document.querySelector(`[data-switch="${sid}"]`);if(!sw)return;
+    const sw=document.querySelector('[data-switch="'+sid+'"]');if(!sw)return;
     sw.querySelectorAll('button').forEach(b=>{b.classList.remove('active-present','active-late','active-absent');if(b.dataset.status===st)b.classList.add('active-'+st);});
-    const row=document.querySelector(`.attendance-row[data-row-sid="${sid}"]`);
+    const row=document.querySelector('.attendance-row[data-row-sid="'+sid+'"]');
     row.classList.remove('row-absent','row-late');
     if(st==='absent')row.classList.add('row-absent');
     if(st==='late')row.classList.add('row-late');
-    const r=document.querySelector(`[data-reason-for="${sid}"]`);
+    const r=document.querySelector('[data-reason-for="'+sid+'"]');
     r.disabled=st==='present';
     if(st==='present')r.value='';
 }
 
-/* ============ СПИСОК КЛАССА (с поиском) ============ */
 let studentsClassId=null;
 let studentsSearch='';
 function renderStudents(){
@@ -1085,7 +1044,7 @@ function renderStudents(){
     let allowed;
     if(isT||isS){const my=getMyClass();allowed=my?[my]:[];}
     else allowed=state.classes;
-    if(!allowed.length){document.getElementById('page-students').innerHTML=`<h1 class="page-title">Список</h1><div class="alert alert-warning">Нет классов</div>`;return;}
+    if(!allowed.length){document.getElementById('page-students').innerHTML='<h1 class="page-title">Список</h1><div class="alert alert-warning">Нет классов</div>';return;}
     if(!studentsClassId||!allowed.some(c=>c.id===studentsClassId))studentsClassId=allowed[0].id;
     const cls=getClass(studentsClassId);
     const teacher=getTeacherOfClass(cls.id);
@@ -1098,12 +1057,13 @@ function renderStudents(){
     const s=new Date();s.setDate(s.getDate()-29);
     const start=s.toISOString().slice(0,10);
     const totalAtt=classAvg(cls.id,start,end);
-    const totalAbs=approved().filter(a=>a.date>=start&&a.date<=end&&getStudentsOfClass(cls.id).some(st=>st.id===a.studentId)).length;
-    const totalLates=approvedLates().filter(a=>a.date>=start&&a.date<=end&&getStudentsOfClass(cls.id).some(st=>st.id===a.studentId)).length;
+    const allSt=getStudentsOfClass(cls.id);
+    const totalAbs=approved().filter(a=>a.date>=start&&a.date<=end&&allSt.some(st=>st.id===a.studentId)).length;
+    const totalLates=approvedLates().filter(a=>a.date>=start&&a.date<=end&&allSt.some(st=>st.id===a.studentId)).length;
 
     document.getElementById('page-students').innerHTML=`
         <h1 class="page-title">Список класса — ${esc(cls.name)}</h1>
-        <p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${getStudentsOfClass(cls.id).length} учеников</p>
+        <p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${allSt.length} учеников</p>
         <div class="no-print">
         ${!isT&&!isS?`<div class="card"><div class="card-body"><div class="form-group" style="margin:0;max-width:300px"><label class="form-label">Класс</label>
             <select class="select" id="stud-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===studentsClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
@@ -1114,7 +1074,7 @@ function renderStudents(){
         </div></div>
         </div>
         <div class="kpi-grid">
-            <div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${getStudentsOfClass(cls.id).length}</div></div>
+            <div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${allSt.length}</div></div>
             <div class="kpi success"><div class="kpi-label">Ср. посещаемость</div><div class="kpi-value">${totalAtt}%</div></div>
             <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${totalAbs}</div></div>
             <div class="kpi warning"><div class="kpi-label">Опозданий</div><div class="kpi-value">${totalLates}</div></div>
@@ -1143,7 +1103,6 @@ function renderStudents(){
     if(si)si.oninput=e=>{studentsSearch=e.target.value;renderStudents();};
 }
 
-/* ============ РАСПИСАНИЕ ============ */
 let scheduleClassId=null;
 function renderSchedule(){
     const isT=session.role==='teacher';
@@ -1152,7 +1111,7 @@ function renderSchedule(){
     let allowed;
     if(isT||isS){const my=getMyClass();allowed=my?[my]:[];}
     else allowed=state.classes;
-    if(!allowed.length){document.getElementById('page-schedule').innerHTML=`<h1 class="page-title">Расписание</h1><div class="alert alert-warning">Нет классов</div>`;return;}
+    if(!allowed.length){document.getElementById('page-schedule').innerHTML='<h1 class="page-title">Расписание</h1><div class="alert alert-warning">Нет классов</div>';return;}
     if(!scheduleClassId||!allowed.some(c=>c.id===scheduleClassId))scheduleClassId=allowed[0].id;
     const cls=getClass(scheduleClassId);
     const teacher=getTeacherOfClass(cls.id);
@@ -1212,7 +1171,7 @@ function renderSchedule(){
             const subject=(fd.get('subject')||'').trim();
             if(!subject)return;
             if(state.schedule.some(l=>l.classId===scheduleClassId&&l.dayOfWeek===dayOfWeek&&l.lessonNumber===lessonNumber)){
-                document.getElementById('sch-msg').innerHTML=`<div class="alert alert-error">Уже есть</div>`;return;
+                document.getElementById('sch-msg').innerHTML='<div class="alert alert-error">Уже есть</div>';return;
             }
             state.schedule.push({id:nextId(state.schedule),classId:scheduleClassId,dayOfWeek,lessonNumber,subject,teacherId:fd.get('teacherId')?Number(fd.get('teacherId')):null,startTime:fd.get('startTime'),endTime:fd.get('endTime')});
             save();renderSchedule();
@@ -1220,14 +1179,13 @@ function renderSchedule(){
         document.querySelectorAll('[data-del-lesson]').forEach(b=>{b.onclick=()=>{
             const id=Number(b.dataset.delLesson);
             const l=state.schedule.find(x=>x.id===id);
-            if(!l||!confirm(`Удалить «${l.subject}»?`))return;
+            if(!l||!confirm('Удалить «'+l.subject+'»?'))return;
             state.schedule=state.schedule.filter(x=>x.id!==id);
             save();renderSchedule();
         };});
     }
 }
 
-/* ============ ГЛАВНАЯ УЧИТЕЛЯ (с быстрыми действиями) ============ */
 function renderHome(){
     if(session.role==='student')return renderStudentHome();
     if(session.role==='teacher')return renderTeacherHome();
@@ -1237,7 +1195,7 @@ function renderHome(){
 
 function renderTeacherHome(){
     const cls=getMyClass();
-    if(!cls){document.getElementById('page-home').innerHTML=`<h1 class="page-title">Мой класс</h1><div class="alert alert-warning">Вам не назначен класс</div>`;return;}
+    if(!cls){document.getElementById('page-home').innerHTML='<h1 class="page-title">Мой класс</h1><div class="alert alert-warning">Вам не назначен класс</div>';return;}
     const ss=getStudentsOfClass(cls.id);
     const ids=ss.map(s=>s.id);
     const abs=approved().filter(a=>ids.includes(a.studentId)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1273,7 +1231,7 @@ function renderTeacherHome(){
             <div class="kpi success"><div class="kpi-label">Посещаемость</div><div class="kpi-value">${avg}%</div></div>
             <div class="kpi ${pending.length?'danger':''}"><div class="kpi-label">Заявок</div><div class="kpi-value">${pending.length}</div></div>
         </div>
-        ${todayCheckins.length?`<div class="alert alert-info">📱 Сегодня по QR отметились: <b>${todayCheckins.length}</b> из ${ss.length}${todayCheckins.filter(c=>c.isLate).length?` · <span style="color:#dc2626">опоздавших: ${todayCheckins.filter(c=>c.isLate).length}</span>`:''}</div>`:''}
+        ${todayCheckins.length?'<div class="alert alert-info">📱 Сегодня по QR отметились: <b>'+todayCheckins.length+'</b> из '+ss.length+(todayCheckins.filter(c=>c.isLate).length?' · <span style="color:#dc2626">опоздавших: '+todayCheckins.filter(c=>c.isLate).length+'</span>':'')+'</div>':''}
         ${pending.length?`<div class="card"><div class="card-header" style="color:#f59e0b">⏳ Заявки от учеников</div><div class="card-body p-0">${pending.map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<div class="request-card"><div class="request-main"><div class="request-name">${esc(s.fullName)}</div><div class="request-meta">${formatDate(a.date)} · ${esc(r?.name||'—')}</div></div><div class="request-actions"><button class="btn btn-sm btn-success" data-approve="${a.id}">✓</button><button class="btn btn-sm btn-danger" data-reject="${a.id}">✕</button></div></div>`;}).join('')}</div></div>`:''}
         <div class="card"><div class="card-header"><span>Последние пропуски</span></div><div class="card-body p-0">${abs.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тип</th><th>Причина</th></tr></thead><tbody>${abs.slice(0,10).map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(s.fullName)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока нет записей</div>'}</div></div>`;
     document.querySelectorAll('[data-approve]').forEach(b=>{b.onclick=()=>{const a=state.absences.find(x=>x.id===Number(b.dataset.approve));if(!a)return;a.status='approved';a.reviewedAt=Date.now();save();logAction('Подтверждение');renderTeacherHome();renderNav();};});
@@ -1290,7 +1248,7 @@ function renderStudentHome(){
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Мои пропуски</h1>
         <p class="page-subtitle">${esc(student?.fullName||'')} · класс ${esc(cls?.name||'—')}</p>
-        ${todayCheckin?`<div class="alert alert-${todayCheckin.isLate?'warning':'success'}">${todayCheckin.isLate?'⚠ Отметились с опозданием в':'✓ Отметились по QR в'} ${esc(todayCheckin.time)}</div>`:''}
+        ${todayCheckin?'<div class="alert alert-'+(todayCheckin.isLate?'warning':'success')+'">'+(todayCheckin.isLate?'⚠ Отметились с опозданием в ':'✓ Отметились по QR в ')+esc(todayCheckin.time)+'</div>':''}
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Всего</div><div class="kpi-value">${my.length}</div></div>
             <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${my.filter(a=>a.type==='absent'&&a.status==='approved').length}</div></div>
@@ -1315,7 +1273,7 @@ function renderAdminSchoolHome(){
             <div class="kpi"><div class="kpi-label">Учителей</div><div class="kpi-value">${allTeachers().length}</div></div>
             <div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">${state.students.length}</div></div>
             <div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">${total}</div></div>
-            ${pendingAll?`<div class="kpi danger"><div class="kpi-label">Заявок</div><div class="kpi-value">${pendingAll}</div></div>`:''}
+            ${pendingAll?'<div class="kpi danger"><div class="kpi-label">Заявок</div><div class="kpi-value">'+pendingAll+'</div></div>':''}
         </div>
         <div class="card"><div class="card-header">Классы</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>${cs.map(x=>{const bar=x.avg>=90?'success':x.avg>=75?'warning':'danger';return`<tr><td><b>${esc(x.cls.name)}</b></td><td>${x.teacher?esc(x.teacher.name):'—'}</td><td class="td-center">${x.students}</td><td class="td-center">${x.abs}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${x.avg}%">${x.avg}%</div></div></td></tr>`;}).join('')}</tbody></table></div></div></div>`;
 }
@@ -1335,7 +1293,6 @@ function renderAdminHome(){
         </div></div>`;
 }
 
-/* ============ ЗАЯВКА ============ */
 function renderMyRequest(){
     const today=new Date().toISOString().slice(0,10);
     const my=state.absences.filter(a=>a.studentId===session.studentId&&a.status!=='approved').sort((a,b)=>b.date.localeCompare(a.date));
@@ -1367,7 +1324,6 @@ function renderMyRequest(){
     };
 }
 
-/* ============ КАЛЕНДАРЬ ============ */
 let calState={year:null,month:null,selectedDay:null};
 function renderCalendar(){
     const today=new Date();
@@ -1388,33 +1344,26 @@ function renderCalendar(){
     while(cells.length%7!==0||cells.length<35){const idx=cells.length-firstDW-dim+1;const m=month===11?0:month+1;const y=month===11?year+1:year;cells.push({day:idx,month:m,year:y,other:true});}
     const todayIso=today.toISOString().slice(0,10);
     const cellsHTML=cells.map(c=>{
-        const iso=`${c.year}-${String(c.month+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+        const iso=c.year+'-'+String(c.month+1).padStart(2,'0')+'-'+String(c.day).padStart(2,'0');
         const list=byD[iso]||[];
         const a=list.filter(x=>x.type==='absent'&&x.status==='approved').length;
         const l=list.filter(x=>x.type==='late'&&x.status==='approved').length;
         const p=list.filter(x=>x.status==='pending').length;
-        let b='';if(a)b+=`<span class="cal-badge">${a}</span>`;if(l)b+=`<span class="cal-badge late">${l}⏰</span>`;if(p)b+=`<span class="cal-badge pending">${p}?</span>`;
-        return`<div class="cal-day ${c.other?'other-month':''} ${iso===todayIso?'today':''} ${iso===calState.selectedDay?'selected':''}" data-date="${iso}"><div class="day-num">${c.day}</div><div class="cal-badges">${b}</div></div>`;
+        let b='';if(a)b+='<span class="cal-badge">'+a+'</span>';if(l)b+='<span class="cal-badge late">'+l+'⏰</span>';if(p)b+='<span class="cal-badge pending">'+p+'?</span>';
+        return'<div class="cal-day '+(c.other?'other-month':'')+' '+(iso===todayIso?'today':'')+' '+(iso===calState.selectedDay?'selected':'')+'" data-date="'+iso+'"><div class="day-num">'+c.day+'</div><div class="cal-badges">'+b+'</div></div>';
     }).join('');
     let details='';
     if(calState.selectedDay){
         const list=byD[calState.selectedDay]||[];
-        if(!list.length)details=`<div class="card"><div class="card-header">${formatDate(calState.selectedDay)}</div><div class="empty">Пропусков нет</div></div>`;
-        else details=`<div class="card"><div class="card-header">${formatDate(calState.selectedDay)} · ${list.length}</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Тип</th><th>Причина</th><th>Статус</th></tr></thead><tbody>${list.map(a=>{const s=getStudent(a.studentId);const c=s?getClass(s.classId):null;const r=getReason(a.reasonId);return`<tr><td>${esc(s?.fullName||'—')}</td><td><b>${esc(c?.name||'—')}</b></td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td><td>${statusBadge(a.status)}</td></tr>`;}).join('')}</tbody></table></div></div></div>`;
+        if(!list.length)details='<div class="card"><div class="card-header">'+formatDate(calState.selectedDay)+'</div><div class="empty">Пропусков нет</div></div>';
+        else details='<div class="card"><div class="card-header">'+formatDate(calState.selectedDay)+' · '+list.length+'</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Тип</th><th>Причина</th><th>Статус</th></tr></thead><tbody>'+list.map(a=>{const s=getStudent(a.studentId);const c=s?getClass(s.classId):null;const r=getReason(a.reasonId);return'<tr><td>'+esc(s?.fullName||'—')+'</td><td><b>'+esc(c?.name||'—')+'</b></td><td>'+(typeCell(a)||'<span class="badge badge-danger">пропуск</span>')+'</td><td>'+esc(r?.name||'—')+'</td><td>'+statusBadge(a.status)+'</td></tr>';}).join('')+'</tbody></table></div></div></div>';
     }
-    document.getElementById('page-calendar').innerHTML=`
-        <h1 class="page-title">Календарь</h1>
-        <div class="no-print" style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать</button></div>
-        <div class="card"><div class="card-body">
-            <div class="calendar-nav"><button class="btn btn-ghost btn-sm no-print" id="cp">←</button><div class="calendar-month">${MONTHS[month]} ${year}</div><button class="btn btn-ghost btn-sm no-print" id="cn">→</button></div>
-            <div class="calendar">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<div class="cal-header">${d}</div>`).join('')}${cellsHTML}</div>
-        </div></div>${details}`;
+    document.getElementById('page-calendar').innerHTML='<h1 class="page-title">Календарь</h1><div class="no-print" style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать</button></div><div class="card"><div class="card-body"><div class="calendar-nav"><button class="btn btn-ghost btn-sm no-print" id="cp">←</button><div class="calendar-month">'+MONTHS[month]+' '+year+'</div><button class="btn btn-ghost btn-sm no-print" id="cn">→</button></div><div class="calendar">'+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>'<div class="cal-header">'+d+'</div>').join('')+cellsHTML+'</div></div></div>'+details;
     const cp=document.getElementById('cp');if(cp)cp.onclick=()=>{if(calState.month===0){calState.month=11;calState.year--;}else calState.month--;renderCalendar();};
     const cn=document.getElementById('cn');if(cn)cn.onclick=()=>{if(calState.month===11){calState.month=0;calState.year++;}else calState.month++;renderCalendar();};
     document.querySelectorAll('.cal-day').forEach(c=>{c.onclick=()=>{calState.selectedDay=c.dataset.date;renderCalendar();};});
 }
 
-/* ============ ОТЧЁТЫ (с печатью) ============ */
 function renderReports(){
     const today=new Date();const s=new Date();s.setDate(s.getDate()-29);
     const start=s.toISOString().slice(0,10);const end=today.toISOString().slice(0,10);
@@ -1433,40 +1382,27 @@ function renderReports(){
     let table;
     if(filter==='all'){
         const rows=allowed.map(c=>{const ss=getStudentsOfClass(c.id);const avg=classAvg(c.id,start,end);const ab=approved().filter(a=>a.date>=start&&a.date<=end&&ss.some(x=>x.id===a.studentId)).length;return{cls:c,teacher:getTeacherOfClass(c.id),students:ss.length,abs:ab,avg};});
-        table=`<table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>${rows.map(r=>{const bar=r.avg>=90?'success':r.avg>=75?'warning':'danger';return`<tr><td><b>${esc(r.cls.name)}</b></td><td>${r.teacher?esc(r.teacher.name):'—'}</td><td class="td-center">${r.students}</td><td class="td-center">${r.abs}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${r.avg}%">${r.avg}%</div></div></td></tr>`;}).join('')}</tbody></table>`;
+        table='<table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>'+rows.map(r=>{const bar=r.avg>=90?'success':r.avg>=75?'warning':'danger';return'<tr><td><b>'+esc(r.cls.name)+'</b></td><td>'+(r.teacher?esc(r.teacher.name):'—')+'</td><td class="td-center">'+r.students+'</td><td class="td-center">'+r.abs+'</td><td><div class="progress"><div class="progress-fill '+bar+'" style="width:'+r.avg+'%">'+r.avg+'%</div></div></td></tr>';}).join('')+'</tbody></table>';
     }else{
         const ss=getStudentsOfClass(Number(filter));
         const stats=ss.map(s=>{const st={name:s.fullName,total:0,lates:0,abs:0};abs.filter(a=>a.studentId===s.id).forEach(a=>{st.total++;if(a.type==='absent')st.abs++;});st.lates=countLates(s.id,start,end);st.att=Math.round(calcAtt(s.id,start,end)*10)/10;return st;}).sort((a,b)=>a.name.localeCompare(b.name));
-        table=`<table><thead><tr><th>Ученик</th><th class="td-center">Проп.</th><th class="td-center">Опозд.</th><th>Посещ.</th></tr></thead><tbody>${stats.map(st=>{const bar=st.att>=90?'success':st.att>=75?'warning':'danger';return`<tr><td>${esc(st.name)}</td><td class="td-center">${st.abs}</td><td class="td-center">${st.lates||0}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${st.att}%">${st.att}%</div></div></td></tr>`;}).join('')}</tbody></table>`;
+        table='<table><thead><tr><th>Ученик</th><th class="td-center">Проп.</th><th class="td-center">Опозд.</th><th>Посещ.</th></tr></thead><tbody>'+stats.map(st=>{const bar=st.att>=90?'success':st.att>=75?'warning':'danger';return'<tr><td>'+esc(st.name)+'</td><td class="td-center">'+st.abs+'</td><td class="td-center">'+(st.lates||0)+'</td><td><div class="progress"><div class="progress-fill '+bar+'" style="width:'+st.att+'%">'+st.att+'%</div></div></td></tr>';}).join('')+'</tbody></table>';
     }
-    document.getElementById('print-subtitle').textContent=`Период: ${formatDate(start)} — ${formatDate(end)}`;
-    document.getElementById('page-reports').innerHTML=`
-        <h1 class="page-title">Отчёты</h1>
-        <p class="page-subtitle">${formatDate(start)} — ${formatDate(end)}</p>
-        <div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать отчёта</button>
-            <button class="btn btn-ghost btn-sm" onclick="printTabel()">📄 Печать табеля</button>
-            <button class="btn btn-ghost btn-sm" id="exp">⬇ CSV</button>
-        </div>
-        <div class="kpi-grid">
-            <div class="kpi"><div class="kpi-label">Раб. дней</div><div class="kpi-value">${wd}</div></div>
-            <div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">${abs.length}</div></div>
-            <div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">${filter==='all'?allowed.reduce((s,c)=>s+getStudentsOfClass(c.id).length,0):getStudentsOfClass(Number(filter)).length}</div></div>
-        </div>
-        <div class="charts-grid">
-            <div class="card" style="margin-bottom:0"><div class="card-header">Топ причин</div><div class="card-body">${top.length?barsHTML(top):'<div class="empty">Нет данных</div>'}</div></div>
-            <div class="card" style="margin-bottom:0"><div class="card-header">Категории</div><div class="card-body">${Object.keys(cc).length?donutHTML(cc):'<div class="empty">Нет данных</div>'}</div></div>
-        </div>
-        <div class="card"><div class="card-header">${filter==='all'?'Классы':'Ученики'}</div><div class="card-body p-0"><div class="table-wrap">${table}</div></div></div>`;
+    const ps=document.getElementById('print-subtitle');
+    if(ps)ps.textContent='Период: '+formatDate(start)+' — '+formatDate(end);
+    document.getElementById('page-reports').innerHTML='<h1 class="page-title">Отчёты</h1><p class="page-subtitle">'+formatDate(start)+' — '+formatDate(end)+'</p><div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать отчёта</button><button class="btn btn-ghost btn-sm" onclick="printTabel()">📄 Печать табеля</button><button class="btn btn-ghost btn-sm" id="exp">⬇ CSV</button></div><div class="kpi-grid"><div class="kpi"><div class="kpi-label">Раб. дней</div><div class="kpi-value">'+wd+'</div></div><div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">'+abs.length+'</div></div><div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">'+(filter==='all'?allowed.reduce((s,c)=>s+getStudentsOfClass(c.id).length,0):getStudentsOfClass(Number(filter)).length)+'</div></div></div><div class="charts-grid"><div class="card" style="margin-bottom:0"><div class="card-header">Топ причин</div><div class="card-body">'+(top.length?barsHTML(top):'<div class="empty">Нет данных</div>')+'</div></div><div class="card" style="margin-bottom:0"><div class="card-header">Категории</div><div class="card-body">'+(Object.keys(cc).length?donutHTML(cc):'<div class="empty">Нет данных</div>')+'</div></div></div><div class="card"><div class="card-header">'+(filter==='all'?'Классы':'Ученики')+'</div><div class="card-body p-0"><div class="table-wrap">'+table+'</div></div></div>';
     const ex=document.getElementById('exp');if(ex)ex.onclick=exportCSV;
 }
-function barsHTML(items){const max=Math.max(...items.map(i=>i[1]),1);return items.map(([l,c])=>`<div class="bar-row"><div class="bar-label">${esc(l)}</div><div class="bar-track"><div class="bar-fill" style="width:${(c/max)*100}%"></div></div><div class="bar-value">${c}</div></div>`).join('');}
-function donutHTML(cc){const colors={'уважительная':'#16a34a','неуважительная':'#f59e0b','особая':'#6b7280'};const total=Object.values(cc).reduce((a,b)=>a+b,0)||1;let acc=0;const seg=[];Object.entries(cc).forEach(([c,n])=>{const f=(acc/total)*360;acc+=n;const t=(acc/total)*360;seg.push(`${colors[c]||'#cbd5e1'} ${f}deg ${t}deg`);});return`<div class="donut-wrap"><div class="donut" style="background:conic-gradient(${seg.join(',')})"></div><div class="legend">${Object.entries(cc).map(([c,n])=>`<div class="legend-item"><span class="legend-dot" style="background:${colors[c]||'#cbd5e1'}"></span><span>${esc(c)}: <b>${n}</b></span></div>`).join('')}</div></div>`;}
+function barsHTML(items){const max=Math.max(...items.map(i=>i[1]),1);return items.map(([l,c])=>'<div class="bar-row"><div class="bar-label">'+esc(l)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c/max*100)+'%"></div></div><div class="bar-value">'+c+'</div></div>').join('');}
+function donutHTML(cc){const colors={'уважительная':'#16a34a','неуважительная':'#f59e0b','особая':'#6b7280'};const total=Object.values(cc).reduce((a,b)=>a+b,0)||1;let acc=0;const seg=[];Object.entries(cc).forEach(([c,n])=>{const f=(acc/total)*360;acc+=n;const t=(acc/total)*360;seg.push((colors[c]||'#cbd5e1')+' '+f+'deg '+t+'deg');});return'<div class="donut-wrap"><div class="donut" style="background:conic-gradient('+seg.join(',')+')"></div><div class="legend">'+Object.entries(cc).map(([c,n])=>'<div class="legend-item"><span class="legend-dot" style="background:'+(colors[c]||'#cbd5e1')+'"></span><span>'+esc(c)+': <b>'+n+'</b></span></div>').join('')+'</div></div>';}
 
+// ⚠️ ВАЖНО: здесь используется <\/script> (экранированный слэш) чтобы не закрыть основной скрипт
 function printTabel(){
     const w=window.open('','_blank');
     if(!w){showToast('Разрешите всплывающие окна','error');return;}
-    const end=new Date().toISOString().slice(0,10);const s=new Date();s.setDate(s.getDate()-29);const start=s.toISOString().slice(0,10);
+    const end=new Date().toISOString().slice(0,10);
+    const s=new Date();s.setDate(s.getDate()-29);
+    const start=s.toISOString().slice(0,10);
     let rows='';
     const isT=session.role==='teacher';
     const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
@@ -1476,81 +1412,39 @@ function printTabel(){
             const att=Math.round(calcAtt(st.id,start,end)*10)/10;
             const abs=approved().filter(a=>a.studentId===st.id&&a.date>=start&&a.date<=end).length;
             const lates=countLates(st.id,start,end);
-            rows+=`<tr><td>${esc(c.name)}</td><td>${esc(st.fullName)}</td><td style="text-align:center">${abs}</td><td style="text-align:center">${lates}</td><td style="text-align:center">${att}%</td></tr>`;
+            rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(st.fullName)+'</td><td style="text-align:center">'+abs+'</td><td style="text-align:center">'+lates+'</td><td style="text-align:center">'+att+'%</td></tr>';
         });
     }
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Табель</title><style>
-        body{font-family:Arial,sans-serif;padding:20px;font-size:12px}
-        h1{text-align:center;margin-bottom:6px;font-size:18px}
-        p{text-align:center;color:#666;margin-bottom:16px;font-size:11px}
-        table{width:100%;border-collapse:collapse}
-        th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
-        th{background:#f0f4f8;font-size:11px;text-transform:uppercase}
-        tr:nth-child(even){background:#f9fafb}
-        .footer{margin-top:20px;text-align:center;font-size:10px;color:#666}
-    </style></head><body>
-        <h1>Табель посещаемости</h1>
-        <p>Период: ${formatDate(start)} — ${formatDate(end)} · Сформировано: ${new Date().toLocaleString('ru-RU')}</p>
-        <table>
-            <thead><tr><th>Класс</th><th>Ученик</th><th>Пропущено</th><th>Опозданий</th><th>Посещаемость</th></tr></thead>
-            <tbody>${rows}</tbody>
-        </table>
-        <div class="footer">Система учёта посещаемости</div>
-        <script>window.onload=()=>window.print();</script>
-    </body></html>`);
+    const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Табель</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}h1{text-align:center;margin-bottom:6px;font-size:18px}p{text-align:center;color:#666;margin-bottom:16px;font-size:11px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}th{background:#f0f4f8;font-size:11px;text-transform:uppercase}tr:nth-child(even){background:#f9fafb}.footer{margin-top:20px;text-align:center;font-size:10px;color:#666}</style></head><body><h1>Табель посещаемости</h1><p>Период: '+formatDate(start)+' — '+formatDate(end)+' · Сформировано: '+new Date().toLocaleString('ru-RU')+'</p><table><thead><tr><th>Класс</th><th>Ученик</th><th>Пропущено</th><th>Опозданий</th><th>Посещаемость</th></tr></thead><tbody>'+rows+'</tbody></table><div class="footer">Система учёта посещаемости</div></body></html>';
+    w.document.write(html);
     w.document.close();
+    setTimeout(()=>w.print(),300);
 }
 
-/* ============ СТРУКТУРА ============ */
 function renderManage(){
     const teachers=allTeachers();
-    const cr=state.classes.map(c=>{const cnt=getStudentsOfClass(c.id).length;return`<tr><td><b>${esc(c.name)}</b></td><td><select class="select" data-ac="${c.id}" style="padding:6px;font-size:13px"><option value="">—</option>${teachers.map(t=>`<option value="${t.id}" ${c.teacherId===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></td><td class="td-center">${cnt}</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dc="${c.id}">✕</button></td></tr>`;}).join('');
-    const sr=state.students.map(s=>{const c=getClass(s.classId);return`<tr><td>${esc(s.fullName)}</td><td>${c?esc(c.name):'—'}</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-ds="${s.id}">✕</button></td></tr>`;}).join('');
-    document.getElementById('page-manage').innerHTML=`
-        <h1 class="page-title">Структура</h1>
-        <div id="man-msg"></div>
-        <div class="card"><div class="card-header">Добавить класс</div><div class="card-body"><form id="fc" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Кл.рук.</label><select class="select" name="teacherId"><option value="">—</option>${teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th></th></tr></thead><tbody>${cr}</tbody></table></div></div></div>
-        <div class="card"><div class="card-header">Добавить ученика</div><div class="card-body"><form id="fs" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Класс</label><select class="select" name="classId" required><option value="">—</option>${state.classes.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th></th></tr></thead><tbody>${sr}</tbody></table></div></div></div>`;
-    const msg=(t,ty='success')=>{document.getElementById('man-msg').innerHTML=`<div class="alert alert-${ty}">${t}</div>`;};
+    const cr=state.classes.map(c=>{const cnt=getStudentsOfClass(c.id).length;return'<tr><td><b>'+esc(c.name)+'</b></td><td><select class="select" data-ac="'+c.id+'" style="padding:6px;font-size:13px"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'" '+(c.teacherId===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></td><td class="td-center">'+cnt+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dc="'+c.id+'">✕</button></td></tr>';}).join('');
+    const sr=state.students.map(s=>{const c=getClass(s.classId);return'<tr><td>'+esc(s.fullName)+'</td><td>'+(c?esc(c.name):'—')+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-ds="'+s.id+'">✕</button></td></tr>';}).join('');
+    document.getElementById('page-manage').innerHTML='<h1 class="page-title">Структура</h1><div id="man-msg"></div><div class="card"><div class="card-header">Добавить класс</div><div class="card-body"><form id="fc" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Кл.рук.</label><select class="select" name="teacherId"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th></th></tr></thead><tbody>'+cr+'</tbody></table></div></div></div><div class="card"><div class="card-header">Добавить ученика</div><div class="card-body"><form id="fs" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Класс</label><select class="select" name="classId" required><option value="">—</option>'+state.classes.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th></th></tr></thead><tbody>'+sr+'</tbody></table></div></div></div>';
+    const msg=(t,ty)=>{document.getElementById('man-msg').innerHTML='<div class="alert alert-'+(ty||'success')+'">'+t+'</div>';};
     document.getElementById('fc').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();if(!name)return;if(state.classes.some(c=>c.name.toLowerCase()===name.toLowerCase())){msg('Уже есть','error');return;}state.classes.push({id:nextId(state.classes),name,teacherId:fd.get('teacherId')?Number(fd.get('teacherId')):null});save();renderManage();};
     document.getElementById('fs').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();const classId=Number(fd.get('classId'));if(!name||!classId)return;state.students.push({id:nextId(state.students),fullName:name,classId});save();renderManage();};
     document.querySelectorAll('[data-ac]').forEach(s=>{s.onchange=()=>{const c=getClass(Number(s.dataset.ac));c.teacherId=s.value?Number(s.value):null;save();msg('Обновлено');};});
-    document.querySelectorAll('[data-dc]').forEach(b=>{b.onclick=()=>{const c=getClass(Number(b.dataset.dc));if(getStudentsOfClass(c.id).length){msg('Есть ученики','error');return;}if(!confirm(`Удалить «${c.name}»?`))return;state.classes=state.classes.filter(x=>x.id!==c.id);save();renderManage();};});
-    document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=()=>{const s=getStudent(Number(b.dataset.ds));if(!confirm(`Удалить «${s.fullName}»?`))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
+    document.querySelectorAll('[data-dc]').forEach(b=>{b.onclick=()=>{const c=getClass(Number(b.dataset.dc));if(getStudentsOfClass(c.id).length){msg('Есть ученики','error');return;}if(!confirm('Удалить «'+c.name+'»?'))return;state.classes=state.classes.filter(x=>x.id!==c.id);save();renderManage();};});
+    document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=()=>{const s=getStudent(Number(b.dataset.ds));if(!confirm('Удалить «'+s.fullName+'»?'))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
 }
 
-/* ============ АККАУНТЫ ============ */
 function renderAccounts(){
-    const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return`<tr>
-        <td>${esc(u.name)}</td>
-        <td><code>${esc(u.username)}</code></td>
-        <td>${u.email?esc(u.email):'<span style="color:#94a3b8">—</span>'}</td>
-        <td><span class="badge badge-secondary">${roleLabel(u.role)}</span></td>
-        <td>${ls?esc(ls.fullName):'—'}</td>
-        <td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="${u.id}">✎</button><button class="btn btn-ghost btn-sm" data-du="${u.id}">✕</button></div></td>
-    </tr>`;}).join('');
-    document.getElementById('page-accounts').innerHTML=`
-        <h1 class="page-title">Аккаунты</h1>
-        <p class="page-subtitle">Можно менять ФИО, логин, email, пароль и роль</p>
-        <div id="acc-msg"></div>
-        <div class="card"><div class="card-body"><form id="fu" class="inline-form">
-            <div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div>
-            <div class="form-group"><label class="form-label">Логин</label><input class="input" name="username" required></div>
-            <div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email" placeholder="необязательно"></div>
-            <div class="form-group"><label class="form-label">Пароль</label><input class="input" name="password" required></div>
-            <div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option></select></div>
-            <div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>${state.students.map(s=>`<option value="${s.id}">${esc(s.fullName)}</option>`).join('')}</select></div>
-            <div class="form-group"><button class="btn" type="submit">+</button></div>
-        </form></div>
-        <div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Email</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
-    const msg=(t,ty='success')=>{document.getElementById('acc-msg').innerHTML=`<div class="alert alert-${ty}">${t}</div>`;};
+    const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return'<tr><td>'+esc(u.name)+'</td><td><code>'+esc(u.username)+'</code></td><td>'+(u.email?esc(u.email):'<span style="color:#94a3b8">—</span>')+'</td><td><span class="badge badge-secondary">'+roleLabel(u.role)+'</span></td><td>'+(ls?esc(ls.fullName):'—')+'</td><td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="'+u.id+'">✎</button><button class="btn btn-ghost btn-sm" data-du="'+u.id+'">✕</button></div></td></tr>';}).join('');
+    document.getElementById('page-accounts').innerHTML='<h1 class="page-title">Аккаунты</h1><p class="page-subtitle">Можно менять ФИО, логин, email, пароль и роль</p><div id="acc-msg"></div><div class="card"><div class="card-body"><form id="fu" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Логин</label><input class="input" name="username" required></div><div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email"></div><div class="form-group"><label class="form-label">Пароль</label><input class="input" name="password" required></div><div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option></select></div><div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>'+state.students.map(s=>'<option value="'+s.id+'">'+esc(s.fullName)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Email</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+    const msg=(t,ty)=>{document.getElementById('acc-msg').innerHTML='<div class="alert alert-'+(ty||'success')+'">'+t+'</div>';};
     document.getElementById('nr').onchange=e=>{document.getElementById('sw').classList.toggle('hidden',e.target.value!=='student');};
     document.getElementById('fu').onsubmit=async(e)=>{
         e.preventDefault();const fd=new FormData(e.target);
         const name=(fd.get('name')||'').trim();const username=(fd.get('username')||'').trim();const password=(fd.get('password')||'').trim();
         const email=(fd.get('email')||'').trim();const role=fd.get('role');const studentId=role==='student'&&fd.get('studentId')?Number(fd.get('studentId')):null;
         if(!name||!username||!password){msg('Заполните','error');return;}
-        if(!/^[a-zA-Z0-9_.-]+$/.test(username)){msg('Логин: латиница, цифры, _ . -','error');return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(username)){msg('Логин: латиница, цифры','error');return;}
         if(state.users.some(u=>u.username===username)){msg('Логин занят','error');return;}
         if(role==='student'&&!studentId){msg('Выберите ученика','error');return;}
         const hash=await hashPassword(password);
@@ -1558,108 +1452,40 @@ function renderAccounts(){
         save();renderAccounts();
     };
     document.querySelectorAll('[data-eu]').forEach(b=>{b.onclick=()=>openEditUserModal(Number(b.dataset.eu));});
-    document.querySelectorAll('[data-du]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.du);if(id===session.userId){msg('Свой нельзя','error');return;}const u=getUser(id);if(!confirm(`Удалить «${u.name}»?`))return;state.users=state.users.filter(x=>x.id!==id);state.classes.forEach(c=>{if(c.teacherId===id)c.teacherId=null;});save();renderAccounts();};});
+    document.querySelectorAll('[data-du]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.du);if(id===session.userId){msg('Свой нельзя','error');return;}const u=getUser(id);if(!confirm('Удалить «'+u.name+'»?'))return;state.users=state.users.filter(x=>x.id!==id);state.classes.forEach(c=>{if(c.teacherId===id)c.teacherId=null;});save();renderAccounts();};});
 }
 
-/* ============ ПРИЧИНЫ ============ */
 function renderReasons(){
-    const rows=state.reasons.map(r=>{const used=state.absences.filter(a=>a.reasonId===r.id).length;return`<tr><td>${esc(r.name)}</td><td>${categoryBadge(r.category)}</td><td class="td-center">${r.requiresCertificate?'<span class="badge badge-warning">обяз.</span>':'—'}</td><td class="td-center">${used}</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dr="${r.id}">✕</button></td></tr>`;}).join('');
-    document.getElementById('page-reasons').innerHTML=`
-        <h1 class="page-title">Причины</h1>
-        <div id="rs-msg"></div>
-        <div class="card"><div class="card-body"><form id="fr" class="inline-form">
-            <div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div>
-            <div class="form-group"><label class="form-label">Категория</label><select class="select" name="category" required><option value="уважительная">уважительная</option><option value="неуважительная">неуважительная</option><option value="особая">особая</option></select></div>
-            <div class="form-group"><label style="display:flex;align-items:center;gap:6px;padding:10px;background:#f8fafc;border-radius:8px;cursor:pointer"><input type="checkbox" name="cert"><span style="font-size:13px">Справка</span></label></div>
-            <div class="form-group"><button class="btn" type="submit">+</button></div>
-        </form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Название</th><th>Категория</th><th class="td-center">Справка</th><th class="td-center">Исп.</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+    const rows=state.reasons.map(r=>{const used=state.absences.filter(a=>a.reasonId===r.id).length;return'<tr><td>'+esc(r.name)+'</td><td>'+categoryBadge(r.category)+'</td><td class="td-center">'+(r.requiresCertificate?'<span class="badge badge-warning">обяз.</span>':'—')+'</td><td class="td-center">'+used+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dr="'+r.id+'">✕</button></td></tr>';}).join('');
+    document.getElementById('page-reasons').innerHTML='<h1 class="page-title">Причины</h1><div id="rs-msg"></div><div class="card"><div class="card-body"><form id="fr" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Категория</label><select class="select" name="category" required><option value="уважительная">уважительная</option><option value="неуважительная">неуважительная</option><option value="особая">особая</option></select></div><div class="form-group"><label style="display:flex;align-items:center;gap:6px;padding:10px;background:#f8fafc;border-radius:8px;cursor:pointer"><input type="checkbox" name="cert"><span style="font-size:13px">Справка</span></label></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Название</th><th>Категория</th><th class="td-center">Справка</th><th class="td-center">Исп.</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
     document.getElementById('fr').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();if(!name)return;state.reasons.push({id:nextId(state.reasons),name,category:fd.get('category'),requiresCertificate:!!fd.get('cert')});save();renderReasons();};
-    document.querySelectorAll('[data-dr]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.dr);const r=getReason(id);if(state.absences.filter(a=>a.reasonId===id).length){document.getElementById('rs-msg').innerHTML='<div class="alert alert-error">Используется</div>';return;}if(!confirm(`Удалить «${r.name}»?`))return;state.reasons=state.reasons.filter(x=>x.id!==id);save();renderReasons();};});
+    document.querySelectorAll('[data-dr]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.dr);const r=getReason(id);if(state.absences.filter(a=>a.reasonId===id).length){document.getElementById('rs-msg').innerHTML='<div class="alert alert-error">Используется</div>';return;}if(!confirm('Удалить «'+r.name+'»?'))return;state.reasons=state.reasons.filter(x=>x.id!==id);save();renderReasons();};});
 }
 
-/* ============ ЖУРНАЛ (с поиском) ============ */
 let logSearch='';
 let logFilter='all';
 function renderLog(){
     let items=[...state.log].sort((a,b)=>b.ts-a.ts);
-    if(logSearch){
-        const q=logSearch.toLowerCase();
-        items=items.filter(l=>l.user.toLowerCase().includes(q)||l.action.toLowerCase().includes(q));
-    }
-    if(logFilter!=='all'){
-        items=items.filter(l=>l.role===logFilter);
-    }
+    if(logSearch){const q=logSearch.toLowerCase();items=items.filter(l=>l.user.toLowerCase().includes(q)||l.action.toLowerCase().includes(q));}
+    if(logFilter!=='all')items=items.filter(l=>l.role===logFilter);
     const roles=['admin','director','deputy','teacher','student'];
-    document.getElementById('page-log').innerHTML=`
-        <h1 class="page-title">Журнал</h1>
-        <div class="no-print">
-            <div class="card"><div class="card-body" style="padding:14px 22px">
-                <div class="filter-btns">
-                    <button data-lf="all" class="${logFilter==='all'?'active':''}">Все</button>
-                    ${roles.map(r=>`<button data-lf="${r}" class="${logFilter===r?'active':''}">${roleLabel(r)}</button>`).join('')}
-                </div>
-                <div class="search-bar"><input type="text" id="log-search" placeholder="Поиск по ФИО или действию..." value="${esc(logSearch)}"></div>
-            </div></div>
-        </div>
-        <p class="page-subtitle">Всего записей: ${items.length}</p>
-        <div class="card"><div class="card-body p-0">${items.length?items.map(l=>`<div class="log-entry"><span class="log-time">${formatDateTime(l.ts)}</span><span><span class="log-user">${esc(l.user)}</span> <span class="badge badge-secondary" style="font-size:10px;padding:1px 6px">${roleLabel(l.role)}</span> — ${esc(l.action)}</span></div>`).join(''):'<div class="empty">Пусто</div>'}</div></div>`;
+    document.getElementById('page-log').innerHTML='<h1 class="page-title">Журнал</h1><div class="no-print"><div class="card"><div class="card-body" style="padding:14px 22px"><div class="filter-btns"><button data-lf="all" class="'+(logFilter==='all'?'active':'')+'">Все</button>'+roles.map(r=>'<button data-lf="'+r+'" class="'+(logFilter===r?'active':'')+'">'+roleLabel(r)+'</button>').join('')+'</div><div class="search-bar"><input type="text" id="log-search" placeholder="Поиск..." value="'+esc(logSearch)+'"></div></div></div></div><p class="page-subtitle">Всего: '+items.length+'</p><div class="card"><div class="card-body p-0">'+(items.length?items.map(l=>'<div class="log-entry"><span class="log-time">'+formatDateTime(l.ts)+'</span><span><span class="log-user">'+esc(l.user)+'</span> <span class="badge badge-secondary" style="font-size:10px;padding:1px 6px">'+roleLabel(l.role)+'</span> — '+esc(l.action)+'</span></div>').join(''):'<div class="empty">Пусто</div>')+'</div></div>';
     document.querySelectorAll('[data-lf]').forEach(b=>{b.onclick=()=>{logFilter=b.dataset.lf;renderLog();};});
     const si=document.getElementById('log-search');
     if(si)si.oninput=e=>{logSearch=e.target.value;renderLog();};
 }
 
-/* ============ СИНХР + ПРАВИЛА БЕЗОПАСНОСТИ ============ */
 function renderSync(){
-    document.getElementById('page-sync').innerHTML=`
-        <h1 class="page-title">Синхронизация и безопасность</h1>
-        <div class="card"><div class="card-header">Firebase</div><div class="card-body">
-            <div class="alert alert-${firebaseReady?'success':'warning'}"><b>${firebaseReady?'✓ Синхронизация активна':'⚠ Локальный режим'}</b><br>${firebaseReady?'Данные сохраняются в Firebase.':'Данные только в этом браузере.'}</div>
-            <p style="color:#64748b;font-size:13px">Проект: <code>school-absences-71570</code></p>
-            <p style="color:#64748b;font-size:13px">Классов: <b>${state.classes.length}</b> · Учеников: <b>${state.students.length}</b> · Пропусков: <b>${state.absences.length}</b></p>
-        </div></div>
-        <div class="card"><div class="card-header">🔒 Правила безопасности Firebase</div><div class="card-body">
-            <p style="font-size:13px;color:#64748b;margin-bottom:12px">Для продакшена рекомендуется заменить <code>{".read": "true", ".write": "true"}</code> на следующие правила. Скопируйте и вставьте в Firebase Console → Realtime Database → Правила.</p>
-            <pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:10px;font-size:12px;overflow-x:auto;line-height:1.5">{
-  "rules": {
-    "school_attendance": {
-      ".read": true,
-      ".write": true,
-      "users": {
-        ".validate": "newData.hasChildren(['username','role','name'])"
-      },
-      "absences": {
-        "$absenceId": {
-          ".validate": "newData.hasChildren(['studentId','date','reasonId'])"
-        }
-      }
-    }
-  }
-}</pre>
-            <div class="alert alert-warning" style="margin-top:12px;font-size:12px">
-                <b>Уровни:</b><br>
-                • Текущий (демо): <code>".read": true, ".write": true</code> — любой может читать/писать<br>
-                • Продакшен: только аутентифицированные через Firebase Auth<br>
-                • Максимум: правила по ролям через custom claims
-            </div>
-        </div></div>
-        <div class="card"><div class="card-header">🛡️ Что уже реализовано</div><div class="card-body" style="font-size:13px;line-height:2">
-            ✅ <b>Хэширование паролей</b> — SHA-256 с солью<br>
-            ✅ <b>2FA</b> для директора и администратора — 6-значный код<br>
-            ✅ <b>Восстановление пароля</b> — через Firebase Auth email<br>
-            ✅ <b>Журнал действий</b> — все операции с timestamp<br>
-            ✅ <b>Роли</b> — 5 уровней доступа<br>
-            ✅ <b>Валидация сессии</b> — сброс если пользователь удалён
-        </div></div>`;
+    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация и безопасность</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Синхронизация активна':'⚠ Локальный режим')+'</b><br>'+(firebaseReady?'Данные сохраняются в Firebase.':'Данные только в этом браузере.')+'</div><p style="color:#64748b;font-size:13px">Проект: <code>school-absences-71570</code></p></div></div><div class="card"><div class="card-header">🔒 Правила безопасности Firebase</div><div class="card-body"><p style="font-size:13px;color:#64748b;margin-bottom:12px">Замените в Firebase Console → Realtime Database → Правила на:</p><pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:10px;font-size:12px;overflow-x:auto;line-height:1.5">{\n  "rules": {\n    "school_attendance": {\n      ".read": true,\n      ".write": true\n    }\n  }\n}</pre><div class="alert alert-warning" style="margin-top:12px;font-size:12px"><b>Продакшен:</b> для ограничения доступа используйте Firebase Auth и custom claims по ролям.</div></div></div><div class="card"><div class="card-header">🛡️ Что реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Хэширование паролей (SHA-256)<br>✅ 2FA для директора и админа<br>✅ Восстановление пароля через Firebase Auth<br>✅ Журнал действий<br>✅ Роли (5 уровней)<br>✅ Валидация сессии</div></div>';
 }
 
-/* ============ CSV ============ */
 function exportCSV(){
     const rows=[['Класс','Ученик','Дата','Тип','Причина','Категория','Справка','Статус']];
     [...state.absences].sort((a,b)=>b.date.localeCompare(a.date)).forEach(a=>{
         const s=getStudent(a.studentId);const r=getReason(a.reasonId);const c=s?getClass(s.classId):null;
         rows.push([c?c.name:'',s?s.fullName:'',a.date,a.type==='late'?'опоздание':'пропуск',r?.name||'',r?.category||'',a.hasCertificate?'да':'',a.status||'']);
     });
-    const csv='\ufeff'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+    const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');
     a.href=url;a.download='absences_'+new Date().toISOString().slice(0,10)+'.csv';
@@ -1667,7 +1493,6 @@ function exportCSV(){
     URL.revokeObjectURL(url);
 }
 
-/* ============ INIT ============ */
 function initApp(){
     console.log('[app] Старт');
     loadSession();
@@ -1677,7 +1502,7 @@ function initApp(){
         pendingCheckinToken=token;
         try{window.history.replaceState({},'',window.location.pathname);}catch(e){}
     }
-    if(session && pendingCheckinToken){
+    if(session&&pendingCheckinToken){
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-name').textContent=session.name;
@@ -1685,7 +1510,7 @@ function initApp(){
         document.getElementById('app-nav').innerHTML='';
         PAGES.forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
         document.getElementById('page-home').classList.remove('hidden');
-        document.getElementById('page-home').innerHTML=`<div class="checkin-processing"><div class="big-icon">📱</div><h2>Отмечаемся по QR...</h2></div>`;
+        document.getElementById('page-home').innerHTML='<div class="checkin-processing"><div class="big-icon">📱</div><h2>Отмечаемся по QR...</h2></div>';
     }else if(pendingCheckinToken){
         document.getElementById('checkin-banner').classList.remove('hidden');
     }
@@ -1707,7 +1532,6 @@ function initApp(){
     document.getElementById('2fa-submit').addEventListener('click',verify2FA);
     document.getElementById('2fa-cancel').addEventListener('click',()=>{pending2faUser=null;renderLogin();});
     document.getElementById('2fa-input').addEventListener('keypress',(e)=>{if(e.key==='Enter')verify2FA();});
-
     let waited=0;
     (function waitForFirebase(){
         if(fbDb){startFirebaseSync();return;}
@@ -1717,7 +1541,6 @@ function initApp(){
     })();
     setTimeout(()=>{if(!state){loadLocal();}},5000);
     if(session){setTimeout(()=>{if(state)onDataReady();},600);}
-    else{setTimeout(()=>{},700);}
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initApp);
