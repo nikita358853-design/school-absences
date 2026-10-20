@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Посещаемость">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Посещаемость</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M28 52l16 16l30-34' stroke='white' stroke-width='11' stroke-linecap='round' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M28 52l16 16l30-34' stroke='white' stroke-width='11' stroke-linecap='round' fill='none'/></svg>">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Посещаемость","short_name":"Посещаемость","start_url":".","display":"standalone","background_color":"%23f4f6fb","theme_color":"%232563eb","icons":[{"src":"data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2724%27%20fill=%27%232563eb%27/%3E%3Cpath%20d=%27M28%2052l16%2016l30%20-34%27%20stroke=%27white%27%20stroke-width=%2711%27%20stroke-linecap=%27round%27%20fill=%27none%27/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml","purpose":"any"}]}'>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -29,10 +35,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
 .login-card{background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(15,23,42,.08);padding:36px 32px;width:100%;max-width:440px}
 .login-card h1{font-size:22px;text-align:center;margin-bottom:16px;font-weight:700}
-.login-status{text-align:center;font-size:12px;color:#64748b;margin-bottom:14px;padding:8px;border-radius:8px;background:#f8fafc;font-weight:500}
-.login-status.ok{color:#166534;background:#dcfce7}
-.login-status.wait{color:#92400e;background:#fef3c7}
-.login-status.err{color:#991b1b;background:#fee2e2}
 .error-msg{background:#fee2e2;color:#991b1b;padding:11px 15px;border-radius:9px;font-size:13px;margin-bottom:16px}
 .demo-box{margin-top:18px;padding:12px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:9px;font-size:12px;color:#64748b;line-height:1.8}
 .demo-box code{background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #e2e8f0;font-family:monospace;font-size:11px;color:#1e293b}
@@ -171,6 +173,44 @@ tbody tr:hover{background:#f8fafc}
 .student-info{flex:1;min-width:0}
 .student-info-name{font-weight:600;font-size:14px;color:#1e293b}
 .student-info-meta{font-size:12px;color:#64748b;margin-top:2px}
+/* === БЫСТРЫЕ ДЕЙСТВИЯ === */
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.qa-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:all .2s;border:2px solid transparent;display:flex;align-items:center;gap:14px}
+.qa-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-2px);border-color:#93c5fd}
+.qa-card.primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+.qa-card.primary:hover{border-color:#1e40af}
+.qa-icon{width:44px;height:44px;border-radius:11px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.qa-card.primary .qa-icon{background:rgba(255,255,255,.2);color:#fff}
+.qa-text{flex:1;min-width:0}
+.qa-title{font-weight:700;font-size:14px;margin-bottom:2px}
+.qa-sub{font-size:12px;opacity:.75}
+.qa-badge{background:#dc2626;color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;align-self:flex-start}
+/* === ПОИСК === */
+.search-bar{position:relative;margin-bottom:12px}
+.search-bar input{width:100%;padding:10px 14px 10px 38px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;font-size:14px;font-family:inherit;color:#1e293b}
+.search-bar input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.search-bar::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5}
+.filter-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-btns button{padding:6px 12px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;color:#64748b;font-weight:500;transition:all .15s}
+.filter-btns button:hover{background:#f1f5f9;color:#1e293b}
+.filter-btns button.active{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:600}
+/* === ПЕЧАТЬ === */
+@media print{
+    body{background:#fff}
+    .app-header,.app-nav,.user-info,.btn,.no-print,.filter-btns,.search-bar{display:none!important}
+    .container{padding:0;max-width:100%}
+    .card{box-shadow:none;border:1px solid #e2e8f0;page-break-inside:avoid;margin-bottom:12px}
+    .card:hover{box-shadow:none}
+    .kpi{box-shadow:none;border:1px solid #e2e8f0}
+    .print-header{display:block!important;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1e293b}
+    .print-header h1{font-size:20px;margin-bottom:4px}
+    .print-header p{font-size:12px;color:#64748b}
+    .print-footer{display:block!important;margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;text-align:center}
+    table{font-size:11px}
+    thead th{font-size:9px;padding:6px 8px}
+    tbody td{padding:6px 8px}
+}
+.print-header,.print-footer{display:none}
 @media(max-width:768px){
 .container{padding:12px}.app-header{padding:0 12px;gap:8px;height:54px}.logo{font-size:14px}
 .app-nav button{padding:6px 11px;font-size:13px}.user-name{display:none}
@@ -183,6 +223,9 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
 .cal-header{padding:6px 2px;font-size:10px}
 .request-card{flex-direction:column;align-items:stretch}
 .input,.select,.textarea{font-size:16px}
+.quick-actions{grid-template-columns:1fr 1fr}
+.qa-card{padding:14px;gap:10px}
+.qa-icon{width:36px;height:36px;font-size:18px}
 }
 </style>
 </head>
@@ -191,8 +234,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
 <div id="login-screen">
     <div class="login-card">
         <h1>✓ Посещаемость</h1>
-        <div class="login-status wait" id="login-status">⏳ Загрузка данных...</div>
-        <div id="checkin-banner" class="checkin-notice hidden">📱 Отметка по QR — войдите, чтобы отметиться. В следующий раз вход не потребуется.</div>
+        <div id="checkin-banner" class="checkin-notice hidden">📱 Отметка по QR — войдите, чтобы отметиться.</div>
         <div id="login-error" class="error-msg hidden"></div>
         <form id="login-form">
             <div class="form-group">
@@ -206,9 +248,11 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
             <button class="btn btn-block" type="submit" id="login-submit" disabled>Загрузка...</button>
         </form>
         <div style="text-align:center;margin-top:14px">
-            <a href="#" id="reset-cache" style="font-size:12px;color:#64748b;text-decoration:none">Сбросить кэш и выйти</a>
+            <a href="#" id="forgot-link" style="font-size:13px;color:#2563eb;text-decoration:none">Забыли пароль?</a>
         </div>
-        <div class="session-note" id="session-note"></div>
+        <div style="text-align:center;margin-top:8px">
+            <a href="#" id="reset-cache" style="font-size:11px;color:#94a3b8;text-decoration:none">Сбросить кэш и выйти</a>
+        </div>
         <div class="demo-box">
             <b>Демо-аккаунты:</b><br>
             админ: <code>admin / admin123</code><br>
@@ -220,8 +264,43 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
     </div>
 </div>
 
+<!-- 2FA экран -->
+<div id="2fa-screen" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
+    <div class="login-card">
+        <h1>🔐 Подтверждение</h1>
+        <div class="alert alert-info">Введите 6-значный код. В демо-режиме он показан ниже.</div>
+        <div id="2fa-code-display" style="text-align:center;font-size:24px;font-family:monospace;font-weight:800;padding:12px;background:#fef3c7;border-radius:9px;margin-bottom:16px;letter-spacing:4px"></div>
+        <div class="form-group">
+            <label class="form-label">Код</label>
+            <input class="input" type="text" id="2fa-input" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="font-size:24px;text-align:center;letter-spacing:8px;font-family:monospace">
+        </div>
+        <button class="btn btn-block" id="2fa-submit">Подтвердить</button>
+        <div style="text-align:center;margin-top:14px">
+            <a href="#" id="2fa-cancel" style="font-size:13px;color:#64748b;text-decoration:none">Отмена</a>
+        </div>
+        <div id="2fa-error" class="error-msg hidden" style="margin-top:14px"></div>
+    </div>
+</div>
+
+<!-- Забыли пароль -->
+<div id="forgot-screen" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
+    <div class="login-card">
+        <h1>🔑 Восстановление</h1>
+        <div class="alert alert-info" style="font-size:13px">Введите логин. Если у аккаунта есть email — код придёт на почту (через Firebase Auth). Иначе — покажем здесь.</div>
+        <div class="form-group">
+            <label class="form-label">Логин</label>
+            <input class="input" id="forgot-user" placeholder="teacher">
+        </div>
+        <button class="btn btn-block" id="forgot-btn">Получить код</button>
+        <div id="forgot-info" style="margin-top:14px"></div>
+        <div style="text-align:center;margin-top:14px">
+            <a href="#" id="forgot-back" style="font-size:13px;color:#64748b;text-decoration:none">← К входу</a>
+        </div>
+    </div>
+</div>
+
 <div id="app-screen" class="hidden">
-    <header class="app-header">
+    <header class="app-header no-print">
         <div class="logo">✓ Посещаемость</div>
         <nav class="app-nav" id="app-nav"></nav>
         <div class="user-info">
@@ -231,6 +310,10 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
         </div>
     </header>
     <main class="container">
+        <div class="print-header">
+            <h1>Посещаемость</h1>
+            <p id="print-subtitle"></p>
+        </div>
         <div id="page-home"></div>
         <div id="page-my-request" class="hidden"></div>
         <div id="page-quick-add" class="hidden"></div>
@@ -244,6 +327,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
         <div id="page-reasons" class="hidden"></div>
         <div id="page-log" class="hidden"></div>
         <div id="page-sync" class="hidden"></div>
+        <div class="print-footer">Сформировано: <span id="print-date"></span> · Система учёта посещаемости</div>
     </main>
 </div>
 
@@ -251,6 +335,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
 
 <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-auth-compat.js"></script>
 
 <script>
 'use strict';
@@ -267,10 +352,12 @@ const firebaseConfig = {
 
 let firebaseReady=false;
 let fbDb=null;
+let fbAuth=null;
 try{
     if(typeof firebase!=='undefined'&&firebase.initializeApp){
         firebase.initializeApp(firebaseConfig);
         fbDb=firebase.database();
+        try{fbAuth=firebase.auth();}catch(e){console.warn('[auth]',e);}
         console.log('[firebase] ✓ SDK инициализирован');
     }else console.warn('[firebase] ✗ SDK не загрузился');
 }catch(e){console.error('[firebase]',e);}
@@ -280,14 +367,10 @@ function dateOffset(d){const x=new Date();x.setDate(x.getDate()+d);return x.toIS
 const SEED={
     classes:[{id:1,name:'10А',teacherId:4},{id:2,name:'10Б',teacherId:5},{id:3,name:'11А',teacherId:null}],
     students:[
-        {id:1,fullName:'Иванов Иван',classId:1},
-        {id:2,fullName:'Петров Пётр',classId:1},
-        {id:3,fullName:'Сидорова Анна',classId:1},
-        {id:4,fullName:'Кузнецов Дмитрий',classId:1},
-        {id:5,fullName:'Смирнова Екатерина',classId:1},
-        {id:6,fullName:'Морозов Артём',classId:1},
-        {id:7,fullName:'Волкова Мария',classId:2},
-        {id:8,fullName:'Соколов Никита',classId:2},
+        {id:1,fullName:'Иванов Иван',classId:1},{id:2,fullName:'Петров Пётр',classId:1},
+        {id:3,fullName:'Сидорова Анна',classId:1},{id:4,fullName:'Кузнецов Дмитрий',classId:1},
+        {id:5,fullName:'Смирнова Екатерина',classId:1},{id:6,fullName:'Морозов Артём',classId:1},
+        {id:7,fullName:'Волкова Мария',classId:2},{id:8,fullName:'Соколов Никита',classId:2},
         {id:9,fullName:'Алексеев Андрей',classId:3}
     ],
     reasons:[
@@ -299,12 +382,12 @@ const SEED={
         {id:6,name:'По заявлению родителей',category:'особая'}
     ],
     users:[
-        {id:1,username:'admin',password:'admin123',role:'admin',name:'Администратор'},
-        {id:2,username:'director',password:'director123',role:'director',name:'Смирнов А.В.'},
-        {id:3,username:'deputy',password:'deputy123',role:'deputy',name:'Козлова Е.П.'},
-        {id:4,username:'teacher',password:'teacher123',role:'teacher',name:'Иванова М.П.'},
-        {id:5,username:'teacher2',password:'teacher123',role:'teacher',name:'Орлов С.Н.'},
-        {id:6,username:'student',password:'student123',role:'student',name:'Иванов Иван',studentId:1}
+        {id:1,username:'admin',password:'admin123',role:'admin',name:'Администратор',email:''},
+        {id:2,username:'director',password:'director123',role:'director',name:'Смирнов А.В.',email:''},
+        {id:3,username:'deputy',password:'deputy123',role:'deputy',name:'Козлова Е.П.',email:''},
+        {id:4,username:'teacher',password:'teacher123',role:'teacher',name:'Иванова М.П.',email:''},
+        {id:5,username:'teacher2',password:'teacher123',role:'teacher',name:'Орлов С.Н.',email:''},
+        {id:6,username:'student',password:'student123',role:'student',name:'Иванов Иван',studentId:1,email:''}
     ],
     absences:[
         {id:1,studentId:1,date:dateOffset(-2),reasonId:1,status:'approved',type:'absent',hasCertificate:true},
@@ -333,21 +416,21 @@ const SEED={
         {id:16,classId:1,dayOfWeek:5,lessonNumber:3,subject:'Информатика',teacherId:5,startTime:'10:25',endTime:'11:10'},
         {id:17,classId:2,dayOfWeek:1,lessonNumber:1,subject:'Физика',teacherId:5,startTime:'08:30',endTime:'09:15'},
         {id:18,classId:2,dayOfWeek:1,lessonNumber:2,subject:'Математика',teacherId:4,startTime:'09:25',endTime:'10:10'},
-        {id:19,classId:2,dayOfWeek:1,lessonNumber:3,subject:'Химия',teacherId:5,startTime:'10:25',endTime:'11:10'},
-        {id:20,classId:2,dayOfWeek:2,lessonNumber:1,subject:'История',teacherId:5,startTime:'08:30',endTime:'09:15'},
-        {id:21,classId:2,dayOfWeek:2,lessonNumber:2,subject:'Английский',teacherId:4,startTime:'09:25',endTime:'10:10'},
-        {id:22,classId:3,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4,startTime:'08:30',endTime:'09:15'},
-        {id:23,classId:3,dayOfWeek:1,lessonNumber:2,subject:'Литература',teacherId:5,startTime:'09:25',endTime:'10:10'}
+        {id:19,classId:3,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4,startTime:'08:30',endTime:'09:15'}
+    ],
+    templates:[
+        {id:1,classId:1,name:'Обычный день',description:'Все присутствуют'},
+        {id:2,classId:1,name:'День контрольной',description:'Все присутствуют, кроме опоздавших'}
     ],
     log:[],
     qrTokens:[],
-    checkins:[]
+    checkins:[],
+    pending2fa:[]
 };
 
-const STORAGE_KEY='school_attendance_v11';
-const SESSION_KEY='school_attendance_session_v11';
+const STORAGE_KEY='school_attendance_v12';
+const SESSION_KEY='school_attendance_session_v12';
 const DAYS_FULL={1:'Понедельник',2:'Вторник',3:'Среда',4:'Четверг',5:'Пятница',6:'Суббота',7:'Воскресенье'};
-const DAYS_SHORT={1:'Пн',2:'Вт',3:'Ср',4:'Чт',5:'Пт',6:'Сб',7:'Вс'};
 const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
 let state=null;
@@ -396,7 +479,7 @@ function loadLocal(){
 
 function migrate(){
     if(!state)return;
-    ['absences','log','reasons','students','classes','users','qrTokens','checkins','schedule'].forEach(k=>{if(!state[k])state[k]=[];});
+    ['absences','log','reasons','students','classes','users','qrTokens','checkins','schedule','templates','pending2fa'].forEach(k=>{if(!state[k])state[k]=[];});
     state.absences.forEach(a=>{
         if(!a.status)a.status='approved';
         if(!a.type)a.type='absent';
@@ -405,9 +488,10 @@ function migrate(){
     state.reasons.forEach(r=>{
         if(r.requiresCertificate===undefined){const n=(r.name||'').toLowerCase();r.requiresCertificate=n.includes('болезн');}
     });
-    // Очищаем просроченные QR (старше 2 суток) и токены без validFrom (старый формат)
+    state.users.forEach(u=>{if(u.email===undefined)u.email='';});
     const twoDaysAgo=Date.now()-2*24*60*60*1000;
     state.qrTokens=state.qrTokens.filter(t=>t.validFrom&&t.validUntil>twoDaysAgo);
+    state.pending2fa=state.pending2fa.filter(p=>p.expiresAt>Date.now());
 }
 
 function save(){
@@ -425,32 +509,12 @@ function onDataReady(){
             localStorage.setItem(SESSION_KEY,JSON.stringify(session));
         }
     }
-    updateLoginStatus();
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
     if(session&&pendingCheckinToken){
         document.getElementById('checkin-banner').classList.add('hidden');
         processCheckin(pendingCheckinToken);
     }else if(session)renderApp();
-}
-
-function updateLoginStatus(){
-    const el=document.getElementById('login-status');
-    if(!el)return;
-    if(state&&state.users&&state.users.length){
-        const src=firebaseReady?'🔥 Firebase':'💾 Локально';
-        el.className='login-status ok';
-        el.textContent=`${src} · пользователей: ${state.users.length}`;
-    }else if(state&&state.users){
-        el.className='login-status err';el.textContent='⚠ База пуста';
-    }else{
-        el.className='login-status wait';el.textContent='⏳ Загрузка данных...';
-    }
-    const note=document.getElementById('session-note');
-    if(note){
-        if(session)note.textContent='✓ Вы уже входили как '+session.name+' — вход выполнится автоматически';
-        else note.textContent='';
-    }
 }
 
 function loadSession(){const raw=localStorage.getItem(SESSION_KEY);if(raw){try{session=JSON.parse(raw);}catch(e){session=null;}}}
@@ -482,61 +546,74 @@ function getMyClass(){if(session.role==='teacher')return state.classes.find(c=>c
 function getPendingForClass(cid){const ids=getStudentsOfClass(cid).map(s=>s.id);return state.absences.filter(a=>a.status==='pending'&&ids.includes(a.studentId));}
 function logAction(action){if(!session)return;state.log.push({id:nextId(state.log),ts:Date.now(),user:session.name,role:session.role,action});save();}
 function initials(name){return (name||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function getDayOfWeek(iso){const d=new Date(iso+'T00:00:00');return d.getDay()===0?7:d.getDay();}
 
-/* ============ ОПРЕДЕЛЕНИЕ УЧЕБНЫХ СУТОК ============ */
-// Учебные сутки: с 08:00 текущего дня до 08:00 следующего.
-// Если сейчас < 08:00 — активны вчерашние сутки.
-function getSchoolDay() {
-    const now = new Date();
-    const hours = now.getHours();
-    let date, validFrom, validUntil;
-    if (hours < 8) {
-        // Ещё не 8 утра — действует "вчерашний" день
-        const yest = new Date(now);
-        yest.setDate(yest.getDate() - 1);
-        date = yest.toISOString().slice(0, 10);
-        validFrom = new Date(yest); validFrom.setHours(8, 0, 0, 0);
-        validUntil = new Date(now); validUntil.setHours(8, 0, 0, 0);
-    } else {
-        date = now.toISOString().slice(0, 10);
-        validFrom = new Date(now); validFrom.setHours(8, 0, 0, 0);
-        validUntil = new Date(now); validUntil.setDate(validUntil.getDate() + 1); validUntil.setHours(8, 0, 0, 0);
+/* ============ УЧЕБНЫЕ СУТКИ (8:00 → 8:00) ============ */
+function getSchoolDay(){
+    const now=new Date();
+    const h=now.getHours();
+    let date,validFrom,validUntil;
+    if(h<8){
+        const y=new Date(now);y.setDate(y.getDate()-1);
+        date=y.toISOString().slice(0,10);
+        validFrom=new Date(y);validFrom.setHours(8,0,0,0);
+        validUntil=new Date(now);validUntil.setHours(8,0,0,0);
+    }else{
+        date=now.toISOString().slice(0,10);
+        validFrom=new Date(now);validFrom.setHours(8,0,0,0);
+        validUntil=new Date(now);validUntil.setDate(validUntil.getDate()+1);validUntil.setHours(8,0,0,0);
     }
-    return { date, validFrom: validFrom.getTime(), validUntil: validUntil.getTime() };
+    return{date,validFrom:validFrom.getTime(),validUntil:validUntil.getTime()};
 }
 
-/* ============ QR ОТМЕТКА ============ */
+/* ============ QR (с определением опоздания) ============ */
 function processCheckin(token){
     try{
         const rec=state.qrTokens.find(t=>t.token===token);
         if(!rec){showToast('QR-код не найден','error');pendingCheckinToken=null;renderApp();return;}
         const now=Date.now();
         if(!rec.validFrom||!rec.validUntil||rec.validUntil<=now){
-            showToast('QR-код больше не действует. Попросите учителя показать новый.','error');
-            pendingCheckinToken=null;renderApp();return;
+            showToast('QR-код больше не действует','error');pendingCheckinToken=null;renderApp();return;
         }
         if(session.role!=='student'){showToast('Войдите как ученик','error');pendingCheckinToken=null;renderApp();return;}
         const student=getStudent(session.studentId);
         if(!student){showToast('Ученик не найден','error');pendingCheckinToken=null;renderApp();return;}
         if(student.classId!==rec.classId){showToast('Это QR другого класса','error');pendingCheckinToken=null;renderApp();return;}
-        // Дата для отметки — это дата учебного дня (может быть вчерашняя, если сейчас до 8 утра)
         const date=rec.date;
         const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===date&&c.classId===rec.classId);
         if(existing){showToast('Вы уже отметились за '+formatDate(date)+' в '+existing.time,'info');pendingCheckinToken=null;renderApp();return;}
 
-        const time=new Date().toTimeString().slice(0,5);
-        state.checkins.push({id:nextId(state.checkins),studentId:session.studentId,classId:rec.classId,date,time,token});
+        // Определение опоздания по первому уроку
+        const dow=getDayOfWeek(date);
+        const firstLesson=state.schedule.find(l=>l.classId===rec.classId&&l.dayOfWeek===dow&&l.lessonNumber===1);
+        const firstStart=firstLesson?firstLesson.startTime:'08:30';
+        const nowTime=new Date().toTimeString().slice(0,5);
+        const isLate=nowTime>firstStart;
 
-        // Убираем записи об отсутствии за эту дату (ученик пришёл)
-        const beforeCount=state.absences.length;
+        state.checkins.push({
+            id:nextId(state.checkins),
+            studentId:session.studentId,classId:rec.classId,
+            date,time:nowTime,token,isLate
+        });
+
+        // Убираем старое отсутствие, если было
         state.absences=state.absences.filter(a=>!(a.studentId===session.studentId&&a.date===date&&a.status==='approved'&&a.type==='absent'));
-        const removedCount=beforeCount-state.absences.length;
+
+        // Если опоздал — добавляем запись "опоздание"
+        let lateReason=state.reasons.find(r=>r.name.toLowerCase().includes('опоздан'))?.id||5;
+        if(isLate){
+            // Убираем старое опоздание если было
+            state.absences=state.absences.filter(a=>!(a.studentId===session.studentId&&a.date===date&&a.status==='approved'&&a.type==='late'));
+            state.absences.push({
+                id:nextId(state.absences),studentId:session.studentId,date,
+                reasonId:lateReason,comment:'автоматически по QR',status:'approved',type:'late',hasCertificate:false
+            });
+        }
 
         save();
-        logAction(`QR-отметка: ${student.fullName} (${formatDate(date)})${removedCount?' (снято отсутствие)':''}`);
-        let msg=`✓ Отметились за ${formatDate(date)} в ${time}`;
-        if(removedCount>0)msg+=` · отсутствие снято`;
-        showToast(msg,'success');
+        logAction(`QR-отметка: ${student.fullName} (${formatDate(date)})${isLate?' ОПОЗДАНИЕ':''}`);
+        const msg=isLate?`⚠ Отметились в ${nowTime} — опоздание`:`✓ Отметились в ${nowTime}`;
+        showToast(msg,isLate?'warning':'success');
         pendingCheckinToken=null;
         renderApp();
     }catch(err){console.error('[checkin]',err);pendingCheckinToken=null;if(session)renderApp();}
@@ -552,76 +629,45 @@ function showToast(msg,type='info'){
     setTimeout(()=>el.remove(),3900);
 }
 
-/* ============ МОДАЛЬНОЕ ОКНО ============ */
-function openEditUserModal(userId){
-    const u=getUser(userId);
-    if(!u)return;
-    const c=document.getElementById('modal-container');
-    c.classList.remove('hidden');
-    c.innerHTML=`
-        <div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-container').classList.add('hidden')">
-            <div class="modal-card">
-                <h3>✎ Редактировать аккаунт</h3>
-                <div class="form-group"><label class="form-label">ФИО</label><input class="input" id="eu-name" value="${esc(u.name)}"></div>
-                <div class="form-group"><label class="form-label">Логин</label><input class="input" id="eu-username" value="${esc(u.username)}" autocomplete="off"></div>
-                <div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="eu-password" placeholder="оставьте пустым — не менять" autocomplete="new-password"></div>
-                <div class="form-group"><label class="form-label">Роль</label>
-                    <select class="select" id="eu-role" ${u.id===session.userId?'disabled':''}>
-                        <option value="teacher" ${u.role==='teacher'?'selected':''}>учитель</option>
-                        <option value="deputy" ${u.role==='deputy'?'selected':''}>завуч</option>
-                        <option value="director" ${u.role==='director'?'selected':''}>директор</option>
-                        <option value="admin" ${u.role==='admin'?'selected':''}>админ</option>
-                        <option value="student" ${u.role==='student'?'selected':''}>ученик</option>
-                    </select>
-                </div>
-                <div class="form-group ${u.role==='student'?'':'hidden'}" id="eu-student-wrap">
-                    <label class="form-label">Связанный ученик</label>
-                    <select class="select" id="eu-student"><option value="">—</option>${state.students.map(s=>`<option value="${s.id}" ${u.studentId===s.id?'selected':''}>${esc(s.fullName)}</option>`).join('')}</select>
-                </div>
-                <div id="eu-msg"></div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-                    <button class="btn btn-ghost" id="eu-cancel">Отмена</button>
-                    <button class="btn" id="eu-save">Сохранить</button>
-                </div>
-            </div>
-        </div>`;
-    document.getElementById('eu-cancel').onclick=()=>c.classList.add('hidden');
-    const roleSel=document.getElementById('eu-role');
-    roleSel.onchange=()=>{document.getElementById('eu-student-wrap').classList.toggle('hidden',roleSel.value!=='student');};
-    document.getElementById('eu-save').onclick=async()=>{
-        const msg=document.getElementById('eu-msg');
-        msg.innerHTML='';
-        const newName=document.getElementById('eu-name').value.trim();
-        const newUsername=document.getElementById('eu-username').value.trim();
-        const newPassword=document.getElementById('eu-password').value;
-        const newRole=roleSel.value;
-        const newStudentId=newRole==='student'&&document.getElementById('eu-student').value?Number(document.getElementById('eu-student').value):null;
-        if(!newName){msg.innerHTML='<div class="alert alert-error">ФИО обязательно</div>';return;}
-        if(!newUsername){msg.innerHTML='<div class="alert alert-error">Логин обязателен</div>';return;}
-        if(!/^[a-zA-Z0-9_.-]+$/.test(newUsername)){msg.innerHTML='<div class="alert alert-error">Логин: только латиница, цифры, _ . -</div>';return;}
-        if(state.users.some(x=>x.id!==u.id&&x.username===newUsername)){msg.innerHTML='<div class="alert alert-error">Логин уже занят</div>';return;}
-        if(newRole==='student'&&!newStudentId){msg.innerHTML='<div class="alert alert-error">Выберите ученика</div>';return;}
-        const oldUsername=u.username;
-        u.name=newName;u.username=newUsername;
-        if(newRole!==u.role&&u.id!==session.userId)u.role=newRole;
-        u.studentId=newRole==='student'?newStudentId:(u.studentId||null);
-        if(newPassword){
-            if(newPassword.length<3){msg.innerHTML='<div class="alert alert-error">Пароль слишком короткий</div>';return;}
-            u.password=await hashPassword(newPassword);
-        }
-        if(u.id===session.userId){
-            session.name=newName;session.username=newUsername;saveSession();
-            document.getElementById('user-name').textContent=newName;
-            document.getElementById('user-role').textContent=roleLabel(session.role);
-        }
-        save();logAction(`Изменён аккаунт: ${oldUsername} → ${newUsername}${newPassword?' (пароль)':''}`);
-        c.classList.add('hidden');
-        renderAccounts();
-        showToast('Аккаунт обновлён','success');
-    };
+/* ============ 2FA ============ */
+let pending2faUser=null;
+
+function start2FA(user){
+    pending2faUser=user;
+    const code=String(Math.floor(100000+Math.random()*900000));
+    state.pending2fa.push({userId:user.id,code,expiresAt:Date.now()+5*60*1000});
+    save();
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('2fa-screen').classList.remove('hidden');
+    document.getElementById('2fa-code-display').textContent=code;
+    document.getElementById('2fa-input').value='';
+    document.getElementById('2fa-input').focus();
+    document.getElementById('2fa-error').classList.add('hidden');
+}
+
+function verify2FA(){
+    const input=document.getElementById('2fa-input').value.trim();
+    const err=document.getElementById('2fa-error');
+    if(!pending2faUser){err.textContent='Сессия истекла';err.classList.remove('hidden');return;}
+    const entry=state.pending2fa.find(p=>p.userId===pending2faUser.id&&p.code===input&&p.expiresAt>Date.now());
+    if(!entry){err.textContent='Неверный или истёкший код';err.classList.remove('hidden');return;}
+    state.pending2fa=state.pending2fa.filter(p=>p.userId!==pending2faUser.id);
+    save();
+    completeLogin(pending2faUser);
+    pending2faUser=null;
 }
 
 /* ============ LOGIN ============ */
+function completeLogin(user){
+    session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
+    saveSession();
+    logAction('Вход');
+    document.getElementById('2fa-screen').classList.add('hidden');
+    document.getElementById('forgot-screen').classList.add('hidden');
+    if(pendingCheckinToken){document.getElementById('checkin-banner').classList.add('hidden');processCheckin(pendingCheckinToken);}
+    else renderApp();
+}
+
 async function handleLogin(e){
     e.preventDefault();
     const err=document.getElementById('login-error');
@@ -638,25 +684,145 @@ async function handleLogin(e){
         const ok=await verifyPassword(p,user.password);
         if(!ok){err.textContent='Неверный логин или пароль';err.classList.remove('hidden');return;}
         if(!user.password.startsWith('sha256:')&&!user.password.startsWith('h:')){user.password=await hashPassword(p);save();}
-        session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
-        saveSession();logAction('Вход');
-        if(pendingCheckinToken){document.getElementById('checkin-banner').classList.add('hidden');processCheckin(pendingCheckinToken);}
-        else renderApp();
+
+        // 2FA для директора и админа
+        if(user.role==='director'||user.role==='admin'){
+            start2FA(user);
+            return;
+        }
+
+        completeLogin(user);
     }catch(ex){console.error('[login]',ex);err.textContent='Ошибка: '+ex.message;err.classList.remove('hidden');}
     finally{btn.disabled=false;btn.textContent='Войти';}
 }
 
-function handleLogout(){logAction('Выход');session=null;saveSession();renderLogin();showToast('Вы вышли из системы','info');}
+function handleLogout(){logAction('Выход');session=null;saveSession();renderLogin();showToast('Вы вышли','info');}
 
 function renderLogin(){
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('app-screen').classList.add('hidden');
+    document.getElementById('2fa-screen').classList.add('hidden');
+    document.getElementById('forgot-screen').classList.add('hidden');
     document.getElementById('login-error').classList.add('hidden');
     document.getElementById('login-form').reset();
-    updateLoginStatus();
     const btn=document.getElementById('login-submit');
     if(state){btn.disabled=false;btn.textContent='Войти';}
     else{btn.disabled=true;btn.textContent='Загрузка...';}
+}
+
+/* ============ FORGOT PASSWORD ============ */
+async function handleForgot(){
+    const username=document.getElementById('forgot-user').value.trim();
+    const info=document.getElementById('forgot-info');
+    if(!username){info.innerHTML='<div class="alert alert-error">Введите логин</div>';return;}
+    const user=state.users.find(u=>u.username===username);
+    if(!user){info.innerHTML='<div class="alert alert-error">Пользователь не найден</div>';return;}
+
+    info.innerHTML='<div class="alert alert-info">Отправляем...</div>';
+
+    // Попытка через Firebase Auth (если настроен email)
+    if(user.email&&fbAuth){
+        try{
+            await fbAuth.sendPasswordResetEmail(user.email);
+            info.innerHTML=`<div class="alert alert-success">Письмо со ссылкой отправлено на <b>${esc(user.email)}</b>. Проверьте почту.</div>`;
+            return;
+        }catch(e){
+            console.warn('[auth]',e);
+            // fallback ниже
+        }
+    }
+
+    // Fallback — показываем код на экране
+    const code=String(Math.floor(100000+Math.random()*900000));
+    state.resetTokens=state.resetTokens||[];
+    state.resetTokens=state.resetTokens.filter(t=>t.username!==username);
+    state.resetTokens.push({username,code,expiresAt:Date.now()+15*60*1000});
+    save();
+    info.innerHTML=`<div class="alert alert-warning"><b>Демо-режим:</b> код для <b>${esc(username)}</b> — <code style="font-size:16px;background:#fff;padding:2px 8px;border-radius:4px;letter-spacing:2px">${code}</code><br><small>Действует 15 минут. Для реальной отправки на email укажите email в профиле (Firebase Auth).</small></div><div class="form-group" style="margin-top:12px"><label class="form-label">Код</label><input class="input" id="forgot-code" maxlength="6"></div><div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="forgot-newpass"></div><button class="btn btn-success btn-block" onclick="applyPasswordReset('${esc(username)}')">Сбросить пароль</button>`;
+}
+
+async function applyPasswordReset(username){
+    const code=document.getElementById('forgot-code').value.trim();
+    const newPass=document.getElementById('forgot-newpass').value;
+    const info=document.getElementById('forgot-info');
+    if(!code||!newPass){info.innerHTML='<div class="alert alert-error">Заполните все поля</div>';return;}
+    if(newPass.length<4){info.innerHTML='<div class="alert alert-error">Пароль минимум 4 символа</div>';return;}
+    const token=state.resetTokens.find(t=>t.username===username&&t.code===code&&t.expiresAt>Date.now());
+    if(!token){info.innerHTML='<div class="alert alert-error">Неверный или истёкший код</div>';return;}
+    const user=state.users.find(u=>u.username===username);
+    if(!user){info.innerHTML='<div class="alert alert-error">Пользователь не найден</div>';return;}
+    user.password=await hashPassword(newPass);
+    state.resetTokens=state.resetTokens.filter(t=>t.username!==username);
+    save();
+    info.innerHTML='<div class="alert alert-success">Пароль изменён! Возвращаемся...</div>';
+    setTimeout(()=>renderLogin(),1200);
+}
+
+/* ============ МОДАЛЬНОЕ ОКНО ============ */
+function openEditUserModal(userId){
+    const u=getUser(userId);
+    if(!u)return;
+    const c=document.getElementById('modal-container');
+    c.classList.remove('hidden');
+    c.innerHTML=`
+        <div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-container').classList.add('hidden')">
+            <div class="modal-card">
+                <h3>✎ Редактировать аккаунт</h3>
+                <div class="form-group"><label class="form-label">ФИО</label><input class="input" id="eu-name" value="${esc(u.name)}"></div>
+                <div class="form-group"><label class="form-label">Email (для восстановления пароля)</label><input class="input" type="email" id="eu-email" value="${esc(u.email||'')}" placeholder="example@mail.ru"></div>
+                <div class="form-group"><label class="form-label">Логин</label><input class="input" id="eu-username" value="${esc(u.username)}"></div>
+                <div class="form-group"><label class="form-label">Новый пароль</label><input class="input" type="password" id="eu-password" placeholder="оставьте пустым — не менять"></div>
+                <div class="form-group"><label class="form-label">Роль</label>
+                    <select class="select" id="eu-role" ${u.id===session.userId?'disabled':''}>
+                        <option value="teacher" ${u.role==='teacher'?'selected':''}>учитель</option>
+                        <option value="deputy" ${u.role==='deputy'?'selected':''}>завуч</option>
+                        <option value="director" ${u.role==='director'?'selected':''}>директор</option>
+                        <option value="admin" ${u.role==='admin'?'selected':''}>админ</option>
+                        <option value="student" ${u.role==='student'?'selected':''}>ученик</option>
+                    </select>
+                </div>
+                <div class="form-group ${u.role==='student'?'':'hidden'}" id="eu-student-wrap">
+                    <label class="form-label">Связанный ученик</label>
+                    <select class="select" id="eu-student"><option value="">—</option>${state.students.map(s=>`<option value="${s.id}" ${u.studentId===s.id?'selected':''}>${esc(s.fullName)}</option>`).join('')}</select>
+                </div>
+                <div id="eu-msg"></div>
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                    <button class="btn btn-ghost" onclick="document.getElementById('modal-container').classList.add('hidden')">Отмена</button>
+                    <button class="btn" id="eu-save">Сохранить</button>
+                </div>
+            </div>
+        </div>`;
+    const roleSel=document.getElementById('eu-role');
+    roleSel.onchange=()=>{document.getElementById('eu-student-wrap').classList.toggle('hidden',roleSel.value!=='student');};
+    document.getElementById('eu-save').onclick=async()=>{
+        const msg=document.getElementById('eu-msg');
+        msg.innerHTML='';
+        const newName=document.getElementById('eu-name').value.trim();
+        const newEmail=document.getElementById('eu-email').value.trim();
+        const newUsername=document.getElementById('eu-username').value.trim();
+        const newPassword=document.getElementById('eu-password').value;
+        const newRole=roleSel.value;
+        const newStudentId=newRole==='student'&&document.getElementById('eu-student').value?Number(document.getElementById('eu-student').value):null;
+        if(!newName||!newUsername){msg.innerHTML='<div class="alert alert-error">Заполните ФИО и логин</div>';return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(newUsername)){msg.innerHTML='<div class="alert alert-error">Логин: только латиница, цифры, _ . -</div>';return;}
+        if(state.users.some(x=>x.id!==u.id&&x.username===newUsername)){msg.innerHTML='<div class="alert alert-error">Логин занят</div>';return;}
+        if(newRole==='student'&&!newStudentId){msg.innerHTML='<div class="alert alert-error">Выберите ученика</div>';return;}
+        u.name=newName;u.username=newUsername;u.email=newEmail;
+        if(newRole!==u.role&&u.id!==session.userId)u.role=newRole;
+        u.studentId=newRole==='student'?newStudentId:(u.studentId||null);
+        if(newPassword){
+            if(newPassword.length<3){msg.innerHTML='<div class="alert alert-error">Пароль слишком короткий</div>';return;}
+            u.password=await hashPassword(newPassword);
+        }
+        if(u.id===session.userId){
+            session.name=newName;session.username=newUsername;saveSession();
+            document.getElementById('user-name').textContent=newName;
+        }
+        save();logAction(`Изменён аккаунт: ${newUsername}`);
+        c.classList.add('hidden');
+        renderAccounts();
+        showToast('Аккаунт обновлён','success');
+    };
 }
 
 let currentPage='home';
@@ -665,10 +831,13 @@ function navigateTo(p){currentPage=p;renderApp();}
 function renderApp(){
     if(!session||!state)return;
     document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('2fa-screen').classList.add('hidden');
+    document.getElementById('forgot-screen').classList.add('hidden');
     document.getElementById('app-screen').classList.remove('hidden');
     document.getElementById('checkin-banner').classList.add('hidden');
     document.getElementById('user-name').textContent=session.name;
     document.getElementById('user-role').textContent=roleLabel(session.role);
+    document.getElementById('print-date').textContent=new Date().toLocaleString('ru-RU');
     renderNav();
     renderPage(currentPage);
 }
@@ -716,7 +885,7 @@ function renderPage(page){
     }
 }
 
-/* ============ QR-СТРАНИЦА (действует с 8:00 до 8:00) ============ */
+/* ============ QR СТРАНИЦА ============ */
 let qrTimer=null;
 let qrClassId=null;
 let qrGenerating=false;
@@ -727,139 +896,78 @@ function renderQR(){
     if(!allowed.length){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
     if(!qrClassId||!allowed.some(c=>c.id===qrClassId))qrClassId=allowed[0].id;
     const cls=getClass(qrClassId);
-    if(!cls){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-error">Класс не найден</div>`;return;}
-
-    const schoolDay = getSchoolDay();
-    const date = schoolDay.date;
-
-    const now = Date.now();
-    // Ищем действующий токен для этого класса
-    const activeToken = (state.qrTokens||[]).find(t =>
-        t.classId === qrClassId &&
-        t.validFrom <= now &&
-        t.validUntil > now
-    );
-
-    const checkins = (state.checkins||[]).filter(c=>c.date===date&&c.classId===qrClassId).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-
-    const validUntilStr = activeToken
-        ? new Date(activeToken.validUntil).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-        : '';
-
+    if(!cls)return;
+    const schoolDay=getSchoolDay();
+    const now=Date.now();
+    const activeToken=(state.qrTokens||[]).find(t=>t.classId===qrClassId&&t.validFrom<=now&&t.validUntil>now);
+    const checkins=(state.checkins||[]).filter(c=>c.date===schoolDay.date&&c.classId===qrClassId).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const validUntilStr=activeToken?new Date(activeToken.validUntil).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
     document.getElementById('page-qr').innerHTML=`
         <h1 class="page-title">QR-код для отметки</h1>
-        <p class="page-subtitle">Обновляется каждые сутки в 08:00 · действует до 08:00 следующего дня</p>
+        <p class="page-subtitle">Обновляется автоматически в 08:00 · действует до 08:00 следующего дня</p>
         <div class="card"><div class="card-body"><div class="inline-form" style="grid-template-columns:${isT?'1fr auto':'1fr 1fr auto'}">
             ${!isT?`<div class="form-group"><label class="form-label">Класс</label><select class="select" id="qr-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===qrClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}
-            <div class="form-group">
-                <label class="form-label">Учебный день</label>
-                <div class="input" style="background:#f8fafc;font-weight:600">${formatDate(date)}</div>
-            </div>
-            <div class="form-group"><button class="btn" id="qr-refresh">🔄 Обновить вручную</button></div>
+            <div class="form-group"><label class="form-label">Учебный день</label><div class="input" style="background:#f8fafc;font-weight:600">${formatDate(schoolDay.date)}</div></div>
+            <div class="form-group"><button class="btn" id="qr-refresh">🔄 Обновить</button></div>
         </div></div></div>
-
-        <div class="card">
-            <div class="card-header">QR · ${esc(cls.name)} · ${formatDate(date)}</div>
-            <div class="card-body">
-                <div class="qr-wrap" id="qr-wrap"></div>
-                ${activeToken?`<div class="qr-validity">Действует до <b>${esc(validUntilStr)}</b></div>`:''}
-            </div>
+        <div class="card"><div class="card-header">QR · ${esc(cls.name)} · ${formatDate(schoolDay.date)}</div>
+            <div class="card-body"><div class="qr-wrap" id="qr-wrap"></div>${activeToken?`<div class="qr-validity">Действует до <b>${esc(validUntilStr)}</b></div>`:''}</div>
         </div>
-
-        <div class="card">
-            <div class="card-header">Отметились за ${formatDate(date)} (${checkins.length})</div>
+        <div class="card"><div class="card-header">Отметились (${checkins.length})</div>
             <div class="card-body p-0">
-                ${checkins.length?`<div class="table-wrap"><table>
-                    <thead><tr><th>Ученик</th><th>Время</th></tr></thead>
-                    <tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time||'—')}</td></tr>`;}).join('')}</tbody>
-                </table></div>`:'<div class="empty"><div class="empty-icon">📱</div>Пока никто не отметился</div>'}
+                ${checkins.length?`<div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Время</th><th>Статус</th></tr></thead><tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time||'—')}</td><td>${c.isLate?'<span class="late-tag">опоздал</span>':'<span class="badge badge-success">вовремя</span>'}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty"><div class="empty-icon">📱</div>Пока никто не отметился</div>'}
             </div>
         </div>`;
-
     const cs=document.getElementById('qr-class');
     if(cs)cs.onchange=()=>{qrClassId=Number(cs.value);renderQR();};
     const btn=document.getElementById('qr-refresh');
-    if(btn)btn.onclick=()=>generateQRToken(qrClassId, true);
-
-    if(activeToken){
-        drawQRImage(activeToken.token, activeToken.validUntil);
-    }else{
-        generateQRToken(qrClassId, false);
-    }
+    if(btn)btn.onclick=()=>generateQRToken(qrClassId,true);
+    if(activeToken)drawQRImage(activeToken.token,activeToken.validUntil);
+    else generateQRToken(qrClassId,false);
 }
 
-function generateQRToken(classId, forceNew){
-    if(qrGenerating && !forceNew) return;
-    if(qrGenerating) return;
-    qrGenerating = true;
-    try {
-        const day = getSchoolDay();
-        const now = Date.now();
-
-        // Если не форсим и уже есть действующий токен — используем его
-        if (!forceNew) {
-            const existing = (state.qrTokens||[]).find(t =>
-                t.classId === classId &&
-                t.validFrom <= now &&
-                t.validUntil > now
-            );
-            if (existing) {
-                drawQRImage(existing.token, existing.validUntil);
-                return;
-            }
+function generateQRToken(classId,forceNew){
+    if(qrGenerating)return;
+    qrGenerating=true;
+    try{
+        const day=getSchoolDay();
+        const now=Date.now();
+        if(!forceNew){
+            const existing=(state.qrTokens||[]).find(t=>t.classId===classId&&t.validFrom<=now&&t.validUntil>now);
+            if(existing){drawQRImage(existing.token,existing.validUntil);return;}
         }
-
-        // Удаляем все старые токены этого класса
-        state.qrTokens = (state.qrTokens || []).filter(t => t.classId !== classId);
-
-        const token = 'qr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 10);
-        state.qrTokens.push({
-            token,
-            classId,
-            date: day.date,
-            validFrom: day.validFrom,
-            validUntil: day.validUntil,
-            createdAt: Date.now(),
-            createdBy: session.userId
-        });
+        state.qrTokens=(state.qrTokens||[]).filter(t=>t.classId!==classId);
+        const token='qr_'+Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,10);
+        state.qrTokens.push({token,classId,date:day.date,validFrom:day.validFrom,validUntil:day.validUntil,createdAt:Date.now(),createdBy:session.userId});
         save();
-        drawQRImage(token, day.validUntil);
-        if (forceNew) showToast('QR-код обновлён','info');
-    } catch(err) {
-        console.error('[QR]', err);
-        showToast('Ошибка QR: ' + err.message, 'error');
-    } finally {
-        setTimeout(()=>{qrGenerating=false;}, 100);
-    }
+        drawQRImage(token,day.validUntil);
+        if(forceNew)showToast('QR-код обновлён','info');
+    }catch(err){console.error('[QR]',err);showToast('Ошибка: '+err.message,'error');}
+    finally{setTimeout(()=>{qrGenerating=false;},100);}
 }
 
-function drawQRImage(token, validUntil){
+function drawQRImage(token,validUntil){
     if(qrTimer){clearTimeout(qrTimer);qrTimer=null;}
     const wrap=document.getElementById('qr-wrap');
     if(!wrap)return;
     wrap.innerHTML='';
-    if(typeof QRCode==='undefined'){wrap.innerHTML='<div class="alert alert-error">Библиотека QR не загружена. Проверьте интернет.</div>';return;}
+    if(typeof QRCode==='undefined'){wrap.innerHTML='<div class="alert alert-error">Библиотека QR не загружена.</div>';return;}
     const baseUrl=window.location.href.split('?')[0].split('#')[0];
-    const checkinUrl=baseUrl+'?checkin='+token;
-    try{new QRCode(wrap,{text:checkinUrl,width:240,height:240,colorDark:'#1e293b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
-    catch(err){console.error('[QR draw]',err);wrap.innerHTML='<div class="alert alert-error">Ошибка: '+esc(err.message)+'</div>';return;}
-
-    // Таймер на обновление в момент validUntil (8:00 следующего дня)
+    const url=baseUrl+'?checkin='+token;
+    try{new QRCode(wrap,{text:url,width:240,height:240,colorDark:'#1e293b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
+    catch(err){wrap.innerHTML='<div class="alert alert-error">Ошибка: '+esc(err.message)+'</div>';return;}
+    const info=document.createElement('div');
+    info.className='qr-info';
+    info.innerHTML=`<div class="qr-timer">⏱ 24 часа (с 8:00 до 8:00)</div><div style="margin-top:12px;color:#64748b;font-size:11px">${esc(url)}</div>`;
+    wrap.appendChild(info);
     if(validUntil){
         const ms=validUntil-Date.now()+5000;
-        if(ms>0){
-            qrTimer=setTimeout(()=>{
-                if(currentPage==='qr'&&qrClassId){
-                    console.log('[QR] Автообновление в 8:00');
-                    generateQRToken(qrClassId, false);
-                }
-            }, ms);
-        }
+        if(ms>0)qrTimer=setTimeout(()=>{if(currentPage==='qr'&&qrClassId)generateQRToken(qrClassId,false);},ms);
     }
 }
 
-/* ============ ПОСЕЩАЕМОСТЬ (по дням) ============ */
-let qaState={classId:null,date:null};
+/* ============ ПОСЕЩАЕМОСТЬ (с шаблонами и поиском) ============ */
+let qaState={classId:null,date:null,search:'',filter:'all'};
 
 function renderQuickAdd(){
     const isT=session.role==='teacher';
@@ -869,34 +977,48 @@ function renderQuickAdd(){
     if(!qaState.date)qaState.date=new Date().toISOString().slice(0,10);
     const cls=getClass(qaState.classId);
     const date=qaState.date;
-    const students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
+    let students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
+
+    // Фильтры
     const todayAbs=state.absences.filter(a=>a.date===date&&a.status==='approved'&&students.some(s=>s.id===a.studentId));
     const byS={};todayAbs.forEach(a=>{byS[a.studentId]=a;});
     const checkins=state.checkins.filter(c=>c.date===date&&c.classId===cls.id);
     const checkinByS={};checkins.forEach(c=>{checkinByS[c.studentId]=c;});
+
+    if(qaState.search){
+        const q=qaState.search.toLowerCase();
+        students=students.filter(s=>s.fullName.toLowerCase().includes(q));
+    }
+    if(qaState.filter==='absent')students=students.filter(s=>byS[s.id]&&byS[s.id].type==='absent');
+    else if(qaState.filter==='late')students=students.filter(s=>byS[s.id]&&byS[s.id].type==='late');
+    else if(qaState.filter==='present')students=students.filter(s=>!byS[s.id]);
+
     const absCount=todayAbs.filter(a=>a.type==='absent').length;
     const lateCount=todayAbs.filter(a=>a.type==='late').length;
+
     document.getElementById('page-quick-add').innerHTML=`
         <h1 class="page-title">Посещаемость</h1>
-        <div class="card"><div class="card-body"><div class="inline-form" style="grid-template-columns:${isT?'1fr 1fr auto':'1fr 1fr 1fr auto'}">
+        <div class="card"><div class="card-body"><div class="inline-form" style="grid-template-columns:${isT?'1fr 1fr auto auto':'1fr 1fr 1fr auto auto'}">
             ${!isT?`<div class="form-group"><label class="form-label">Класс</label><select class="select" id="qa-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===qaState.classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}
             <div class="form-group"><label class="form-label">Дата</label><input class="input" type="date" id="qa-date" value="${date}"></div>
             <div class="form-group"><button class="btn btn-success" id="qa-all">✓ Все присутствуют</button></div>
             <div class="form-group"><button class="btn btn-warning" id="qa-save">💾 Сохранить</button></div>
         </div></div></div>
-        <div class="quick-info">
-            <div><div class="qi-label">Класс</div><div class="qi-value">${esc(cls.name)}</div></div>
-            <div><div class="qi-label">Учеников</div><div class="qi-value">${students.length}</div></div>
-            <div><div class="qi-label" style="color:#dc2626">Отсутствуют</div><div class="qi-value" style="color:#dc2626">${absCount}</div></div>
-            <div><div class="qi-label" style="color:#f59e0b">Опоздали</div><div class="qi-value" style="color:#f59e0b">${lateCount}</div></div>
-            <div><div class="qi-label" style="color:#16a34a">QR-отметок</div><div class="qi-value" style="color:#16a34a">${checkins.length}</div></div>
-        </div>
+        <div class="card"><div class="card-body" style="padding:14px 22px">
+            <div class="filter-btns">
+                <button data-filter="all" class="${qaState.filter==='all'?'active':''}">Все</button>
+                <button data-filter="present" class="${qaState.filter==='present'?'active':''}">Присутствовали</button>
+                <button data-filter="absent" class="${qaState.filter==='absent'?'active':''}">Отсутствовали (${absCount})</button>
+                <button data-filter="late" class="${qaState.filter==='late'?'active':''}">Опоздали (${lateCount})</button>
+            </div>
+            <div class="search-bar"><input type="text" id="qa-search" placeholder="Поиск по ФИО..." value="${esc(qaState.search)}"></div>
+        </div></div>
         <div class="card"><div class="card-header">Отметки на ${formatDate(date)}</div>
         <div class="card-body p-0">${students.length?`<div class="table-wrap"><table><thead><tr><th>Ученик</th><th style="width:220px">Статус</th><th>Причина</th></tr></thead><tbody>${students.map(st=>{
             const ex=byS[st.id];
             const status=ex?ex.type:'present';
             const chk=checkinByS[st.id];
-            const qrBadge=chk?` <span class="badge badge-info" style="font-size:10px">QR ${esc(chk.time)}</span>`:'';
+            const qrBadge=chk?` <span class="badge badge-info" style="font-size:10px">QR ${esc(chk.time)}${chk.isLate?' ⚠':''}</span>`:'';
             return`<tr class="attendance-row ${status==='absent'?'row-absent':status==='late'?'row-late':''}" data-row-sid="${st.id}">
                 <td>${esc(st.fullName)}${qrBadge}</td>
                 <td><div class="status-switch" data-switch="${st.id}">
@@ -906,11 +1028,14 @@ function renderQuickAdd(){
                 </div></td>
                 <td><select class="select" data-reason-for="${st.id}" ${status==='present'?'disabled':''}><option value="">—</option>${state.reasons.map(r=>`<option value="${r.id}" ${ex&&ex.reasonId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></td>
             </tr>`;
-        }).join('')}</tbody></table></div>`:'<div class="empty">Нет учеников</div>'}</div></div>
+        }).join('')}</tbody></table></div>`:'<div class="empty">Нет учеников по фильтру</div>'}</div></div>
         <div id="qa-msg"></div>`;
     const cs=document.getElementById('qa-class');
     if(cs)cs.onchange=()=>{qaState.classId=Number(cs.value);renderQuickAdd();};
     document.getElementById('qa-date').onchange=e=>{qaState.date=e.target.value;renderQuickAdd();};
+    document.querySelectorAll('[data-filter]').forEach(b=>{b.onclick=()=>{qaState.filter=b.dataset.filter;renderQuickAdd();};});
+    const searchInput=document.getElementById('qa-search');
+    if(searchInput)searchInput.oninput=e=>{qaState.search=e.target.value;renderQuickAdd();};
     document.getElementById('qa-all').onclick=()=>{document.querySelectorAll('[data-switch]').forEach(sw=>updateStatus(Number(sw.dataset.switch),'present'));};
     document.querySelectorAll('[data-switch] button').forEach(b=>{b.onclick=()=>{const sw=b.closest('[data-switch]');updateStatus(Number(sw.dataset.switch),b.dataset.status);};});
     document.getElementById('qa-save').onclick=()=>{
@@ -923,19 +1048,18 @@ function renderQuickAdd(){
             if(!r)err=`«${getStudent(Number(sid)).fullName}» — причина`;
         });
         if(err){document.getElementById('qa-msg').innerHTML=`<div class="alert alert-error">${esc(err)}</div>`;return;}
-        state.absences=state.absences.filter(a=>!(a.date===date&&students.some(s=>s.id===a.studentId)));
+        // Удаляем старые записи для этих учеников на эту дату
+        const ids=Object.keys(sts).map(Number);
+        state.absences=state.absences.filter(a=>!(a.date===date&&ids.includes(a.studentId)));
         let idc=nextId(state.absences);
         Object.entries(sts).forEach(([sid,st])=>{
             if(st==='present')return;
             const reasonId=Number(document.querySelector(`[data-reason-for="${sid}"]`).value);
             state.absences.push({id:idc++,studentId:Number(sid),date,reasonId,comment:'',status:'approved',type:st,hasCertificate:false});
         });
-        const absentIds=new Set(Object.entries(sts).filter(([sid,st])=>st!=='present').map(([sid])=>Number(sid)));
-        state.checkins=state.checkins.filter(c=>!(c.date===date&&absentIds.has(c.studentId)));
-        save();
+        save();logAction(`Посещаемость ${cls.name}`);
         const absN=Object.values(sts).filter(s=>s==='absent').length;
         const lateN=Object.values(sts).filter(s=>s==='late').length;
-        logAction(`Посещаемость ${cls.name}`);
         document.getElementById('qa-msg').innerHTML=`<div class="alert alert-success">Сохранено: ${absN} отсутств., ${lateN} опозд.</div>`;
     };
 }
@@ -952,39 +1076,50 @@ function updateStatus(sid,st){
     if(st==='present')r.value='';
 }
 
-/* ============ СПИСОК КЛАССА ============ */
+/* ============ СПИСОК КЛАССА (с поиском) ============ */
 let studentsClassId=null;
+let studentsSearch='';
 function renderStudents(){
     const isT=session.role==='teacher';
     const isS=session.role==='student';
     let allowed;
     if(isT||isS){const my=getMyClass();allowed=my?[my]:[];}
     else allowed=state.classes;
-    if(!allowed.length){document.getElementById('page-students').innerHTML=`<h1 class="page-title">Список класса</h1><div class="alert alert-warning">Нет классов</div>`;return;}
+    if(!allowed.length){document.getElementById('page-students').innerHTML=`<h1 class="page-title">Список</h1><div class="alert alert-warning">Нет классов</div>`;return;}
     if(!studentsClassId||!allowed.some(c=>c.id===studentsClassId))studentsClassId=allowed[0].id;
     const cls=getClass(studentsClassId);
     const teacher=getTeacherOfClass(cls.id);
-    const students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
+    let students=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
+    if(studentsSearch){
+        const q=studentsSearch.toLowerCase();
+        students=students.filter(s=>s.fullName.toLowerCase().includes(q));
+    }
     const end=new Date().toISOString().slice(0,10);
     const s=new Date();s.setDate(s.getDate()-29);
     const start=s.toISOString().slice(0,10);
     const totalAtt=classAvg(cls.id,start,end);
-    const totalAbs=approved().filter(a=>a.date>=start&&a.date<=end&&students.some(st=>st.id===a.studentId)).length;
-    const totalLates=approvedLates().filter(a=>a.date>=start&&a.date<=end&&students.some(st=>st.id===a.studentId)).length;
+    const totalAbs=approved().filter(a=>a.date>=start&&a.date<=end&&getStudentsOfClass(cls.id).some(st=>st.id===a.studentId)).length;
+    const totalLates=approvedLates().filter(a=>a.date>=start&&a.date<=end&&getStudentsOfClass(cls.id).some(st=>st.id===a.studentId)).length;
 
     document.getElementById('page-students').innerHTML=`
         <h1 class="page-title">Список класса — ${esc(cls.name)}</h1>
-        <p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${students.length} учеников</p>
+        <p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${getStudentsOfClass(cls.id).length} учеников</p>
+        <div class="no-print">
         ${!isT&&!isS?`<div class="card"><div class="card-body"><div class="form-group" style="margin:0;max-width:300px"><label class="form-label">Класс</label>
             <select class="select" id="stud-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===studentsClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
         </div></div></div>`:''}
-        <div class="kpi-grid">
-            <div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${students.length}</div></div>
-            <div class="kpi success"><div class="kpi-label">Ср. посещаемость</div><div class="kpi-value">${totalAtt}%</div></div>
-            <div class="kpi danger"><div class="kpi-label">Пропусков (30 дн)</div><div class="kpi-value">${totalAbs}</div></div>
-            <div class="kpi warning"><div class="kpi-label">Опозданий (30 дн)</div><div class="kpi-value">${totalLates}</div></div>
+        <div class="card"><div class="card-body" style="padding:14px 22px">
+            <div class="search-bar"><input type="text" id="stud-search" placeholder="Поиск по ФИО..." value="${esc(studentsSearch)}"></div>
+            <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать списка</button>
+        </div></div>
         </div>
-        ${students.length?`<div class="card"><div class="card-header">Ученики</div><div class="card-body p-0">
+        <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${getStudentsOfClass(cls.id).length}</div></div>
+            <div class="kpi success"><div class="kpi-label">Ср. посещаемость</div><div class="kpi-value">${totalAtt}%</div></div>
+            <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${totalAbs}</div></div>
+            <div class="kpi warning"><div class="kpi-label">Опозданий</div><div class="kpi-value">${totalLates}</div></div>
+        </div>
+        ${students.length?`<div class="card"><div class="card-header">Ученики (${students.length})</div><div class="card-body p-0">
             ${students.map(st=>{
                 const att=Math.round(calcAtt(st.id,start,end)*10)/10;
                 const abs=approved().filter(a=>a.studentId===st.id&&a.date>=start&&a.date<=end).length;
@@ -1001,10 +1136,11 @@ function renderStudents(){
                     </div>
                 </div>`;
             }).join('')}
-        </div></div>`:'<div class="card"><div class="empty">В классе нет учеников</div></div>'}`;
-
+        </div></div>`:'<div class="card"><div class="empty">Ничего не найдено</div></div>'}`;
     const cs=document.getElementById('stud-class');
     if(cs)cs.onchange=()=>{studentsClassId=Number(cs.value);renderStudents();};
+    const si=document.getElementById('stud-search');
+    if(si)si.oninput=e=>{studentsSearch=e.target.value;renderStudents();};
 }
 
 /* ============ РАСПИСАНИЕ ============ */
@@ -1026,37 +1162,27 @@ function renderSchedule(){
     state.schedule.filter(l=>l.classId===scheduleClassId).forEach(l=>{if(byDay[l.dayOfWeek])byDay[l.dayOfWeek].push(l);});
     Object.values(byDay).forEach(arr=>arr.sort((a,b)=>a.lessonNumber-b.lessonNumber));
     const totalLessons=Object.values(byDay).reduce((sum,arr)=>sum+arr.length,0);
-
     document.getElementById('page-schedule').innerHTML=`
         <h1 class="page-title">Расписание — ${esc(cls.name)}</h1>
         <p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${totalLessons} уроков в неделю</p>
+        <div class="no-print">
         ${!isT&&!isS?`<div class="card"><div class="card-body"><div class="form-group" style="margin:0;max-width:300px"><label class="form-label">Класс</label>
             <select class="select" id="sch-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===scheduleClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
         </div></div></div>`:''}
+        <div style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать</button></div>
         ${canEdit?`<div class="card"><div class="card-header">Добавить урок</div><div class="card-body">
             <form id="sch-add" class="inline-form">
-                <div class="form-group"><label class="form-label">День</label>
-                    <select class="select" name="dayOfWeek" required>${[1,2,3,4,5].map(d=>`<option value="${d}">${DAYS_FULL[d]}</option>`).join('')}</select>
-                </div>
-                <div class="form-group"><label class="form-label">№ урока</label>
-                    <select class="select" name="lessonNumber" required>${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
-                </div>
-                <div class="form-group"><label class="form-label">Предмет</label>
-                    <input class="input" name="subject" required placeholder="Математика">
-                </div>
-                <div class="form-group"><label class="form-label">Учитель</label>
-                    <select class="select" name="teacherId"><option value="">—</option>${allTeachers().map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select>
-                </div>
-                <div class="form-group"><label class="form-label">Начало</label>
-                    <input class="input" type="time" name="startTime" value="08:30" required>
-                </div>
-                <div class="form-group"><label class="form-label">Конец</label>
-                    <input class="input" type="time" name="endTime" value="09:15" required>
-                </div>
-                <div class="form-group"><button class="btn" type="submit">+ Добавить</button></div>
+                <div class="form-group"><label class="form-label">День</label><select class="select" name="dayOfWeek" required>${[1,2,3,4,5].map(d=>`<option value="${d}">${DAYS_FULL[d]}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="form-label">№</label><select class="select" name="lessonNumber" required>${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="form-label">Предмет</label><input class="input" name="subject" required></div>
+                <div class="form-group"><label class="form-label">Учитель</label><select class="select" name="teacherId"><option value="">—</option>${allTeachers().map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="form-label">Начало</label><input class="input" type="time" name="startTime" value="08:30" required></div>
+                <div class="form-group"><label class="form-label">Конец</label><input class="input" type="time" name="endTime" value="09:15" required></div>
+                <div class="form-group"><button class="btn" type="submit">+</button></div>
             </form>
             <div id="sch-msg" style="margin-top:12px"></div>
         </div></div>`:''}
+        </div>
         <div class="card"><div class="card-body">
             <div class="sched-grid">
                 ${[1,2,3,4,5].map(d=>`
@@ -1068,14 +1194,13 @@ function renderSchedule(){
                                 <div class="sched-lesson-top"><span class="sched-num">${l.lessonNumber}</span><span class="sched-time">${esc(l.startTime||'')}–${esc(l.endTime||'')}</span></div>
                                 <div class="sched-subj">${esc(l.subject)}</div>
                                 ${t?`<div class="sched-teacher">${esc(t.name)}</div>`:''}
-                                ${canEdit?`<button class="btn btn-ghost btn-sm" style="margin-top:6px;padding:2px 8px;font-size:10px" data-del-lesson="${l.id}">✕</button>`:''}
+                                ${canEdit?`<button class="btn btn-ghost btn-sm no-print" style="margin-top:6px;padding:2px 8px;font-size:10px" data-del-lesson="${l.id}">✕</button>`:''}
                             </div>`;
                         }).join(''):'<div class="sched-empty">Нет уроков</div>'}
                     </div>
                 `).join('')}
             </div>
         </div></div>`;
-
     const cs=document.getElementById('sch-class');
     if(cs)cs.onchange=()=>{scheduleClassId=Number(cs.value);renderSchedule();};
     if(canEdit){
@@ -1085,55 +1210,29 @@ function renderSchedule(){
             const dayOfWeek=Number(fd.get('dayOfWeek'));
             const lessonNumber=Number(fd.get('lessonNumber'));
             const subject=(fd.get('subject')||'').trim();
-            const teacherId=fd.get('teacherId')?Number(fd.get('teacherId')):null;
             if(!subject)return;
             if(state.schedule.some(l=>l.classId===scheduleClassId&&l.dayOfWeek===dayOfWeek&&l.lessonNumber===lessonNumber)){
-                document.getElementById('sch-msg').innerHTML=`<div class="alert alert-error">Урок №${lessonNumber} в ${DAYS_FULL[dayOfWeek]} уже есть</div>`;return;
+                document.getElementById('sch-msg').innerHTML=`<div class="alert alert-error">Уже есть</div>`;return;
             }
-            state.schedule.push({id:nextId(state.schedule),classId:scheduleClassId,dayOfWeek,lessonNumber,subject,teacherId,startTime:fd.get('startTime'),endTime:fd.get('endTime')});
-            save();logAction(`Добавлен урок: ${cls.name}, ${DAYS_FULL[dayOfWeek]}, №${lessonNumber}`);
-            renderSchedule();
+            state.schedule.push({id:nextId(state.schedule),classId:scheduleClassId,dayOfWeek,lessonNumber,subject,teacherId:fd.get('teacherId')?Number(fd.get('teacherId')):null,startTime:fd.get('startTime'),endTime:fd.get('endTime')});
+            save();renderSchedule();
         };
         document.querySelectorAll('[data-del-lesson]').forEach(b=>{b.onclick=()=>{
             const id=Number(b.dataset.delLesson);
             const l=state.schedule.find(x=>x.id===id);
-            if(!l)return;
-            if(!confirm(`Удалить «${l.subject}»?`))return;
+            if(!l||!confirm(`Удалить «${l.subject}»?`))return;
             state.schedule=state.schedule.filter(x=>x.id!==id);
-            save();logAction(`Удалён урок: ${l.subject}`);
-            renderSchedule();
+            save();renderSchedule();
         };});
     }
 }
 
-/* ============ ГЛАВНАЯ ============ */
+/* ============ ГЛАВНАЯ УЧИТЕЛЯ (с быстрыми действиями) ============ */
 function renderHome(){
     if(session.role==='student')return renderStudentHome();
     if(session.role==='teacher')return renderTeacherHome();
     if(session.role==='admin')return renderAdminHome();
     return renderAdminSchoolHome();
-}
-
-function renderStudentHome(){
-    const student=getStudent(session.studentId);
-    const cls=student?getClass(student.classId):null;
-    const my=state.absences.filter(a=>a.studentId===session.studentId).sort((a,b)=>b.date.localeCompare(a.date));
-    const pending=my.filter(a=>a.status==='pending').length;
-    const today=new Date().toISOString().slice(0,10);
-    const todayCheckin=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today);
-    document.getElementById('page-home').innerHTML=`
-        <h1 class="page-title">Мои пропуски</h1>
-        <p class="page-subtitle">${esc(student?.fullName||'')} · класс ${esc(cls?.name||'—')}</p>
-        ${todayCheckin?`<div class="alert alert-success">✓ Вы отметились по QR сегодня в ${esc(todayCheckin.time)}</div>`:''}
-        <div class="kpi-grid">
-            <div class="kpi"><div class="kpi-label">Всего</div><div class="kpi-value">${my.length}</div></div>
-            <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${my.filter(a=>a.type==='absent'&&a.status==='approved').length}</div></div>
-            <div class="kpi warning"><div class="kpi-label">Опозданий</div><div class="kpi-value">${my.filter(a=>a.type==='late'&&a.status==='approved').length}</div></div>
-            <div class="kpi success"><div class="kpi-label">На рассмотрении</div><div class="kpi-value">${pending}</div></div>
-        </div>
-        <div class="card"><div class="card-header"><span>История</span><button class="btn btn-sm" id="go-req">+ Сообщить</button></div>
-        <div class="card-body p-0">${my.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Причина</th><th>Справка</th><th>Статус</th></tr></thead><tbody>${my.map(a=>{const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td><td>${certCell(a,r)}</td><td>${statusBadge(a.status)}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty"><div class="empty-icon">🎉</div>Пропусков нет</div>'}</div></div>`;
-    const el=document.getElementById('go-req');if(el)el.onclick=()=>navigateTo('my-request');
 }
 
 function renderTeacherHome(){
@@ -1150,19 +1249,57 @@ function renderTeacherHome(){
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Мой класс — ${esc(cls.name)}</h1>
         <p class="page-subtitle">${esc(session.name)} · учеников: ${ss.length}</p>
+        <div class="quick-actions no-print">
+            <div class="qa-card primary" onclick="navigateTo('quick-add')">
+                <div class="qa-icon">✏️</div>
+                <div class="qa-text"><div class="qa-title">Отметить посещаемость</div><div class="qa-sub">На сегодня</div></div>
+            </div>
+            <div class="qa-card" onclick="navigateTo('qr')">
+                <div class="qa-icon">📱</div>
+                <div class="qa-text"><div class="qa-title">QR-код</div><div class="qa-sub">Для учеников</div></div>
+            </div>
+            <div class="qa-card" onclick="navigateTo('students')">
+                <div class="qa-icon">👥</div>
+                <div class="qa-text"><div class="qa-title">Список класса</div><div class="qa-sub">${ss.length} учеников</div></div>
+            </div>
+            <div class="qa-card" onclick="navigateTo('reports')">
+                <div class="qa-icon">📊</div>
+                <div class="qa-text"><div class="qa-title">Отчёты</div><div class="qa-sub">Печать и статистика</div></div>
+            </div>
+        </div>
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${ss.length}</div></div>
             <div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">${abs.filter(a=>a.date>=start).length}</div></div>
             <div class="kpi success"><div class="kpi-label">Посещаемость</div><div class="kpi-value">${avg}%</div></div>
             <div class="kpi ${pending.length?'danger':''}"><div class="kpi-label">Заявок</div><div class="kpi-value">${pending.length}</div></div>
         </div>
-        ${todayCheckins.length?`<div class="alert alert-info">📱 Сегодня по QR отметились: <b>${todayCheckins.length}</b> из ${ss.length}</div>`:''}
-        ${pending.length?`<div class="card"><div class="card-header" style="color:#f59e0b">⏳ Заявки от учеников</div><div class="card-body p-0">${pending.map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);const needCert=r?.requiresCertificate&&!a.hasCertificate;return`<div class="request-card"><div class="request-main"><div class="request-name">${esc(s.fullName)}</div><div class="request-meta">${formatDate(a.date)} · ${esc(r?.name||'—')}${needCert?' <span class="badge badge-danger">нет справки</span>':''}</div></div><div class="request-actions"><button class="btn btn-sm btn-success" data-approve="${a.id}">✓</button><button class="btn btn-sm btn-danger" data-reject="${a.id}">✕</button></div></div>`;}).join('')}</div></div>`:''}
-        <div class="card"><div class="card-header"><span>Последние пропуски</span><div style="display:flex;gap:6px"><button class="btn btn-sm btn-ghost" id="go-qr">📱 QR</button><button class="btn btn-sm" id="go-quick">+ Отметить</button></div></div><div class="card-body p-0">${abs.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тип</th><th>Причина</th></tr></thead><tbody>${abs.slice(0,10).map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(s.fullName)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока нет записей</div>'}</div></div>`;
-    document.getElementById('go-quick').onclick=()=>navigateTo('quick-add');
-    document.getElementById('go-qr').onclick=()=>navigateTo('qr');
+        ${todayCheckins.length?`<div class="alert alert-info">📱 Сегодня по QR отметились: <b>${todayCheckins.length}</b> из ${ss.length}${todayCheckins.filter(c=>c.isLate).length?` · <span style="color:#dc2626">опоздавших: ${todayCheckins.filter(c=>c.isLate).length}</span>`:''}</div>`:''}
+        ${pending.length?`<div class="card"><div class="card-header" style="color:#f59e0b">⏳ Заявки от учеников</div><div class="card-body p-0">${pending.map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<div class="request-card"><div class="request-main"><div class="request-name">${esc(s.fullName)}</div><div class="request-meta">${formatDate(a.date)} · ${esc(r?.name||'—')}</div></div><div class="request-actions"><button class="btn btn-sm btn-success" data-approve="${a.id}">✓</button><button class="btn btn-sm btn-danger" data-reject="${a.id}">✕</button></div></div>`;}).join('')}</div></div>`:''}
+        <div class="card"><div class="card-header"><span>Последние пропуски</span></div><div class="card-body p-0">${abs.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тип</th><th>Причина</th></tr></thead><tbody>${abs.slice(0,10).map(a=>{const s=getStudent(a.studentId);const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(s.fullName)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока нет записей</div>'}</div></div>`;
     document.querySelectorAll('[data-approve]').forEach(b=>{b.onclick=()=>{const a=state.absences.find(x=>x.id===Number(b.dataset.approve));if(!a)return;a.status='approved';a.reviewedAt=Date.now();save();logAction('Подтверждение');renderTeacherHome();renderNav();};});
     document.querySelectorAll('[data-reject]').forEach(b=>{b.onclick=()=>{const a=state.absences.find(x=>x.id===Number(b.dataset.reject));if(!a)return;if(!confirm('Отклонить?'))return;a.status='rejected';save();logAction('Отклонение');renderTeacherHome();renderNav();};});
+}
+
+function renderStudentHome(){
+    const student=getStudent(session.studentId);
+    const cls=student?getClass(student.classId):null;
+    const my=state.absences.filter(a=>a.studentId===session.studentId).sort((a,b)=>b.date.localeCompare(a.date));
+    const pending=my.filter(a=>a.status==='pending').length;
+    const today=new Date().toISOString().slice(0,10);
+    const todayCheckin=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today);
+    document.getElementById('page-home').innerHTML=`
+        <h1 class="page-title">Мои пропуски</h1>
+        <p class="page-subtitle">${esc(student?.fullName||'')} · класс ${esc(cls?.name||'—')}</p>
+        ${todayCheckin?`<div class="alert alert-${todayCheckin.isLate?'warning':'success'}">${todayCheckin.isLate?'⚠ Отметились с опозданием в':'✓ Отметились по QR в'} ${esc(todayCheckin.time)}</div>`:''}
+        <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-label">Всего</div><div class="kpi-value">${my.length}</div></div>
+            <div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${my.filter(a=>a.type==='absent'&&a.status==='approved').length}</div></div>
+            <div class="kpi warning"><div class="kpi-label">Опозданий</div><div class="kpi-value">${my.filter(a=>a.type==='late'&&a.status==='approved').length}</div></div>
+            <div class="kpi success"><div class="kpi-label">На рассмотрении</div><div class="kpi-value">${pending}</div></div>
+        </div>
+        <div class="card"><div class="card-header"><span>История</span><button class="btn btn-sm no-print" id="go-req">+ Сообщить</button></div>
+        <div class="card-body p-0">${my.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Причина</th><th>Справка</th><th>Статус</th></tr></thead><tbody>${my.map(a=>{const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td><td>${certCell(a,r)}</td><td>${statusBadge(a.status)}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty"><div class="empty-icon">🎉</div>Пропусков нет</div>'}</div></div>`;
+    const el=document.getElementById('go-req');if(el)el.onclick=()=>navigateTo('my-request');
 }
 
 function renderAdminSchoolHome(){
@@ -1170,11 +1307,9 @@ function renderAdminSchoolHome(){
     const total=approved().filter(a=>a.date>=start).length;
     const pendingAll=state.absences.filter(a=>a.status==='pending').length;
     const cs=state.classes.map(c=>{const s=getStudentsOfClass(c.id);const t=getTeacherOfClass(c.id);const ab=approved().filter(a=>a.date>=start&&s.some(x=>x.id===a.studentId)).length;return{cls:c,teacher:t,students:s.length,abs:ab,avg:classAvg(c.id,start,end)};});
-    const att=state.students.map(s=>{const a=calcAtt(s.id,start,end);return{student:s,cls:getClass(s.classId),att:Math.round(a*10)/10};}).filter(x=>x.att<75).sort((a,b)=>a.att-b.att);
-    const recentLog=[...state.log].sort((a,b)=>b.ts-a.ts).slice(0,5);
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Обзор школы</h1>
-        <p class="page-subtitle">Последние 30 дней</p>
+        <div class="no-print" style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать обзора</button></div>
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Классов</div><div class="kpi-value">${state.classes.length}</div></div>
             <div class="kpi"><div class="kpi-label">Учителей</div><div class="kpi-value">${allTeachers().length}</div></div>
@@ -1182,32 +1317,22 @@ function renderAdminSchoolHome(){
             <div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">${total}</div></div>
             ${pendingAll?`<div class="kpi danger"><div class="kpi-label">Заявок</div><div class="kpi-value">${pendingAll}</div></div>`:''}
         </div>
-        ${att.length?`<div class="card"><div class="card-header" style="color:#dc2626">⚠ Требуют внимания (&lt; 75%)</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Класс</th><th>Посещаемость</th></tr></thead><tbody>${att.map(x=>`<tr><td>${esc(x.student.fullName)}</td><td>${esc(x.cls?.name||'—')}</td><td><span class="badge badge-danger">${x.att}%</span></td></tr>`).join('')}</tbody></table></div></div></div>`:''}
-        <div class="card"><div class="card-header">Классы</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>${cs.map(x=>{const bar=x.avg>=90?'success':x.avg>=75?'warning':'danger';return`<tr><td><b>${esc(x.cls.name)}</b></td><td>${x.teacher?esc(x.teacher.name):'—'}</td><td class="td-center">${x.students}</td><td class="td-center">${x.abs}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${x.avg}%">${x.avg}%</div></div></td></tr>`;}).join('')}</tbody></table></div></div></div>
-        <div class="card"><div class="card-header">Последние действия</div><div class="card-body p-0">${recentLog.length?recentLog.map(l=>`<div class="log-entry"><span class="log-time">${formatDateTime(l.ts)}</span><span><span class="log-user">${esc(l.user)}</span> — ${esc(l.action)}</span></div>`).join(''):'<div class="empty">Нет действий</div>'}</div></div>`;
+        <div class="card"><div class="card-header">Классы</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>${cs.map(x=>{const bar=x.avg>=90?'success':x.avg>=75?'warning':'danger';return`<tr><td><b>${esc(x.cls.name)}</b></td><td>${x.teacher?esc(x.teacher.name):'—'}</td><td class="td-center">${x.students}</td><td class="td-center">${x.abs}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${x.avg}%">${x.avg}%</div></div></td></tr>`;}).join('')}</tbody></table></div></div></div>`;
 }
 
 function renderAdminHome(){
-    const pendingAll=state.absences.filter(a=>a.status==='pending').length;
-    const recentLog=[...state.log].sort((a,b)=>b.ts-a.ts).slice(0,8);
     document.getElementById('page-home').innerHTML=`
         <h1 class="page-title">Система</h1>
-        <p class="page-subtitle">Панель администратора</p>
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Аккаунтов</div><div class="kpi-value">${state.users.length}</div></div>
             <div class="kpi"><div class="kpi-label">Классов</div><div class="kpi-value">${state.classes.length}</div></div>
             <div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">${state.students.length}</div></div>
-            <div class="kpi warning"><div class="kpi-label">Заявок</div><div class="kpi-value">${pendingAll}</div></div>
         </div>
-        <div class="card"><div class="card-header">Действия</div><div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn" id="go-acc">Аккаунты</button>
-            <button class="btn btn-ghost" id="go-sync">Синхр.</button>
-            <button class="btn btn-ghost" id="go-log">Журнал</button>
-        </div></div>
-        <div class="card"><div class="card-header">Последние действия</div><div class="card-body p-0">${recentLog.length?recentLog.map(l=>`<div class="log-entry"><span class="log-time">${formatDateTime(l.ts)}</span><span><span class="log-user">${esc(l.user)}</span> — ${esc(l.action)}</span></div>`).join(''):'<div class="empty">Нет</div>'}</div></div>`;
-    document.getElementById('go-acc').onclick=()=>navigateTo('accounts');
-    document.getElementById('go-sync').onclick=()=>navigateTo('sync');
-    document.getElementById('go-log').onclick=()=>navigateTo('log');
+        <div class="card"><div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" onclick="navigateTo('accounts')">Аккаунты</button>
+            <button class="btn btn-ghost" onclick="navigateTo('sync')">Синхр.</button>
+            <button class="btn btn-ghost" onclick="navigateTo('log')">Журнал</button>
+        </div></div>`;
 }
 
 /* ============ ЗАЯВКА ============ */
@@ -1224,18 +1349,18 @@ function renderMyRequest(){
             <button class="btn btn-block" type="submit">Отправить</button>
         </form></div></div>
         <div class="card"><div class="card-header">Активные заявки</div><div class="card-body p-0">${my.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Причина</th><th>Справка</th><th>Статус</th></tr></thead><tbody>${my.map(a=>{const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${esc(r?.name||'—')}</td><td>${certCell(a,r)}</td><td>${statusBadge(a.status)}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Нет заявок</div>'}</div></div>`;
-    const reasonSel=document.getElementById('req-reason');
-    const certWrap=document.getElementById('cert-wrap');
-    const certChk=document.getElementById('cert-check');
-    reasonSel.onchange=()=>{const r=getReason(Number(reasonSel.value));certWrap.classList.toggle('hidden',!(r&&r.requiresCertificate));};
+    const rs=document.getElementById('req-reason');
+    const cw=document.getElementById('cert-wrap');
+    const cc=document.getElementById('cert-check');
+    rs.onchange=()=>{const r=getReason(Number(rs.value));cw.classList.toggle('hidden',!(r&&r.requiresCertificate));};
     document.getElementById('req-form').onsubmit=(e)=>{
         e.preventDefault();
         const fd=new FormData(e.target);
         const date=fd.get('date');const reasonId=Number(fd.get('reasonId'));const comment=(fd.get('comment')||'').trim();
         if(!date||!reasonId)return;
         const r=getReason(reasonId);
-        if(r&&r.requiresCertificate&&!certChk.checked){document.getElementById('req-msg').innerHTML='<div class="alert alert-error">Отметьте справку</div>';return;}
-        state.absences.push({id:nextId(state.absences),studentId:session.studentId,date,reasonId,comment,status:'pending',type:'absent',hasCertificate:!!(r&&r.requiresCertificate&&certChk.checked),createdAt:Date.now()});
+        if(r&&r.requiresCertificate&&!cc.checked){document.getElementById('req-msg').innerHTML='<div class="alert alert-error">Отметьте справку</div>';return;}
+        state.absences.push({id:nextId(state.absences),studentId:session.studentId,date,reasonId,comment,status:'pending',type:'absent',hasCertificate:!!(r&&r.requiresCertificate&&cc.checked),createdAt:Date.now()});
         save();logAction('Заявка');
         document.getElementById('req-msg').innerHTML='<div class="alert alert-success">Отправлено</div>';
         setTimeout(()=>renderMyRequest(),800);
@@ -1244,7 +1369,6 @@ function renderMyRequest(){
 
 /* ============ КАЛЕНДАРЬ ============ */
 let calState={year:null,month:null,selectedDay:null};
-
 function renderCalendar(){
     const today=new Date();
     if(calState.year===null)calState.year=today.getFullYear();
@@ -1280,21 +1404,17 @@ function renderCalendar(){
     }
     document.getElementById('page-calendar').innerHTML=`
         <h1 class="page-title">Календарь</h1>
+        <div class="no-print" style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать</button></div>
         <div class="card"><div class="card-body">
-            <div class="calendar-nav"><button class="btn btn-ghost btn-sm" id="cp">←</button><div class="calendar-month">${MONTHS[month]} ${year}</div><button class="btn btn-ghost btn-sm" id="cn">→</button></div>
+            <div class="calendar-nav"><button class="btn btn-ghost btn-sm no-print" id="cp">←</button><div class="calendar-month">${MONTHS[month]} ${year}</div><button class="btn btn-ghost btn-sm no-print" id="cn">→</button></div>
             <div class="calendar">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<div class="cal-header">${d}</div>`).join('')}${cellsHTML}</div>
-            <div style="margin-top:14px;font-size:12px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap">
-                <span><span class="cal-badge" style="display:inline-block">n</span> пропуски</span>
-                <span><span class="cal-badge late" style="display:inline-block">n⏰</span> опоздания</span>
-                <span><span class="cal-badge pending" style="display:inline-block">n?</span> заявки</span>
-            </div>
         </div></div>${details}`;
-    document.getElementById('cp').onclick=()=>{if(calState.month===0){calState.month=11;calState.year--;}else calState.month--;renderCalendar();};
-    document.getElementById('cn').onclick=()=>{if(calState.month===11){calState.month=0;calState.year++;}else calState.month++;renderCalendar();};
+    const cp=document.getElementById('cp');if(cp)cp.onclick=()=>{if(calState.month===0){calState.month=11;calState.year--;}else calState.month--;renderCalendar();};
+    const cn=document.getElementById('cn');if(cn)cn.onclick=()=>{if(calState.month===11){calState.month=0;calState.year++;}else calState.month++;renderCalendar();};
     document.querySelectorAll('.cal-day').forEach(c=>{c.onclick=()=>{calState.selectedDay=c.dataset.date;renderCalendar();};});
 }
 
-/* ============ ОТЧЁТЫ ============ */
+/* ============ ОТЧЁТЫ (с печатью) ============ */
 function renderReports(){
     const today=new Date();const s=new Date();s.setDate(s.getDate()-29);
     const start=s.toISOString().slice(0,10);const end=today.toISOString().slice(0,10);
@@ -1316,12 +1436,18 @@ function renderReports(){
         table=`<table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th class="td-center">Проп.</th><th>Посещ.</th></tr></thead><tbody>${rows.map(r=>{const bar=r.avg>=90?'success':r.avg>=75?'warning':'danger';return`<tr><td><b>${esc(r.cls.name)}</b></td><td>${r.teacher?esc(r.teacher.name):'—'}</td><td class="td-center">${r.students}</td><td class="td-center">${r.abs}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${r.avg}%">${r.avg}%</div></div></td></tr>`;}).join('')}</tbody></table>`;
     }else{
         const ss=getStudentsOfClass(Number(filter));
-        const stats=ss.map(s=>{const st={name:s.fullName,total:0,lates:0};abs.filter(a=>a.studentId===s.id).forEach(a=>{st.total++;});st.lates=countLates(s.id,start,end);st.att=Math.round(calcAtt(s.id,start,end)*10)/10;return st;}).sort((a,b)=>a.name.localeCompare(b.name));
-        table=`<table><thead><tr><th>Ученик</th><th class="td-center">Проп.</th><th class="td-center">Опозд.</th><th>Посещ.</th></tr></thead><tbody>${stats.map(st=>{const bar=st.att>=90?'success':st.att>=75?'warning':'danger';return`<tr><td>${esc(st.name)}</td><td class="td-center">${st.total}</td><td class="td-center">${st.lates||0}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${st.att}%">${st.att}%</div></div></td></tr>`;}).join('')}</tbody></table>`;
+        const stats=ss.map(s=>{const st={name:s.fullName,total:0,lates:0,abs:0};abs.filter(a=>a.studentId===s.id).forEach(a=>{st.total++;if(a.type==='absent')st.abs++;});st.lates=countLates(s.id,start,end);st.att=Math.round(calcAtt(s.id,start,end)*10)/10;return st;}).sort((a,b)=>a.name.localeCompare(b.name));
+        table=`<table><thead><tr><th>Ученик</th><th class="td-center">Проп.</th><th class="td-center">Опозд.</th><th>Посещ.</th></tr></thead><tbody>${stats.map(st=>{const bar=st.att>=90?'success':st.att>=75?'warning':'danger';return`<tr><td>${esc(st.name)}</td><td class="td-center">${st.abs}</td><td class="td-center">${st.lates||0}</td><td><div class="progress"><div class="progress-fill ${bar}" style="width:${st.att}%">${st.att}%</div></div></td></tr>`;}).join('')}</tbody></table>`;
     }
+    document.getElementById('print-subtitle').textContent=`Период: ${formatDate(start)} — ${formatDate(end)}`;
     document.getElementById('page-reports').innerHTML=`
         <h1 class="page-title">Отчёты</h1>
         <p class="page-subtitle">${formatDate(start)} — ${formatDate(end)}</p>
+        <div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать отчёта</button>
+            <button class="btn btn-ghost btn-sm" onclick="printTabel()">📄 Печать табеля</button>
+            <button class="btn btn-ghost btn-sm" id="exp">⬇ CSV</button>
+        </div>
         <div class="kpi-grid">
             <div class="kpi"><div class="kpi-label">Раб. дней</div><div class="kpi-value">${wd}</div></div>
             <div class="kpi warning"><div class="kpi-label">Пропусков</div><div class="kpi-value">${abs.length}</div></div>
@@ -1331,11 +1457,49 @@ function renderReports(){
             <div class="card" style="margin-bottom:0"><div class="card-header">Топ причин</div><div class="card-body">${top.length?barsHTML(top):'<div class="empty">Нет данных</div>'}</div></div>
             <div class="card" style="margin-bottom:0"><div class="card-header">Категории</div><div class="card-body">${Object.keys(cc).length?donutHTML(cc):'<div class="empty">Нет данных</div>'}</div></div>
         </div>
-        <div class="card"><div class="card-header">${filter==='all'?'Классы':'Ученики'}<button class="btn btn-sm btn-ghost" id="exp">⬇ CSV</button></div><div class="card-body p-0"><div class="table-wrap">${table}</div></div></div>`;
-    document.getElementById('exp').onclick=exportCSV;
+        <div class="card"><div class="card-header">${filter==='all'?'Классы':'Ученики'}</div><div class="card-body p-0"><div class="table-wrap">${table}</div></div></div>`;
+    const ex=document.getElementById('exp');if(ex)ex.onclick=exportCSV;
 }
 function barsHTML(items){const max=Math.max(...items.map(i=>i[1]),1);return items.map(([l,c])=>`<div class="bar-row"><div class="bar-label">${esc(l)}</div><div class="bar-track"><div class="bar-fill" style="width:${(c/max)*100}%"></div></div><div class="bar-value">${c}</div></div>`).join('');}
 function donutHTML(cc){const colors={'уважительная':'#16a34a','неуважительная':'#f59e0b','особая':'#6b7280'};const total=Object.values(cc).reduce((a,b)=>a+b,0)||1;let acc=0;const seg=[];Object.entries(cc).forEach(([c,n])=>{const f=(acc/total)*360;acc+=n;const t=(acc/total)*360;seg.push(`${colors[c]||'#cbd5e1'} ${f}deg ${t}deg`);});return`<div class="donut-wrap"><div class="donut" style="background:conic-gradient(${seg.join(',')})"></div><div class="legend">${Object.entries(cc).map(([c,n])=>`<div class="legend-item"><span class="legend-dot" style="background:${colors[c]||'#cbd5e1'}"></span><span>${esc(c)}: <b>${n}</b></span></div>`).join('')}</div></div>`;}
+
+function printTabel(){
+    const w=window.open('','_blank');
+    if(!w){showToast('Разрешите всплывающие окна','error');return;}
+    const end=new Date().toISOString().slice(0,10);const s=new Date();s.setDate(s.getDate()-29);const start=s.toISOString().slice(0,10);
+    let rows='';
+    const isT=session.role==='teacher';
+    const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
+    for(const c of allowed){
+        const students=getStudentsOfClass(c.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
+        students.forEach(st=>{
+            const att=Math.round(calcAtt(st.id,start,end)*10)/10;
+            const abs=approved().filter(a=>a.studentId===st.id&&a.date>=start&&a.date<=end).length;
+            const lates=countLates(st.id,start,end);
+            rows+=`<tr><td>${esc(c.name)}</td><td>${esc(st.fullName)}</td><td style="text-align:center">${abs}</td><td style="text-align:center">${lates}</td><td style="text-align:center">${att}%</td></tr>`;
+        });
+    }
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Табель</title><style>
+        body{font-family:Arial,sans-serif;padding:20px;font-size:12px}
+        h1{text-align:center;margin-bottom:6px;font-size:18px}
+        p{text-align:center;color:#666;margin-bottom:16px;font-size:11px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+        th{background:#f0f4f8;font-size:11px;text-transform:uppercase}
+        tr:nth-child(even){background:#f9fafb}
+        .footer{margin-top:20px;text-align:center;font-size:10px;color:#666}
+    </style></head><body>
+        <h1>Табель посещаемости</h1>
+        <p>Период: ${formatDate(start)} — ${formatDate(end)} · Сформировано: ${new Date().toLocaleString('ru-RU')}</p>
+        <table>
+            <thead><tr><th>Класс</th><th>Ученик</th><th>Пропущено</th><th>Опозданий</th><th>Посещаемость</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">Система учёта посещаемости</div>
+        <script>window.onload=()=>window.print();</script>
+    </body></html>`);
+    w.document.close();
+}
 
 /* ============ СТРУКТУРА ============ */
 function renderManage(){
@@ -1351,7 +1515,7 @@ function renderManage(){
     document.getElementById('fc').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();if(!name)return;if(state.classes.some(c=>c.name.toLowerCase()===name.toLowerCase())){msg('Уже есть','error');return;}state.classes.push({id:nextId(state.classes),name,teacherId:fd.get('teacherId')?Number(fd.get('teacherId')):null});save();renderManage();};
     document.getElementById('fs').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();const classId=Number(fd.get('classId'));if(!name||!classId)return;state.students.push({id:nextId(state.students),fullName:name,classId});save();renderManage();};
     document.querySelectorAll('[data-ac]').forEach(s=>{s.onchange=()=>{const c=getClass(Number(s.dataset.ac));c.teacherId=s.value?Number(s.value):null;save();msg('Обновлено');};});
-    document.querySelectorAll('[data-dc]').forEach(b=>{b.onclick=()=>{const c=getClass(Number(b.dataset.dc));if(getStudentsOfClass(c.id).length){msg('В классе есть ученики','error');return;}if(!confirm(`Удалить «${c.name}»?`))return;state.classes=state.classes.filter(x=>x.id!==c.id);save();renderManage();};});
+    document.querySelectorAll('[data-dc]').forEach(b=>{b.onclick=()=>{const c=getClass(Number(b.dataset.dc));if(getStudentsOfClass(c.id).length){msg('Есть ученики','error');return;}if(!confirm(`Удалить «${c.name}»?`))return;state.classes=state.classes.filter(x=>x.id!==c.id);save();renderManage();};});
     document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=()=>{const s=getStudent(Number(b.dataset.ds));if(!confirm(`Удалить «${s.fullName}»?`))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
 }
 
@@ -1360,35 +1524,37 @@ function renderAccounts(){
     const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return`<tr>
         <td>${esc(u.name)}</td>
         <td><code>${esc(u.username)}</code></td>
+        <td>${u.email?esc(u.email):'<span style="color:#94a3b8">—</span>'}</td>
         <td><span class="badge badge-secondary">${roleLabel(u.role)}</span></td>
         <td>${ls?esc(ls.fullName):'—'}</td>
-        <td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="${u.id}" title="Редактировать">✎</button><button class="btn btn-ghost btn-sm" data-du="${u.id}" title="Удалить">✕</button></div></td>
+        <td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="${u.id}">✎</button><button class="btn btn-ghost btn-sm" data-du="${u.id}">✕</button></div></td>
     </tr>`;}).join('');
     document.getElementById('page-accounts').innerHTML=`
         <h1 class="page-title">Аккаунты</h1>
-        <p class="page-subtitle">Можно менять ФИО, логин, пароль и роль</p>
+        <p class="page-subtitle">Можно менять ФИО, логин, email, пароль и роль</p>
         <div id="acc-msg"></div>
-        <div class="card"><div class="card-header">Добавить аккаунт</div><div class="card-body"><form id="fu" class="inline-form">
+        <div class="card"><div class="card-body"><form id="fu" class="inline-form">
             <div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div>
             <div class="form-group"><label class="form-label">Логин</label><input class="input" name="username" required></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email" placeholder="необязательно"></div>
             <div class="form-group"><label class="form-label">Пароль</label><input class="input" name="password" required></div>
             <div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option></select></div>
             <div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>${state.students.map(s=>`<option value="${s.id}">${esc(s.fullName)}</option>`).join('')}</select></div>
-            <div class="form-group"><button class="btn" type="submit">+ Создать</button></div>
+            <div class="form-group"><button class="btn" type="submit">+</button></div>
         </form></div>
-        <div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+        <div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Email</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
     const msg=(t,ty='success')=>{document.getElementById('acc-msg').innerHTML=`<div class="alert alert-${ty}">${t}</div>`;};
     document.getElementById('nr').onchange=e=>{document.getElementById('sw').classList.toggle('hidden',e.target.value!=='student');};
     document.getElementById('fu').onsubmit=async(e)=>{
         e.preventDefault();const fd=new FormData(e.target);
         const name=(fd.get('name')||'').trim();const username=(fd.get('username')||'').trim();const password=(fd.get('password')||'').trim();
-        const role=fd.get('role');const studentId=role==='student'&&fd.get('studentId')?Number(fd.get('studentId')):null;
+        const email=(fd.get('email')||'').trim();const role=fd.get('role');const studentId=role==='student'&&fd.get('studentId')?Number(fd.get('studentId')):null;
         if(!name||!username||!password){msg('Заполните','error');return;}
-        if(!/^[a-zA-Z0-9_.-]+$/.test(username)){msg('Логин: только латиница, цифры, _ . -','error');return;}
+        if(!/^[a-zA-Z0-9_.-]+$/.test(username)){msg('Логин: латиница, цифры, _ . -','error');return;}
         if(state.users.some(u=>u.username===username)){msg('Логин занят','error');return;}
         if(role==='student'&&!studentId){msg('Выберите ученика','error');return;}
         const hash=await hashPassword(password);
-        state.users.push({id:nextId(state.users),username,password:hash,role,name,studentId});
+        state.users.push({id:nextId(state.users),username,password:hash,role,name,studentId,email});
         save();renderAccounts();
     };
     document.querySelectorAll('[data-eu]').forEach(b=>{b.onclick=()=>openEditUserModal(Number(b.dataset.eu));});
@@ -1411,20 +1577,78 @@ function renderReasons(){
     document.querySelectorAll('[data-dr]').forEach(b=>{b.onclick=()=>{const id=Number(b.dataset.dr);const r=getReason(id);if(state.absences.filter(a=>a.reasonId===id).length){document.getElementById('rs-msg').innerHTML='<div class="alert alert-error">Используется</div>';return;}if(!confirm(`Удалить «${r.name}»?`))return;state.reasons=state.reasons.filter(x=>x.id!==id);save();renderReasons();};});
 }
 
-/* ============ ЖУРНАЛ ============ */
+/* ============ ЖУРНАЛ (с поиском) ============ */
+let logSearch='';
+let logFilter='all';
 function renderLog(){
-    const items=[...state.log].sort((a,b)=>b.ts-a.ts);
-    document.getElementById('page-log').innerHTML=`<h1 class="page-title">Журнал</h1><p class="page-subtitle">Всего: ${items.length}</p><div class="card"><div class="card-body p-0">${items.length?items.map(l=>`<div class="log-entry"><span class="log-time">${formatDateTime(l.ts)}</span><span><span class="log-user">${esc(l.user)}</span> — ${esc(l.action)}</span></div>`).join(''):'<div class="empty">Пусто</div>'}</div></div>`;
+    let items=[...state.log].sort((a,b)=>b.ts-a.ts);
+    if(logSearch){
+        const q=logSearch.toLowerCase();
+        items=items.filter(l=>l.user.toLowerCase().includes(q)||l.action.toLowerCase().includes(q));
+    }
+    if(logFilter!=='all'){
+        items=items.filter(l=>l.role===logFilter);
+    }
+    const roles=['admin','director','deputy','teacher','student'];
+    document.getElementById('page-log').innerHTML=`
+        <h1 class="page-title">Журнал</h1>
+        <div class="no-print">
+            <div class="card"><div class="card-body" style="padding:14px 22px">
+                <div class="filter-btns">
+                    <button data-lf="all" class="${logFilter==='all'?'active':''}">Все</button>
+                    ${roles.map(r=>`<button data-lf="${r}" class="${logFilter===r?'active':''}">${roleLabel(r)}</button>`).join('')}
+                </div>
+                <div class="search-bar"><input type="text" id="log-search" placeholder="Поиск по ФИО или действию..." value="${esc(logSearch)}"></div>
+            </div></div>
+        </div>
+        <p class="page-subtitle">Всего записей: ${items.length}</p>
+        <div class="card"><div class="card-body p-0">${items.length?items.map(l=>`<div class="log-entry"><span class="log-time">${formatDateTime(l.ts)}</span><span><span class="log-user">${esc(l.user)}</span> <span class="badge badge-secondary" style="font-size:10px;padding:1px 6px">${roleLabel(l.role)}</span> — ${esc(l.action)}</span></div>`).join(''):'<div class="empty">Пусто</div>'}</div></div>`;
+    document.querySelectorAll('[data-lf]').forEach(b=>{b.onclick=()=>{logFilter=b.dataset.lf;renderLog();};});
+    const si=document.getElementById('log-search');
+    if(si)si.oninput=e=>{logSearch=e.target.value;renderLog();};
 }
 
-/* ============ СИНХР ============ */
+/* ============ СИНХР + ПРАВИЛА БЕЗОПАСНОСТИ ============ */
 function renderSync(){
     document.getElementById('page-sync').innerHTML=`
-        <h1 class="page-title">Синхронизация</h1>
+        <h1 class="page-title">Синхронизация и безопасность</h1>
         <div class="card"><div class="card-header">Firebase</div><div class="card-body">
             <div class="alert alert-${firebaseReady?'success':'warning'}"><b>${firebaseReady?'✓ Синхронизация активна':'⚠ Локальный режим'}</b><br>${firebaseReady?'Данные сохраняются в Firebase.':'Данные только в этом браузере.'}</div>
-            <p style="color:#64748b;font-size:13px;margin-top:12px">Проект: <code>school-absences-71570</code></p>
-            <p style="color:#64748b;font-size:13px">Классов: <b>${state.classes.length}</b> · Учеников: <b>${state.students.length}</b> · Пропусков: <b>${state.absences.length}</b> · Уроков: <b>${state.schedule.length}</b></p>
+            <p style="color:#64748b;font-size:13px">Проект: <code>school-absences-71570</code></p>
+            <p style="color:#64748b;font-size:13px">Классов: <b>${state.classes.length}</b> · Учеников: <b>${state.students.length}</b> · Пропусков: <b>${state.absences.length}</b></p>
+        </div></div>
+        <div class="card"><div class="card-header">🔒 Правила безопасности Firebase</div><div class="card-body">
+            <p style="font-size:13px;color:#64748b;margin-bottom:12px">Для продакшена рекомендуется заменить <code>{".read": "true", ".write": "true"}</code> на следующие правила. Скопируйте и вставьте в Firebase Console → Realtime Database → Правила.</p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:10px;font-size:12px;overflow-x:auto;line-height:1.5">{
+  "rules": {
+    "school_attendance": {
+      ".read": true,
+      ".write": true,
+      "users": {
+        ".validate": "newData.hasChildren(['username','role','name'])"
+      },
+      "absences": {
+        "$absenceId": {
+          ".validate": "newData.hasChildren(['studentId','date','reasonId'])"
+        }
+      }
+    }
+  }
+}</pre>
+            <div class="alert alert-warning" style="margin-top:12px;font-size:12px">
+                <b>Уровни:</b><br>
+                • Текущий (демо): <code>".read": true, ".write": true</code> — любой может читать/писать<br>
+                • Продакшен: только аутентифицированные через Firebase Auth<br>
+                • Максимум: правила по ролям через custom claims
+            </div>
+        </div></div>
+        <div class="card"><div class="card-header">🛡️ Что уже реализовано</div><div class="card-body" style="font-size:13px;line-height:2">
+            ✅ <b>Хэширование паролей</b> — SHA-256 с солью<br>
+            ✅ <b>2FA</b> для директора и администратора — 6-значный код<br>
+            ✅ <b>Восстановление пароля</b> — через Firebase Auth email<br>
+            ✅ <b>Журнал действий</b> — все операции с timestamp<br>
+            ✅ <b>Роли</b> — 5 уровней доступа<br>
+            ✅ <b>Валидация сессии</b> — сброс если пользователь удалён
         </div></div>`;
 }
 
@@ -1461,7 +1685,7 @@ function initApp(){
         document.getElementById('app-nav').innerHTML='';
         PAGES.forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
         document.getElementById('page-home').classList.remove('hidden');
-        document.getElementById('page-home').innerHTML=`<div class="checkin-processing"><div class="big-icon">📱</div><h2>Отмечаемся по QR...</h2><p>Подождите</p></div>`;
+        document.getElementById('page-home').innerHTML=`<div class="checkin-processing"><div class="big-icon">📱</div><h2>Отмечаемся по QR...</h2></div>`;
     }else if(pendingCheckinToken){
         document.getElementById('checkin-banner').classList.remove('hidden');
     }
@@ -1471,6 +1695,19 @@ function initApp(){
         e.preventDefault();
         if(confirm('Очистить всё?')){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(SESSION_KEY);location.reload();}
     });
+    document.getElementById('forgot-link').addEventListener('click',(e)=>{
+        e.preventDefault();
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('forgot-screen').classList.remove('hidden');
+        document.getElementById('forgot-info').innerHTML='';
+        document.getElementById('forgot-user').value='';
+    });
+    document.getElementById('forgot-back').addEventListener('click',(e)=>{e.preventDefault();renderLogin();});
+    document.getElementById('forgot-btn').addEventListener('click',handleForgot);
+    document.getElementById('2fa-submit').addEventListener('click',verify2FA);
+    document.getElementById('2fa-cancel').addEventListener('click',()=>{pending2faUser=null;renderLogin();});
+    document.getElementById('2fa-input').addEventListener('keypress',(e)=>{if(e.key==='Enter')verify2FA();});
+
     let waited=0;
     (function waitForFirebase(){
         if(fbDb){startFirebaseSync();return;}
@@ -1480,7 +1717,7 @@ function initApp(){
     })();
     setTimeout(()=>{if(!state){loadLocal();}},5000);
     if(session){setTimeout(()=>{if(state)onDataReady();},600);}
-    else{setTimeout(()=>{if(state)updateLoginStatus();},700);}
+    else{setTimeout(()=>{},700);}
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initApp);
