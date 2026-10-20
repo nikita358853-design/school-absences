@@ -33,7 +33,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .login-status.ok{color:#166534;background:#dcfce7}
 .login-status.wait{color:#92400e;background:#fef3c7}
 .login-status.err{color:#991b1b;background:#fee2e2}
-.login-status.checkin{color:#1e40af;background:#dbeafe;font-weight:600}
 .error-msg{background:#fee2e2;color:#991b1b;padding:11px 15px;border-radius:9px;font-size:13px;margin-bottom:16px}
 .demo-box{margin-top:18px;padding:12px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:9px;font-size:12px;color:#64748b;line-height:1.8}
 .demo-box code{background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #e2e8f0;font-family:monospace;font-size:11px;color:#1e293b}
@@ -135,7 +134,6 @@ tbody tr:hover{background:#f8fafc}
 .log-time{color:#64748b;font-size:12px;white-space:nowrap;min-width:135px;font-family:monospace}
 .log-user{font-weight:700}
 .late-tag{display:inline-block;padding:2px 8px;border-radius:5px;background:#fed7aa;color:#9a3412;font-size:11px;font-weight:700}
-/* QR */
 .qr-wrap{text-align:center;padding:24px;background:#f8fafc;border-radius:12px;border:2px dashed #e2e8f0;margin:16px 0;min-height:280px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .qr-wrap img,.qr-wrap canvas{display:block;border-radius:8px}
 .qr-info{font-size:12px;color:#64748b;word-break:break-all;margin-top:12px;font-family:monospace;max-width:100%}
@@ -370,7 +368,6 @@ function migrate(){
     state.reasons.forEach(r=>{
         if(r.requiresCertificate===undefined){const n=(r.name||'').toLowerCase();r.requiresCertificate=n.includes('болезн');}
     });
-    // Чистим старые QR-токены (старше суток)
     const dayAgo=Date.now()-24*60*60*1000;
     state.qrTokens=state.qrTokens.filter(t=>t.expiresAt>dayAgo);
 }
@@ -385,7 +382,6 @@ function onDataReady(){
     updateLoginStatus();
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
-    // Если пришли по QR-ссылке и уже вошли как ученик — отмечаем
     if(session&&pendingCheckinToken){
         processCheckin(pendingCheckinToken);
     }else if(session){
@@ -448,67 +444,31 @@ function logAction(action){if(!session)return;state.log.push({id:nextId(state.lo
 
 /* ============ QR ОТМЕТКА ============ */
 function processCheckin(token){
-    const rec=state.qrTokens.find(t=>t.token===token);
-    if(!rec){
-        showToast('QR-код не найден или устарел','error');
+    try{
+        const rec=state.qrTokens.find(t=>t.token===token);
+        if(!rec){showToast('QR-код не найден или устарел','error');pendingCheckinToken=null;renderApp();return;}
+        if(rec.expiresAt<Date.now()){showToast('QR-код истёк','error');pendingCheckinToken=null;renderApp();return;}
+        if(session.role!=='student'){showToast('Отметиться может только ученик','error');pendingCheckinToken=null;renderApp();return;}
+        const student=getStudent(session.studentId);
+        if(!student){showToast('Ученик не найден','error');pendingCheckinToken=null;renderApp();return;}
+        if(student.classId!==rec.classId){showToast('Это QR другого класса','error');pendingCheckinToken=null;renderApp();return;}
+        const today=new Date().toISOString().slice(0,10);
+        if(rec.date!==today){showToast('QR не на сегодня','error');pendingCheckinToken=null;renderApp();return;}
+        if(state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId)){
+            showToast('Вы уже отметились сегодня','info');pendingCheckinToken=null;renderApp();return;
+        }
+        const time=new Date().toTimeString().slice(0,5);
+        state.checkins.push({id:nextId(state.checkins),studentId:session.studentId,classId:rec.classId,date:today,time,token});
+        save();
+        logAction(`QR-отметка: ${student.fullName}`);
+        showToast(`✓ Отметились в ${time}`,'success');
         pendingCheckinToken=null;
         renderApp();
-        return;
-    }
-    if(rec.expiresAt<Date.now()){
-        showToast('QR-код истёк. Попросите учителя обновить.','error');
+    }catch(err){
+        console.error('[checkin]',err);
         pendingCheckinToken=null;
-        renderApp();
-        return;
+        if(session)renderApp();
     }
-    if(session.role!=='student'){
-        showToast('Отметиться может только ученик','error');
-        pendingCheckinToken=null;
-        renderApp();
-        return;
-    }
-    const student=getStudent(session.studentId);
-    if(!student){
-        showToast('Ученик не найден','error');
-        pendingCheckinToken=null;
-        renderApp();
-        return;
-    }
-    if(student.classId!==rec.classId){
-        showToast('Это QR-код другого класса','error');
-        pendingCheckinToken=null;
-        renderApp();
-        return;
-    }
-    const today=new Date().toISOString().slice(0,10);
-    if(rec.date!==today){
-        showToast('QR-код не на сегодня','error');
-        pendingCheckinToken=null;
-        renderApp();
-        return;
-    }
-    const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId);
-    if(existing){
-        showToast('Вы уже отметились сегодня','info');
-        pendingCheckinToken=null;
-        renderApp();
-        return;
-    }
-    const now=new Date();
-    const time=now.toTimeString().slice(0,5);
-    state.checkins.push({
-        id:nextId(state.checkins),
-        studentId:session.studentId,
-        classId:rec.classId,
-        date:today,
-        time,
-        token
-    });
-    save();
-    logAction(`QR-отметка: ${student.fullName}`);
-    showToast(`✓ Отметились в ${time}`,'success');
-    pendingCheckinToken=null;
-    renderApp();
 }
 
 function showToast(msg,type='info'){
@@ -526,44 +486,23 @@ async function handleLogin(e){
     e.preventDefault();
     const err=document.getElementById('login-error');
     const btn=document.getElementById('login-submit');
-
-    if(!state){
-        err.textContent='Данные не загружены. Подождите 2 секунды.';
-        err.classList.remove('hidden');
-        return;
-    }
-    if(!state.users||state.users.length===0){
-        err.textContent='База пуста. Проверьте Firebase.';
-        err.classList.remove('hidden');
-        return;
-    }
-
+    if(!state){err.textContent='Данные не загружены. Подождите.';err.classList.remove('hidden');return;}
+    if(!state.users||state.users.length===0){err.textContent='База пуста.';err.classList.remove('hidden');return;}
     try{
         btn.disabled=true;btn.textContent='Вход...';
         err.classList.add('hidden');
-
         const u=document.getElementById('login-user').value.trim();
         const p=document.getElementById('login-pass').value;
         const user=state.users.find(x=>x.username===u);
-        if(!user){
-            err.textContent='Неверный логин или пароль';
-            err.classList.remove('hidden');
-            return;
-        }
+        if(!user){err.textContent='Неверный логин или пароль';err.classList.remove('hidden');return;}
         const ok=await verifyPassword(p,user.password);
-        if(!ok){
-            err.textContent='Неверный логин или пароль';
-            err.classList.remove('hidden');
-            return;
-        }
+        if(!ok){err.textContent='Неверный логин или пароль';err.classList.remove('hidden');return;}
         if(!user.password.startsWith('sha256:')&&!user.password.startsWith('h:')){
             user.password=await hashPassword(p);save();
         }
         session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
         saveSession();
         logAction('Вход');
-
-        // Если пришли по QR
         if(pendingCheckinToken){
             document.getElementById('checkin-banner').classList.add('hidden');
             processCheckin(pendingCheckinToken);
@@ -636,31 +575,44 @@ const PAGES=['home','my-request','quick-add','qr','calendar','reports','manage',
 function renderPage(page){
     PAGES.forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
     document.getElementById('page-'+page).classList.remove('hidden');
-    if(page==='home')renderHome();
-    else if(page==='my-request')renderMyRequest();
-    else if(page==='quick-add')renderQuickAdd();
-    else if(page==='qr')renderQR();
-    else if(page==='calendar')renderCalendar();
-    else if(page==='reports')renderReports();
-    else if(page==='manage')renderManage();
-    else if(page==='accounts')renderAccounts();
-    else if(page==='reasons')renderReasons();
-    else if(page==='log')renderLog();
-    else if(page==='sync')renderSync();
+    try{
+        if(page==='home')renderHome();
+        else if(page==='my-request')renderMyRequest();
+        else if(page==='quick-add')renderQuickAdd();
+        else if(page==='qr')renderQR();
+        else if(page==='calendar')renderCalendar();
+        else if(page==='reports')renderReports();
+        else if(page==='manage')renderManage();
+        else if(page==='accounts')renderAccounts();
+        else if(page==='reasons')renderReasons();
+        else if(page==='log')renderLog();
+        else if(page==='sync')renderSync();
+    }catch(err){
+        console.error('[render '+page+']',err);
+        document.getElementById('page-'+page).innerHTML=`<div class="alert alert-error"><b>Ошибка загрузки страницы:</b> ${esc(err.message)}<br><small>Откройте F12 для деталей</small></div>`;
+    }
 }
 
-/* ============ QR-СТРАНИЦА ============ */
+/* ============ QR-СТРАНИЦА (ИСПРАВЛЕНА) ============ */
 let qrTimer=null;
 let qrClassId=null;
+let qrGenerating=false;
 
 function renderQR(){
     const isT=session.role==='teacher';
     const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
-    if(!allowed.length){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
+    if(!allowed.length){
+        document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;
+        return;
+    }
     if(!qrClassId||!allowed.some(c=>c.id===qrClassId))qrClassId=allowed[0].id;
     const cls=getClass(qrClassId);
+    if(!cls){
+        document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-error">Класс не найден</div>`;
+        return;
+    }
     const today=new Date().toISOString().slice(0,10);
-    const checkins=state.checkins.filter(c=>c.date===today&&c.classId===qrClassId).sort((a,b)=>a.time.localeCompare(b.time));
+    const checkins=(state.checkins||[]).filter(c=>c.date===today&&c.classId===qrClassId).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 
     document.getElementById('page-qr').innerHTML=`
         <h1 class="page-title">QR-код для отметки</h1>
@@ -670,72 +622,80 @@ function renderQR(){
             <div class="form-group"><button class="btn" id="qr-refresh">🔄 Обновить QR</button></div>
         </div></div></div>
         <div class="card"><div class="card-header">QR · ${esc(cls.name)} · ${formatDate(today)}</div>
-            <div class="card-body">
-                <div class="qr-wrap" id="qr-wrap">
-                    <div style="color:#64748b">Генерация QR...</div>
-                </div>
-            </div>
+            <div class="card-body"><div class="qr-wrap" id="qr-wrap"></div></div>
         </div>
         <div class="card"><div class="card-header">Отметились сегодня (${checkins.length})</div>
             <div class="card-body p-0">
                 ${checkins.length?`<div class="table-wrap"><table>
                     <thead><tr><th>Ученик</th><th>Время</th></tr></thead>
-                    <tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time)}</td></tr>`;}).join('')}</tbody>
+                    <tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time||'—')}</td></tr>`;}).join('')}</tbody>
                 </table></div>`:'<div class="empty"><div class="empty-icon">📱</div>Пока никто не отметился</div>'}
             </div>
         </div>`;
 
     const cs=document.getElementById('qr-class');
     if(cs)cs.onchange=()=>{qrClassId=Number(cs.value);renderQR();};
-    document.getElementById('qr-refresh').onclick=()=>generateQR(qrClassId);
-    generateQR(qrClassId);
+    const btn=document.getElementById('qr-refresh');
+    if(btn)btn.onclick=()=>generateQRToken(qrClassId);
+
+    // Ищем действующий токен — БЕЗ СОЗДАНИЯ НОВОГО
+    const existing=(state.qrTokens||[]).find(t=>
+        t.classId===qrClassId && t.date===today && t.expiresAt>Date.now()
+    );
+
+    if(existing){
+        // Просто рисуем существующий — никакого save()
+        drawQRImage(existing.token);
+    }else{
+        // Токена нет — создаём один раз
+        generateQRToken(qrClassId);
+    }
 }
 
-function generateQR(classId){
-    // Удаляем старые токены этого класса на сегодня
-    const today=new Date().toISOString().slice(0,10);
-    state.qrTokens=state.qrTokens.filter(t=>!(t.classId===classId&&t.date===today));
-    const token='qr_'+Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,10);
-    const expiresAt=Date.now()+5*60*1000; // 5 минут
-    state.qrTokens.push({token,classId,date:today,expiresAt,createdAt:Date.now(),createdBy:session.userId});
-    save();
+function generateQRToken(classId){
+    if(qrGenerating)return;
+    qrGenerating=true;
+    try{
+        const today=new Date().toISOString().slice(0,10);
+        state.qrTokens=(state.qrTokens||[]).filter(t=>!(t.classId===classId&&t.date===today));
+        const token='qr_'+Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,10);
+        const expiresAt=Date.now()+5*60*1000;
+        state.qrTokens.push({token,classId,date:today,expiresAt,createdAt:Date.now(),createdBy:session.userId});
+        save();
+        drawQRImage(token);
+    }catch(err){
+        console.error('[QR]',err);
+        showToast('Ошибка QR: '+err.message,'error');
+    }finally{
+        setTimeout(()=>{qrGenerating=false;},100);
+    }
+}
 
-    const baseUrl=window.location.href.split('?')[0].split('#')[0];
-    const checkinUrl=baseUrl+'?checkin='+token;
+function drawQRImage(token){
+    if(qrTimer){clearTimeout(qrTimer);qrTimer=null;}
     const wrap=document.getElementById('qr-wrap');
     if(!wrap)return;
     wrap.innerHTML='';
-
     if(typeof QRCode==='undefined'){
-        wrap.innerHTML='<div class="alert alert-error">Не удалось загрузить библиотеку QR. Проверьте интернет и обновите страницу.</div>';
+        wrap.innerHTML='<div class="alert alert-error">Библиотека QR не загружена. Проверьте интернет и обновите страницу.</div>';
         return;
     }
-
+    const baseUrl=window.location.href.split('?')[0].split('#')[0];
+    const checkinUrl=baseUrl+'?checkin='+token;
     try{
-        new QRCode(wrap,{
-            text:checkinUrl,
-            width:240,
-            height:240,
-            colorDark:'#1e293b',
-            colorLight:'#ffffff',
-            correctLevel:QRCode.CorrectLevel.H
-        });
+        new QRCode(wrap,{text:checkinUrl,width:240,height:240,colorDark:'#1e293b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     }catch(err){
+        console.error('[QR draw]',err);
         wrap.innerHTML='<div class="alert alert-error">Ошибка создания QR: '+esc(err.message)+'</div>';
         return;
     }
-
     const info=document.createElement('div');
     info.className='qr-info';
-    info.innerHTML=`<div class="qr-timer">⏱ Действует 5 минут</div>
-        <div style="margin-top:12px;color:#64748b;font-size:11px">${esc(checkinUrl)}</div>`;
+    info.innerHTML=`<div class="qr-timer">⏱ Действует 5 минут</div><div style="margin-top:12px;color:#64748b;font-size:11px">${esc(checkinUrl)}</div>`;
     wrap.appendChild(info);
-
-    if(qrTimer)clearTimeout(qrTimer);
     qrTimer=setTimeout(()=>{
-        if(currentPage==='qr'&&qrClassId===classId){
-            showToast('QR-код обновлён','info');
-            generateQR(classId);
+        if(currentPage==='qr'&&qrClassId){
+            generateQRToken(qrClassId);
         }
     },5*60*1000);
 }
@@ -767,7 +727,7 @@ function renderStudentHome(){
         </div>
         <div class="card"><div class="card-header"><span>История</span><button class="btn btn-sm" id="go-req">+ Сообщить</button></div>
         <div class="card-body p-0">${my.length?`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Причина</th><th>Справка</th><th>Статус</th></tr></thead><tbody>${my.map(a=>{const r=getReason(a.reasonId);return`<tr><td>${formatDate(a.date)}</td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}</td><td>${esc(r?.name||'—')}</td><td>${certCell(a,r)}</td><td>${statusBadge(a.status)}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty"><div class="empty-icon">🎉</div>Пропусков нет</div>'}</div></div>`;
-    document.getElementById('go-req').onclick=()=>navigateTo('my-request');
+    const el=document.getElementById('go-req');if(el)el.onclick=()=>navigateTo('my-request');
 }
 
 function renderTeacherHome(){
@@ -1164,15 +1124,12 @@ function initApp(){
     console.log('[app] Старт');
     loadSession();
 
-    // Проверяем ?checkin=ТОКЕН
     const params=new URLSearchParams(window.location.search);
     const token=params.get('checkin');
     if(token){
         pendingCheckinToken=token;
-        console.log('[app] Обнаружен QR-токен:',token);
-        // Показываем баннер на экране входа
+        console.log('[app] QR-токен:',token);
         document.getElementById('checkin-banner').classList.remove('hidden');
-        // Очищаем URL, чтобы при обновлении не отправить повторно
         try{window.history.replaceState({},'',window.location.pathname);}catch(e){}
     }
 
@@ -1200,7 +1157,6 @@ function initApp(){
     if(session){
         setTimeout(()=>{if(state)onDataReady();},600);
     }else{
-        // Ничего не делаем — останемся на экране входа
         setTimeout(()=>{if(state)updateLoginStatus();},700);
     }
 }
