@@ -139,6 +139,10 @@ tbody tr:hover{background:#f8fafc}
 .qr-info{font-size:12px;color:#64748b;word-break:break-all;margin-top:12px;font-family:monospace;max-width:100%}
 .qr-timer{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:#fef3c7;color:#92400e;font-weight:700;font-size:13px}
 .checkin-notice{background:#dbeafe;border:2px solid #93c5fd;color:#1e40af;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-weight:600}
+.checkin-processing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center;color:#64748b;padding:40px}
+.checkin-processing .big-icon{font-size:64px;line-height:1}
+.checkin-processing h2{color:#1e293b;font-size:22px;font-weight:700}
+.session-note{font-size:11px;color:#94a3b8;margin-top:14px;text-align:center}
 @media(max-width:768px){
 .container{padding:12px}.app-header{padding:0 12px;gap:8px;height:54px}.logo{font-size:14px}
 .app-nav button{padding:6px 11px;font-size:13px}.user-name{display:none}
@@ -160,7 +164,7 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
     <div class="login-card">
         <h1>✓ Посещаемость</h1>
         <div class="login-status wait" id="login-status">⏳ Загрузка данных...</div>
-        <div id="checkin-banner" class="checkin-notice hidden">📱 Отметка по QR — войдите, чтобы отметиться</div>
+        <div id="checkin-banner" class="checkin-notice hidden">📱 Отметка по QR — войдите, чтобы отметиться. В следующий раз вход не потребуется.</div>
         <div id="login-error" class="error-msg hidden"></div>
         <form id="login-form">
             <div class="form-group">
@@ -174,8 +178,9 @@ thead th{padding:8px 10px;font-size:10px}tbody td{padding:10px;font-size:13px}
             <button class="btn btn-block" type="submit" id="login-submit" disabled>Загрузка...</button>
         </form>
         <div style="text-align:center;margin-top:14px">
-            <a href="#" id="reset-cache" style="font-size:12px;color:#64748b;text-decoration:none">Сбросить кэш и перезагрузить</a>
+            <a href="#" id="reset-cache" style="font-size:12px;color:#64748b;text-decoration:none">Сбросить кэш и выйти</a>
         </div>
+        <div class="session-note" id="session-note"></div>
         <div class="demo-box">
             <b>Демо-аккаунты:</b><br>
             админ: <code>admin / admin123</code><br>
@@ -379,10 +384,23 @@ function save(){
 }
 
 function onDataReady(){
+    // Валидация сохранённой сессии — вдруг пользователя удалили
+    if(session&&state&&state.users){
+        const user=state.users.find(u=>u.id===session.userId);
+        if(!user){
+            console.log('[session] Пользователь не существует — сбрасываю');
+            session=null;
+            localStorage.removeItem(SESSION_KEY);
+        }
+    }
+
     updateLoginStatus();
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
+
+    // Если сессия есть + пришли по QR → автоматически отмечаемся
     if(session&&pendingCheckinToken){
+        document.getElementById('checkin-banner').classList.add('hidden');
         processCheckin(pendingCheckinToken);
     }else if(session){
         renderApp();
@@ -403,16 +421,33 @@ function updateLoginStatus(){
         el.className='login-status wait';
         el.textContent='⏳ Загрузка данных...';
     }
+
+    // Подсказка "вы уже входили"
+    const note=document.getElementById('session-note');
+    if(note){
+        if(session){
+            note.textContent='✓ Вы уже входили как '+session.name+' — вход выполнится автоматически';
+        }else{
+            note.textContent='';
+        }
+    }
 }
 
-/* ============ СЕССИЯ ============ */
+/* ============ СЕССИЯ (теперь localStorage — постоянная) ============ */
 function loadSession(){
-    const raw=sessionStorage.getItem(SESSION_KEY);
+    // ВАЖНО: localStorage вместо sessionStorage — сессия сохраняется между визитами
+    const raw=localStorage.getItem(SESSION_KEY);
     if(raw){try{session=JSON.parse(raw);}catch(e){session=null;}}
+    if(session)console.log('[session] Загружена:',session.name,'('+session.role+')');
 }
 function saveSession(){
-    if(session)sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));
-    else sessionStorage.removeItem(SESSION_KEY);
+    if(session){
+        localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+        console.log('[session] Сохранена:',session.name);
+    }else{
+        localStorage.removeItem(SESSION_KEY);
+        console.log('[session] Очищена');
+    }
 }
 
 /* ============ УТИЛИТЫ ============ */
@@ -448,14 +483,23 @@ function processCheckin(token){
         const rec=state.qrTokens.find(t=>t.token===token);
         if(!rec){showToast('QR-код не найден или устарел','error');pendingCheckinToken=null;renderApp();return;}
         if(rec.expiresAt<Date.now()){showToast('QR-код истёк','error');pendingCheckinToken=null;renderApp();return;}
-        if(session.role!=='student'){showToast('Отметиться может только ученик','error');pendingCheckinToken=null;renderApp();return;}
+        if(session.role!=='student'){
+            showToast('Вы вошли как '+roleLabel(session.role)+'. Выйдите и войдите как ученик.','error');
+            pendingCheckinToken=null;
+            renderApp();
+            return;
+        }
         const student=getStudent(session.studentId);
         if(!student){showToast('Ученик не найден','error');pendingCheckinToken=null;renderApp();return;}
         if(student.classId!==rec.classId){showToast('Это QR другого класса','error');pendingCheckinToken=null;renderApp();return;}
         const today=new Date().toISOString().slice(0,10);
         if(rec.date!==today){showToast('QR не на сегодня','error');pendingCheckinToken=null;renderApp();return;}
-        if(state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId)){
-            showToast('Вы уже отметились сегодня','info');pendingCheckinToken=null;renderApp();return;
+        const existing=state.checkins.find(c=>c.studentId===session.studentId&&c.date===today&&c.classId===rec.classId);
+        if(existing){
+            showToast('Вы уже отметились сегодня в '+existing.time,'info');
+            pendingCheckinToken=null;
+            renderApp();
+            return;
         }
         const time=new Date().toTimeString().slice(0,5);
         state.checkins.push({id:nextId(state.checkins),studentId:session.studentId,classId:rec.classId,date:today,time,token});
@@ -503,6 +547,7 @@ async function handleLogin(e){
         session={userId:user.id,role:user.role,name:user.name,username:user.username,studentId:user.studentId||null};
         saveSession();
         logAction('Вход');
+        // Если пришли по QR — отмечаемся
         if(pendingCheckinToken){
             document.getElementById('checkin-banner').classList.add('hidden');
             processCheckin(pendingCheckinToken);
@@ -523,6 +568,7 @@ function handleLogout(){
     session=null;
     saveSession();
     renderLogin();
+    showToast('Вы вышли из системы','info');
 }
 
 function renderLogin(){
@@ -589,11 +635,11 @@ function renderPage(page){
         else if(page==='sync')renderSync();
     }catch(err){
         console.error('[render '+page+']',err);
-        document.getElementById('page-'+page).innerHTML=`<div class="alert alert-error"><b>Ошибка загрузки страницы:</b> ${esc(err.message)}<br><small>Откройте F12 для деталей</small></div>`;
+        document.getElementById('page-'+page).innerHTML=`<div class="alert alert-error"><b>Ошибка:</b> ${esc(err.message)}</div>`;
     }
 }
 
-/* ============ QR-СТРАНИЦА (ИСПРАВЛЕНА) ============ */
+/* ============ QR-СТРАНИЦА ============ */
 let qrTimer=null;
 let qrClassId=null;
 let qrGenerating=false;
@@ -601,16 +647,10 @@ let qrGenerating=false;
 function renderQR(){
     const isT=session.role==='teacher';
     const allowed=isT?(getMyClass()?[getMyClass()]:[]):state.classes;
-    if(!allowed.length){
-        document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;
-        return;
-    }
+    if(!allowed.length){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-warning">Не назначен класс</div>`;return;}
     if(!qrClassId||!allowed.some(c=>c.id===qrClassId))qrClassId=allowed[0].id;
     const cls=getClass(qrClassId);
-    if(!cls){
-        document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-error">Класс не найден</div>`;
-        return;
-    }
+    if(!cls){document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR-код</h1><div class="alert alert-error">Класс не найден</div>`;return;}
     const today=new Date().toISOString().slice(0,10);
     const checkins=(state.checkins||[]).filter(c=>c.date===today&&c.classId===qrClassId).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 
@@ -638,16 +678,13 @@ function renderQR(){
     const btn=document.getElementById('qr-refresh');
     if(btn)btn.onclick=()=>generateQRToken(qrClassId);
 
-    // Ищем действующий токен — БЕЗ СОЗДАНИЯ НОВОГО
     const existing=(state.qrTokens||[]).find(t=>
         t.classId===qrClassId && t.date===today && t.expiresAt>Date.now()
     );
 
     if(existing){
-        // Просто рисуем существующий — никакого save()
         drawQRImage(existing.token);
     }else{
-        // Токена нет — создаём один раз
         generateQRToken(qrClassId);
     }
 }
@@ -677,7 +714,7 @@ function drawQRImage(token){
     if(!wrap)return;
     wrap.innerHTML='';
     if(typeof QRCode==='undefined'){
-        wrap.innerHTML='<div class="alert alert-error">Библиотека QR не загружена. Проверьте интернет и обновите страницу.</div>';
+        wrap.innerHTML='<div class="alert alert-error">Библиотека QR не загружена. Проверьте интернет.</div>';
         return;
     }
     const baseUrl=window.location.href.split('?')[0].split('#')[0];
@@ -686,7 +723,7 @@ function drawQRImage(token){
         new QRCode(wrap,{text:checkinUrl,width:240,height:240,colorDark:'#1e293b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     }catch(err){
         console.error('[QR draw]',err);
-        wrap.innerHTML='<div class="alert alert-error">Ошибка создания QR: '+esc(err.message)+'</div>';
+        wrap.innerHTML='<div class="alert alert-error">Ошибка: '+esc(err.message)+'</div>';
         return;
     }
     const info=document.createElement('div');
@@ -1129,17 +1166,39 @@ function initApp(){
     if(token){
         pendingCheckinToken=token;
         console.log('[app] QR-токен:',token);
-        document.getElementById('checkin-banner').classList.remove('hidden');
         try{window.history.replaceState({},'',window.location.pathname);}catch(e){}
+    }
+
+    // Если есть сохранённая сессия + пришли по QR — НЕ показываем экран логина
+    if(session && pendingCheckinToken){
+        console.log('[app] Сессия есть + QR — показываю "Отмечаемся..."');
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        document.getElementById('user-name').textContent=session.name;
+        document.getElementById('user-role').textContent=roleLabel(session.role);
+        document.getElementById('app-nav').innerHTML='';
+        ['my-request','quick-add','qr','calendar','reports','manage','accounts','reasons','log','sync'].forEach(p=>{
+            document.getElementById('page-'+p).classList.add('hidden');
+        });
+        document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('page-home').innerHTML=`
+            <div class="checkin-processing">
+                <div class="big-icon">📱</div>
+                <h2>Отмечаемся по QR...</h2>
+                <p>Подождите, идёт проверка</p>
+            </div>`;
+    }else if(pendingCheckinToken){
+        // Есть QR, но не вошли — показываем баннер "войдите"
+        document.getElementById('checkin-banner').classList.remove('hidden');
     }
 
     document.getElementById('login-form').addEventListener('submit',handleLogin);
     document.getElementById('logout-btn').addEventListener('click',handleLogout);
     document.getElementById('reset-cache').addEventListener('click',(e)=>{
         e.preventDefault();
-        if(confirm('Очистить локальные данные и перезагрузить?')){
+        if(confirm('Выйти из системы и очистить все локальные данные?')){
             localStorage.removeItem(STORAGE_KEY);
-            sessionStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem(SESSION_KEY);
             location.reload();
         }
     });
