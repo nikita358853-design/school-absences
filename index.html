@@ -526,7 +526,6 @@ function migrate(){
     state.notifications=state.notifications.filter(n=>n.expiresAt>Date.now()-3600000);
     state.pending2fa=state.pending2fa.filter(p=>p.expiresAt>Date.now());
 
-    // Миграция: у всех авто-прогулов должна быть причина «Без предупреждения»
     const autoReason=migrateFindAutoReason();
     if(autoReason){
         state.absences.forEach(a=>{
@@ -552,7 +551,6 @@ function autoMarkAbsences(){
     if(!state)return 0;
     const now=new Date();
     let created=0;
-    // Причина для авто-прогула
     const autoReason=state.reasons.find(r=>(r.name||'').toLowerCase().includes('без предупреждения'))
         || state.reasons.find(r=>r.category==='неуважительная')
         || state.reasons[0];
@@ -645,6 +643,36 @@ function logAction(action){if(!session)return;state.log.push({id:nextId(state.lo
 function initials(name){return (name||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
 function getDayOfWeek(iso){const d=new Date(iso+'T00:00:00');return d.getDay()===0?7:d.getDay();}
 function getBell(lessonNumber){return (state.bells||[]).find(b=>b.n===lessonNumber);}
+
+/* ============ АВТО-ГЕНЕРАЦИЯ УЧЁТНЫХ ДАННЫХ ============ */
+function transliterate(str){
+    const map={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+    return String(str).toLowerCase().split('').map(c=>map[c]!==undefined?map[c]:c).join('');
+}
+function generateUsername(fullName){
+    const parts=String(fullName||'').trim().split(/\s+/).filter(Boolean);
+    let base=transliterate(parts[0]||'user').replace(/[^a-z0-9]/g,'')||'user';
+    if(parts[1]){const first=transliterate(parts[1]).replace(/[^a-z0-9]/g,'');if(first)base+='_'+first[0];}
+    let username=base;let n=1;
+    while(state.users.some(u=>u.username===username)){username=base+n;n++;}
+    return username;
+}
+function generatePassword(length=8){
+    const chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let pass='';
+    for(let i=0;i<length;i++)pass+=chars[Math.floor(Math.random()*chars.length)];
+    return pass;
+}
+function showGeneratedCredentials(items){
+    const c=document.getElementById('modal-container');c.classList.remove('hidden');
+    window._credItems=items;
+    c.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-container').classList.add('hidden')"><div class="modal-card"><h3>🔑 Данные для входа</h3><p style="color:#64748b;font-size:13px;margin-bottom:14px">Сохраните — они больше не будут показаны</p><div class="table-wrap" style="max-height:400px;overflow:auto"><table style="font-size:12px"><thead><tr><th>ФИО</th><th>Логин</th><th>Пароль</th></tr></thead><tbody>${items.map(i=>'<tr><td>'+esc(i.name)+'</td><td><code>'+esc(i.username)+'</code></td><td><code>'+esc(i.password)+'</code></td></tr>').join('')}</tbody></table></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn btn-ghost" onclick="copyCreds()">📋 Копировать</button><button class="btn" onclick="document.getElementById('modal-container').classList.add('hidden')">OK</button></div></div></div>`;
+}
+function copyCreds(){
+    const text=(window._credItems||[]).map(i=>i.name+' — логин: '+i.username+', пароль: '+i.password).join('\n');
+    if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>showToast('Скопировано','success')).catch(()=>showToast('Ошибка','error'));
+    else showToast('Копирование недоступно','warning');
+}
 
 function getLessonsForDate(classId,isoDate){
     const dw=getDayOfWeek(isoDate);
@@ -1437,31 +1465,119 @@ function renderManage(){
     const teachers=allTeachers();
     const cr=state.classes.map(c=>{const cnt=getStudentsOfClass(c.id).length;return'<tr><td><b>'+esc(c.name)+'</b></td><td><select class="select" data-ac="'+c.id+'" style="padding:6px;font-size:13px"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'" '+(c.teacherId===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></td><td class="td-center">'+cnt+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dc="'+c.id+'">✕</button></td></tr>';}).join('');
     const sr=state.students.map(s=>{const c=getClass(s.classId);return'<tr><td>'+esc(s.fullName)+'</td><td>'+(c?esc(c.name):'—')+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-ds="'+s.id+'">✕</button></td></tr>';}).join('');
-    document.getElementById('page-manage').innerHTML='<h1 class="page-title">Структура</h1><div id="man-msg"></div><div class="card"><div class="card-header">Добавить класс</div><div class="card-body"><form id="fc" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Кл.рук.</label><select class="select" name="teacherId"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th></th></tr></thead><tbody>'+cr+'</tbody></table></div></div></div><div class="card"><div class="card-header">Добавить ученика</div><div class="card-body"><form id="fs" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Класс</label><select class="select" name="classId" required><option value="">—</option>'+state.classes.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th></th></tr></thead><tbody>'+sr+'</tbody></table></div></div></div>';
+    const tr=teachers.map(t=>{const cnt=state.classes.filter(c=>c.teacherId===t.id).length;return'<tr><td>'+esc(t.name)+'</td><td><code>'+esc(t.username)+'</code></td><td class="td-center">'+cnt+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dt="'+t.id+'">✕</button></td></tr>';}).join('');
+
+    document.getElementById('page-manage').innerHTML=
+        '<h1 class="page-title">Структура</h1><div id="man-msg"></div>'+
+        '<div class="card"><div class="card-header">Добавить класс</div><div class="card-body"><form id="fc" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Кл.рук.</label><select class="select" name="teacherId"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Класс</th><th>Кл.рук.</th><th class="td-center">Уч.</th><th></th></tr></thead><tbody>'+cr+'</tbody></table></div></div></div>'+
+        '<div class="card"><div class="card-header">➕ Добавить учителя</div><div class="card-body"><form id="ft" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required placeholder="Иванов Иван Иванович"></div><div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email"></div><div class="form-group"><button class="btn btn-success" type="submit">+ Добавить</button></div></form><p style="color:#64748b;font-size:12px;margin-top:8px">🔑 Логин и пароль будут сгенерированы автоматически</p></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th class="td-center">Классов</th><th></th></tr></thead><tbody>'+(tr||'<tr><td colspan="4" class="empty">Нет учителей</td></tr>')+'</tbody></table></div></div></div>'+
+        '<div class="card"><div class="card-header">➕ Добавить ученика</div><div class="card-body"><form id="fs" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required placeholder="Иванов Иван"></div><div class="form-group"><label class="form-label">Класс</label><select class="select" name="classId" required><option value="">—</option>'+state.classes.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn btn-success" type="submit">+ Добавить</button></div></form><p style="color:#64748b;font-size:12px;margin-top:8px">🔑 Логин и пароль будут сгенерированы автоматически</p></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Класс</th><th></th></tr></thead><tbody>'+sr+'</tbody></table></div></div></div>';
+
     const msg=(t,ty)=>{document.getElementById('man-msg').innerHTML='<div class="alert alert-'+(ty||'success')+'">'+t+'</div>';};
+
     document.getElementById('fc').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();if(!name)return;if(state.classes.some(c=>c.name.toLowerCase()===name.toLowerCase())){msg('Уже есть','error');return;}state.classes.push({id:nextId(state.classes),name,teacherId:fd.get('teacherId')?Number(fd.get('teacherId')):null});save();renderManage();};
-    document.getElementById('fs').onsubmit=(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();const classId=Number(fd.get('classId'));if(!name||!classId)return;state.students.push({id:nextId(state.students),fullName:name,classId});save();renderManage();};
+
+    document.getElementById('ft').onsubmit=async(e)=>{
+        e.preventDefault();
+        const fd=new FormData(e.target);
+        const name=(fd.get('name')||'').trim();
+        const email=(fd.get('email')||'').trim();
+        if(!name){msg('Введите ФИО','error');return;}
+        const username=generateUsername(name);
+        const password=generatePassword();
+        const hash=await hashPassword(password);
+        state.users.push({id:nextId(state.users),username,password:hash,role:'teacher',name,studentId:null,email});
+        save();
+        logAction('Добавлен учитель: '+name+' (логин: '+username+')');
+        renderManage();
+        showGeneratedCredentials([{name,username,password}]);
+    };
+
+    document.getElementById('fs').onsubmit=async(e)=>{
+        e.preventDefault();
+        const fd=new FormData(e.target);
+        const name=(fd.get('name')||'').trim();
+        const classId=Number(fd.get('classId'));
+        if(!name||!classId){msg('Заполните поля','error');return;}
+        const newStudentId=nextId(state.students);
+        state.students.push({id:newStudentId,fullName:name,classId});
+        const username=generateUsername(name);
+        const password=generatePassword();
+        const hash=await hashPassword(password);
+        state.users.push({id:nextId(state.users),username,password:hash,role:'student',name,studentId:newStudentId,email:''});
+        save();
+        logAction('Добавлен ученик: '+name+' (логин: '+username+')');
+        renderManage();
+        showGeneratedCredentials([{name,username,password}]);
+    };
+
     document.querySelectorAll('[data-ac]').forEach(s=>{s.onchange=()=>{const c=getClass(Number(s.dataset.ac));c.teacherId=s.value?Number(s.value):null;save();msg('Обновлено');};});
     document.querySelectorAll('[data-dc]').forEach(b=>{b.onclick=async()=>{const c=getClass(Number(b.dataset.dc));if(getStudentsOfClass(c.id).length){msg('Есть ученики','error');return;}if(!await showConfirm('Удалить «'+c.name+'»?'))return;state.classes=state.classes.filter(x=>x.id!==c.id);save();renderManage();};});
-    document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=async()=>{const s=getStudent(Number(b.dataset.ds));if(!await showConfirm('Удалить «'+s.fullName+'»?'))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
+    document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=async()=>{const s=getStudent(Number(b.dataset.ds));if(!await showConfirm('Удалить «'+s.fullName+'»?'))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);state.users=state.users.filter(u=>u.studentId!==s.id);save();renderManage();};});
+    document.querySelectorAll('[data-dt]').forEach(b=>{b.onclick=async()=>{const id=Number(b.dataset.dt);const t=getUser(id);if(!t)return;const cnt=state.classes.filter(c=>c.teacherId===id).length;if(cnt>0){msg('Учитель ведёт '+cnt+' классов','error');return;}if(!await showConfirm('Удалить учителя «'+t.name+'»?'))return;state.users=state.users.filter(x=>x.id!==id);save();renderManage();};});
 }
 
 function renderAccounts(){
     const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return'<tr><td>'+esc(u.name)+'</td><td><code>'+esc(u.username)+'</code></td><td>'+(u.email?esc(u.email):'<span style="color:#94a3b8">—</span>')+'</td><td><span class="badge badge-secondary">'+roleLabel(u.role)+'</span></td><td>'+(ls?esc(ls.fullName):'—')+'</td><td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="'+u.id+'">✎</button><button class="btn btn-ghost btn-sm" data-du="'+u.id+'">✕</button></div></td></tr>';}).join('');
     const swa=state.students.filter(s=>!state.users.some(u=>u.studentId===s.id&&(u.role==='student'||u.role==='parent')));
-    document.getElementById('page-accounts').innerHTML='<h1 class="page-title">Аккаунты</h1><div id="acc-msg"></div><div class="card"><div class="card-header">➕ Массовое создание</div><div class="card-body">'+(swa.length?'<p style="color:#64748b;font-size:13px;margin-bottom:12px">Без аккаунтов: <b>'+swa.length+'</b></p><div class="form-group"><label class="form-label">Роль</label><select class="select" id="bulk-role"><option value="student">Ученик</option><option value="parent">Родитель</option></select></div><div class="form-group"><label class="form-label">Пароль</label><input class="input" id="bulk-pass" value="12345"></div><button class="btn btn-success" id="bulk-create">Создать '+swa.length+'</button>':'<div class="alert alert-success">Все имеют аккаунты</div>')+'</div></div><div class="card"><div class="card-header">Добавить</div><div class="card-body"><form id="fu" class="inline-form"><div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Логин</label><input class="input" name="username" required></div><div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email"></div><div class="form-group"><label class="form-label">Пароль</label><input class="input" name="password" required></div><div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option><option value="parent">родитель</option></select></div><div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>'+state.students.map(s=>'<option value="'+s.id+'">'+esc(s.fullName)+'</option>').join('')+'</select></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Email</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+
+    document.getElementById('page-accounts').innerHTML=
+        '<h1 class="page-title">Аккаунты</h1><div id="acc-msg"></div>'+
+        '<div class="card"><div class="card-header">➕ Массовое создание</div><div class="card-body">'+
+            (swa.length
+                ?'<p style="color:#64748b;font-size:13px;margin-bottom:12px">Без аккаунтов: <b>'+swa.length+'</b></p><div class="form-group"><label class="form-label">Роль</label><select class="select" id="bulk-role"><option value="student">Ученик</option><option value="parent">Родитель</option></select></div><button class="btn btn-success" id="bulk-create">Создать '+swa.length+'</button>'
+                :'<div class="alert alert-success">Все ученики имеют аккаунты</div>'
+            )+'<p style="color:#64748b;font-size:12px;margin-top:10px">🔑 Логины и пароли будут сгенерированы автоматически</p></div></div>'+
+        '<div class="card"><div class="card-header">➕ Добавить аккаунт</div><div class="card-body"><form id="fu" class="inline-form">'+
+            '<div class="form-group"><label class="form-label">ФИО</label><input class="input" name="name" required></div>'+
+            '<div class="form-group"><label class="form-label">Email</label><input class="input" type="email" name="email"></div>'+
+            '<div class="form-group"><label class="form-label">Роль</label><select class="select" name="role" id="nr" required><option value="teacher">учитель</option><option value="deputy">завуч</option><option value="director">директор</option><option value="admin">админ</option><option value="student">ученик</option><option value="parent">родитель</option></select></div>'+
+            '<div class="form-group hidden" id="sw"><label class="form-label">Ученик</label><select class="select" name="studentId" id="ns"><option value="">—</option>'+state.students.map(s=>'<option value="'+s.id+'">'+esc(s.fullName)+'</option>').join('')+'</select></div>'+
+            '<div class="form-group"><button class="btn btn-success" type="submit">+ Создать</button></div>'+
+            '</form><p style="color:#64748b;font-size:12px;margin-top:8px">🔑 Логин и пароль будут сгенерированы автоматически</p></div>'+
+            '<div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Email</th><th>Роль</th><th>Ученик</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+
     const msg=(t,ty)=>{document.getElementById('acc-msg').innerHTML='<div class="alert alert-'+(ty||'success')+'">'+t+'</div>';};
     const nr=document.getElementById('nr');if(nr)nr.onchange=e=>{document.getElementById('sw').classList.toggle('hidden',e.target.value!=='student'&&e.target.value!=='parent');};
-    document.getElementById('fu').onsubmit=async(e)=>{e.preventDefault();const fd=new FormData(e.target);const name=(fd.get('name')||'').trim();const username=(fd.get('username')||'').trim();const password=(fd.get('password')||'').trim();const email=(fd.get('email')||'').trim();const role=fd.get('role');const studentId=(role==='student'||role==='parent')&&fd.get('studentId')?Number(fd.get('studentId')):null;
-        if(!name||!username||!password){msg('Заполните','error');return;}if(state.users.some(u=>u.username===username)){msg('Логин занят','error');return;}const hash=await hashPassword(password);state.users.push({id:nextId(state.users),username,password:hash,role,name,studentId,email});save();renderAccounts();};
+
+    document.getElementById('fu').onsubmit=async(e)=>{
+        e.preventDefault();
+        const fd=new FormData(e.target);
+        const name=(fd.get('name')||'').trim();
+        const email=(fd.get('email')||'').trim();
+        const role=fd.get('role');
+        const studentId=(role==='student'||role==='parent')&&fd.get('studentId')?Number(fd.get('studentId')):null;
+        if(!name){msg('Введите ФИО','error');return;}
+        if((role==='student'||role==='parent')&&!studentId){msg('Выберите ученика','error');return;}
+        if(role==='student'&&state.users.some(u=>u.studentId===studentId&&u.role==='student')){msg('У этого ученика уже есть аккаунт','error');return;}
+        const username=generateUsername(name);
+        const password=generatePassword();
+        const hash=await hashPassword(password);
+        state.users.push({id:nextId(state.users),username,password:hash,role,name,studentId,email});
+        save();
+        logAction('Создан аккаунт: '+name+' ('+role+', логин: '+username+')');
+        renderAccounts();
+        showGeneratedCredentials([{name,username,password}]);
+    };
+
     const bc=document.getElementById('bulk-create');
     if(bc)bc.onclick=async()=>{
-        const role=document.getElementById('bulk-role').value;const pass=document.getElementById('bulk-pass').value.trim()||'12345';
+        const role=document.getElementById('bulk-role').value;
         if(!await showConfirm('Создать '+swa.length+' аккаунтов?'))return;
-        const hash=await hashPassword(pass);const used=new Set(state.users.map(u=>u.username));
-        swa.forEach(s=>{const parts=s.fullName.toLowerCase().split(' ').filter(p=>p.length>0);const base=parts.slice(0,2).map(p=>p.replace(/[^a-zа-яё]/gi,'')).join('_');let username=base;let n=1;while(used.has(username)){username=base+n;n++;}used.add(username);state.users.push({id:nextId(state.users),username,password:hash,role,name:s.fullName,studentId:s.id,email:''});});
-        save();renderAccounts();showToast('Создано '+swa.length+' (пароль: '+pass+')','success');
+        const created=[];
+        swa.forEach(s=>{
+            const username=generateUsername(s.fullName);
+            const password=generatePassword();
+            created.push({name:s.fullName,username,password,_hash:null,_studentId:s.id});
+        });
+        for(const c of created){
+            c._hash=await hashPassword(c.password);
+            state.users.push({id:nextId(state.users),username:c.username,password:c._hash,role,name:c.name,studentId:c._studentId,email:''});
+        }
+        save();renderAccounts();
+        if(created.length)showGeneratedCredentials(created.map(c=>({name:c.name,username:c.username,password:c.password})));
     };
+
     document.querySelectorAll('[data-eu]').forEach(b=>{b.onclick=()=>openEditUserModal(Number(b.dataset.eu));});
     document.querySelectorAll('[data-du]').forEach(b=>{b.onclick=async()=>{const id=Number(b.dataset.du);if(id===session.userId){msg('Свой нельзя','error');return;}const u=getUser(id);if(!await showConfirm('Удалить «'+u.name+'»?'))return;state.users=state.users.filter(x=>x.id!==id);state.classes.forEach(c=>{if(c.teacherId===id)c.teacherId=null;});save();renderAccounts();};});
 }
@@ -1487,7 +1603,7 @@ function renderLog(){
 }
 
 function renderSync(){
-    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Активна':'⚠ Локально')+'</b></div></div></div><div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Автопрогул (причина «Без предупреждения»)<br>✅ Постоянный QR кабинетов<br>✅ QR по урокам<br>✅ Печать QR<br>✅ Уведомления<br>✅ Звонки<br>✅ 2FA<br>✅ Журнал<br>✅ Подпись<br>✅ Массовые операции<br>✅ Просмотр посещаемости с фильтрами</div></div>';
+    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Активна':'⚠ Локально')+'</b></div></div></div><div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Автопрогул (причина «Без предупреждения»)<br>✅ Постоянный QR кабинетов<br>✅ QR по урокам<br>✅ Печать QR<br>✅ Уведомления<br>✅ Звонки<br>✅ 2FA<br>✅ Журнал<br>✅ Подпись<br>✅ Массовые операции<br>✅ Просмотр посещаемости с фильтрами<br>✅ Авто-генерация логинов и паролей</div></div>';
 }
 
 function exportCSV(){
