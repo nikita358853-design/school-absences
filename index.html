@@ -27,8 +27,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .input:focus,.select:focus,.textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .input:disabled,.select:disabled{background:#f8fafc;color:#64748b;cursor:not-allowed}
 .textarea{resize:vertical;min-height:60px}
-
-/* === LOGIN — увеличенный, по центру === */
 #login-screen,#2fa-screen,#forgot-screen{min-height:100vh;display:grid;place-items:center;padding:20px;box-sizing:border-box}
 .login-card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(15,23,42,.12);padding:48px 44px;width:100%;max-width:480px;margin:0 auto}
 .login-card h1{font-size:30px;text-align:center;margin-bottom:28px;font-weight:800;letter-spacing:-.02em}
@@ -42,8 +40,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .demo-box code{background:#fff;padding:2px 7px;border-radius:5px;border:1px solid #e2e8f0;font-family:monospace;font-size:11px;color:#1e293b;display:inline-block;margin:1px 0}
 .error-msg{background:#fee2e2;color:#991b1b;padding:13px 17px;border-radius:10px;font-size:14px;margin-bottom:18px}
 .checkin-notice{background:#dbeafe;border:2px solid #93c5fd;color:#1e40af;padding:14px 18px;border-radius:10px;margin-bottom:18px;font-weight:600;text-align:center}
-
-/* === APP === */
 .app-header{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0;padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;position:sticky;top:0;z-index:100}
 .logo{font-weight:800;font-size:16px;color:#2563eb;white-space:nowrap}
 .app-nav{display:flex;gap:4px;flex:1;overflow-x:auto;padding:4px 0;scrollbar-width:none}
@@ -476,8 +472,8 @@ const SEED={
     log:[],qrTokens:[],checkins:[],pending2fa:[],resetTokens:[],signatures:[],notifications:[],markedDays:{}
 };
 
-const STORAGE_KEY='school_attendance_v16';
-const SESSION_KEY='school_attendance_session_v16';
+const STORAGE_KEY='school_attendance_v17';
+const SESSION_KEY='school_attendance_session_v17';
 const DAYS_FULL={1:'Понедельник',2:'Вторник',3:'Среда',4:'Четверг',5:'Пятница',6:'Суббота',7:'Воскресенье'};
 const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const seenNotifications=new Set();
@@ -529,6 +525,20 @@ function migrate(){
     state.qrTokens=state.qrTokens.filter(t=>t.scheduleId&&t.validFrom&&t.validUntil>twoDaysAgo);
     state.notifications=state.notifications.filter(n=>n.expiresAt>Date.now()-3600000);
     state.pending2fa=state.pending2fa.filter(p=>p.expiresAt>Date.now());
+
+    // Миграция: у всех авто-прогулов должна быть причина «Без предупреждения»
+    const autoReason=migrateFindAutoReason();
+    if(autoReason){
+        state.absences.forEach(a=>{
+            if(a.autoMarked&&a.reasonId!==autoReason.id){a.reasonId=autoReason.id;}
+        });
+    }
+}
+
+function migrateFindAutoReason(){
+    return state.reasons.find(r=>(r.name||'').toLowerCase().includes('без предупреждения'))
+        || state.reasons.find(r=>r.category==='неуважительная')
+        || state.reasons[0]||null;
 }
 
 function save(){
@@ -542,15 +552,18 @@ function autoMarkAbsences(){
     if(!state)return 0;
     const now=new Date();
     let created=0;
-    // Проверяем вчера и сегодня
+    // Причина для авто-прогула
+    const autoReason=state.reasons.find(r=>(r.name||'').toLowerCase().includes('без предупреждения'))
+        || state.reasons.find(r=>r.category==='неуважительная')
+        || state.reasons[0];
+    const autoReasonId=autoReason?autoReason.id:4;
+
     for(let offset=-1;offset<=0;offset++){
         const d=new Date();d.setDate(d.getDate()+offset);
         const isoDate=d.toISOString().slice(0,10);
         const dow=getDayOfWeek(isoDate);
         if(dow<1||dow>5)continue;
-        // Пропускаем если учитель уже отмечал вручную
         if(state.markedDays[isoDate])continue;
-        // Уроки этого дня
         const lessonsOfDay=state.schedule.filter(l=>l.dayOfWeek===dow);
         if(!lessonsOfDay.length)continue;
         lessonsOfDay.forEach(lesson=>{
@@ -558,22 +571,17 @@ function autoMarkAbsences(){
             if(!bell)return;
             const [eh,em]=bell.end.split(':').map(Number);
             const lessonEnd=new Date(isoDate+'T00:00:00');lessonEnd.setHours(eh,em,0,0);
-            // Урок закончился + 15 мин буфер
             if(now<new Date(lessonEnd.getTime()+15*60*1000))return;
-            // Ученики этого класса
             const students=getStudentsOfClass(lesson.classId);
             students.forEach(student=>{
-                // Отмечен по QR
                 const hasCheckin=state.checkins.some(c=>c.studentId===student.id&&c.date===isoDate&&c.scheduleId===lesson.id);
                 if(hasCheckin)return;
-                // Уже есть запись (approved/pending)
                 const hasAbsence=state.absences.some(a=>a.studentId===student.id&&a.date===isoDate&&a.scheduleId===lesson.id&&a.status!=='rejected');
                 if(hasAbsence)return;
-                // Создаём «прогул»
                 state.absences.push({
                     id:nextId(state.absences),studentId:student.id,date:isoDate,
                     scheduleId:lesson.id,lessonNumber:lesson.lessonNumber,
-                    reasonId:4,comment:'автоматически — не отметился',
+                    reasonId:autoReasonId,comment:'автоматически — не отметился',
                     status:'approved',type:'absent',hasCertificate:false,
                     autoMarked:true,createdAt:Date.now()
                 });
@@ -597,7 +605,6 @@ function onDataReady(){
     }
     const btn=document.getElementById('login-submit');
     if(btn){btn.disabled=false;btn.textContent='Войти';}
-    // Автопрогул
     autoMarkAbsences();
     if(session&&pendingRoomToken){document.getElementById('checkin-banner').classList.add('hidden');processRoomCheckin(pendingRoomToken);}
     else if(session&&pendingCheckinToken){document.getElementById('checkin-banner').classList.add('hidden');processCheckin(pendingCheckinToken);}
@@ -704,7 +711,6 @@ function createSignaturePad(padId,canvasId){
     return{clear:()=>{ctx.clearRect(0,0,canvas.width,canvas.height);empty=true;pad.classList.remove('signed');},isEmpty:()=>empty,getDataUrl:()=>canvas.toDataURL('image/png')};
 }
 
-/* ROOM CHECKIN */
 function processRoomCheckin(token){
     try{
         const room=state.rooms.find(r=>r.token===token);
@@ -715,7 +721,7 @@ function processRoomCheckin(token){
         const today=new Date().toISOString().slice(0,10);const now=new Date();
         const nowMin=now.getHours()*60+now.getMinutes();const dow=getDayOfWeek(today);
         const subjectsInRoom=(state.subjects||[]).filter(s=>s.roomId===room.id).map(s=>s.name);
-        if(!subjectsInRoom.length){showToast('В этом кабинете нет уроков','error');pendingRoomToken=null;renderApp();return;}
+        if(!subjectsInRoom.length){showToast('В кабинете нет уроков','error');pendingRoomToken=null;renderApp();return;}
         const activeLessons=state.schedule.filter(l=>{if(l.dayOfWeek!==dow)return false;if(!subjectsInRoom.includes(l.subject))return false;const bell=getBell(l.lessonNumber);if(!bell)return false;const[sh,sm]=bell.start.split(':').map(Number);const startMin=sh*60+sm;return nowMin>=startMin-2&&nowMin<=startMin+15;});
         if(!activeLessons.length){showToast('Сейчас нет урока в этом кабинете','warning');pendingRoomToken=null;renderApp();return;}
         const lesson=activeLessons.find(l=>l.classId===student.classId);
@@ -736,7 +742,6 @@ function processRoomCheckin(token){
     }catch(err){console.error('[room]',err);pendingRoomToken=null;if(session)renderApp();}
 }
 
-/* LESSON CHECKIN */
 function processCheckin(token){
     try{
         const rec=state.qrTokens.find(t=>t.token===token);
@@ -767,12 +772,11 @@ function processCheckin(token){
     }catch(err){console.error('[checkin]',err);pendingCheckinToken=null;if(session)renderApp();}
 }
 
-/* NOTIFICATIONS */
 async function requestNotificationPermission(){if(!('Notification' in window))return;if(Notification.permission==='default'){try{await Notification.requestPermission();}catch(e){}}}
 function sendNotification(classId,scheduleId){
     const lesson=state.schedule.find(l=>l.id===scheduleId);if(!lesson)return;
     const existing=state.notifications.find(n=>n.classId===classId&&n.scheduleId===scheduleId&&n.expiresAt>Date.now());
-    if(existing){showToast('Уведомление уже отправлено','info');return;}
+    if(existing){showToast('Уже отправлено','info');return;}
     state.notifications.push({id:nextId(state.notifications),classId,scheduleId,lessonNumber:lesson.lessonNumber,subject:lesson.subject,createdAt:Date.now(),expiresAt:Date.now()+20*60*1000});
     save();logAction(`Уведомление: ${getClass(classId)?.name} · ${lesson.subject}`);
     showToast('🔔 Ученики получат уведомление','success');
@@ -789,7 +793,6 @@ function fireLocalNotification(notif){
     try{new Notification('Отметься!',{body:`Урок №${notif.lessonNumber} ${notif.subject} — отметься по QR`,tag:'checkin-'+notif.id});}catch(e){}
 }
 
-/* 2FA */
 let pending2faUser=null;
 function start2FA(user){
     pending2faUser=user;
@@ -855,7 +858,7 @@ async function handleForgot(){
     const username=document.getElementById('forgot-user').value.trim();const info=document.getElementById('forgot-info');
     if(!username){info.innerHTML='<div class="alert alert-error">Введите логин</div>';return;}
     const user=state.users.find(u=>u.username===username);
-    if(!user){info.innerHTML='<div class="alert alert-error">Пользователь не найден</div>';return;}
+    if(!user){info.innerHTML='<div class="alert alert-error">Не найден</div>';return;}
     const code=String(Math.floor(100000+Math.random()*900000));
     state.resetTokens=state.resetTokens||[];state.resetTokens=state.resetTokens.filter(t=>t.username!==username);
     state.resetTokens.push({username,code,expiresAt:Date.now()+15*60*1000});save();
@@ -874,7 +877,6 @@ async function applyPasswordReset(username){
     setTimeout(()=>renderLogin(),1200);
 }
 
-/* MODALS */
 function openEditUserModal(userId){
     const u=getUser(userId);if(!u)return;
     const c=document.getElementById('modal-container');c.classList.remove('hidden');
@@ -909,7 +911,6 @@ function openEditAbsenceModal(absenceId){
     };
 }
 
-/* NAV */
 let currentPage='home';
 function navigateTo(p){currentPage=p;renderApp();}
 
@@ -975,11 +976,10 @@ function renderPage(page){
     }catch(err){console.error('[render '+page+']',err);document.getElementById('page-'+page).innerHTML='<div class="alert alert-error"><b>Ошибка:</b> '+esc(err.message)+'</div>';}
 }
 
-/* ROOMS */
 function renderRooms(){
     const canEdit=['director','deputy','admin'].includes(session.role);
     const rooms=state.rooms||[];const subjects=state.subjects||[];
-    document.getElementById('page-rooms').innerHTML=`<h1 class="page-title">🏫 Кабинеты и QR</h1><p class="page-subtitle">Постоянный QR для каждого кабинета. Распечатайте и повесьте на дверь.</p>
+    document.getElementById('page-rooms').innerHTML=`<h1 class="page-title">🏫 Кабинеты и QR</h1><p class="page-subtitle">Постоянный QR для каждого кабинета</p>
         ${canEdit?`<div class="card"><div class="card-header">Добавить кабинет</div><div class="card-body"><form id="form-add-room" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div></div>`:''}
         <div class="rooms-grid">${rooms.length?rooms.map(r=>{const ls=subjects.filter(s=>s.roomId===r.id);return`<div class="room-card"><div class="room-name">${esc(r.name)}</div><div class="room-qr" id="room-qr-${r.id}"></div><div class="room-subjects">${ls.length?ls.map(s=>`<span class="badge badge-secondary">${esc(s.name)}</span>`).join(''):'<span style="color:#94a3b8;font-size:12px">Не закреплены</span>'}</div><div class="room-actions"><button class="btn btn-sm btn-ghost" onclick="printRoomQR(${r.id})">🖨 Печать</button>${canEdit?`<button class="btn btn-sm btn-ghost" onclick="deleteRoom(${r.id})" style="color:#dc2626">✕</button>`:''}</div></div>`;}).join(''):'<div class="empty" style="grid-column:1/-1">Нет кабинетов</div>'}</div>
         ${canEdit?`<div class="card"><div class="card-header">📚 Предметы → Кабинеты</div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Предмет</th><th>Кабинет</th><th></th></tr></thead><tbody>${subjects.length?subjects.map(s=>`<tr><td><b>${esc(s.name)}</b></td><td><select class="select" onchange="setSubjectRoom(${s.id}, this.value)" style="padding:6px 10px;font-size:13px;max-width:200px"><option value="">— не закреплён —</option>${rooms.map(r=>`<option value="${r.id}" ${s.roomId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></td><td class="td-end"><button class="btn btn-ghost btn-sm" onclick="deleteSubject(${s.id})">✕</button></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Нет предметов</td></tr>'}</tbody></table></div></div></div>
@@ -1002,13 +1002,12 @@ function printRoomQR(roomId){
     setTimeout(()=>{
         const canvas=tempDiv.querySelector('canvas');const img=tempDiv.querySelector('img');
         const qrDataUrl=canvas?canvas.toDataURL('image/png'):(img?img.src:'');
-        const w=window.open('','_blank');if(!w){showToast('Разрешите всплывающие окна','error');return;}
+        const w=window.open('','_blank');if(!w){showToast('Разрешите окна','error');return;}
         const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR · '+esc(room.name)+'</title><style>@page{size:A4;margin:15mm}body{font-family:Arial,sans-serif;margin:0;padding:0;text-align:center;color:#1e293b}.header h1{font-size:52pt;margin:0 0 4mm 0;color:#2563eb}.header p{font-size:18pt;color:#64748b;margin:0 0 12mm 0}.qr-container{display:inline-block;padding:10mm;background:#fff;border:5px solid #2563eb;border-radius:12mm;margin:10mm 0}.qr-container img{display:block;width:120mm;height:120mm}.subjects{font-size:16pt;color:#475569;margin:8mm 0;line-height:1.6}.badge{display:inline-block;background:#ede9fe;color:#6d28d9;padding:2mm 5mm;border-radius:99px;font-weight:bold;margin:0 2mm;font-size:14pt}.instructions{margin-top:15mm;padding:8mm;background:#f8fafc;border-radius:6mm;text-align:left;font-size:14pt;line-height:1.8}.instructions h3{margin:0 0 4mm 0;font-size:20pt;color:#2563eb}.instructions ol{margin:0;padding-left:8mm}.instructions li{margin-bottom:3mm}.warn{margin-top:6mm;padding:4mm;background:#fef3c7;border-radius:4mm;font-size:13pt;color:#92400e;text-align:center}.footer{margin-top:10mm;font-size:10pt;color:#94a3b8}</style></head><body><div class="header"><h1>'+esc(room.name)+'</h1><p>Постоянный QR-код</p></div><div class="qr-container"><img src="'+qrDataUrl+'"></div>'+(subjects.length?'<div class="subjects">Уроки в кабинете:<br>'+subjects.map(s=>'<span class="badge">'+esc(s.name)+'</span>').join('')+'</div>':'')+'<div class="instructions"><h3>📱 Как отметиться:</h3><ol><li>Убедись, что у тебя сейчас урок в этом кабинете</li><li>Открой камеру</li><li>Наведи на QR</li><li>Войди (первый раз)</li><li>Отметка произойдёт автоматически</li></ol></div><div class="warn">⚠ Отметка сработает только в первые 15 минут урока</div><div class="footer">'+new Date().toLocaleDateString('ru-RU')+'</div></body></html>';
         w.document.write(html);w.document.close();setTimeout(()=>w.print(),500);
     },300);
 }
 
-/* QR per-lesson */
 let qrClassId=null,qrSelectedLessonId=null,qrGenerating=false;
 function renderQR(){
     const isT=session.role==='teacher';
@@ -1023,15 +1022,13 @@ function renderQR(){
     const activeToken=selectedLesson?(state.qrTokens||[]).find(t=>t.scheduleId===selectedLesson.id):null;
     const checkins=selectedLesson?(state.checkins||[]).filter(c=>c.date===today&&c.scheduleId===selectedLesson.id).sort((a,b)=>(a.time||'').localeCompare(b.time||'')):[];
     const dayName=DAYS_FULL[getDayOfWeek(today)];
-
     document.getElementById('page-qr').innerHTML=`<h1 class="page-title">QR по урокам</h1><p class="page-subtitle">${esc(dayName)}, ${formatDate(today)}</p>
-        <div class="alert alert-info" style="font-size:13px">💡 Для постоянного QR на двери кабинета используйте раздел <a href="#" onclick="navigateTo('rooms');return false;" style="color:#1e40af;font-weight:700">«Кабинеты»</a></div>
+        <div class="alert alert-info" style="font-size:13px">💡 Для постоянного QR на двери используйте раздел <a href="#" onclick="navigateTo('rooms');return false;" style="color:#1e40af;font-weight:700">«Кабинеты»</a></div>
         <div class="card"><div class="card-body"><div class="inline-form" style="grid-template-columns:${isT?'1fr':'1fr 1fr'}">${!isT?`<div class="form-group"><label class="form-label">Класс</label><select class="select" id="qr-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===qrClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}<div class="form-group"><label class="form-label">День</label><div class="input" style="background:#f8fafc;font-weight:600">${esc(dayName)}, ${formatDate(today)}</div></div></div></div></div>
         ${!lessons.length?`<div class="card"><div class="empty"><div class="empty-icon">📅</div>Нет уроков</div></div>`:`
         <div class="card"><div class="card-header">Уроки сегодня</div><div class="card-body"><div class="lesson-tabs">${lessons.map(l=>{const cur=isLessonWindowActive(l,today);return`<button class="lesson-tab ${l.id===qrSelectedLessonId?'active':''} ${cur?'current-lesson':''}" data-lesson-id="${l.id}"><div class="lt-num">№${l.lessonNumber}${cur?' 🔴':''}</div><div class="lt-time">${esc(l.bellStart)}–${esc(l.bellEnd)}</div><div class="lt-subj">${esc(l.subject)}</div></button>`;}).join('')}</div></div></div>
         ${selectedLesson?`<div class="card"><div class="card-header"><span>QR · ${esc(cls.name)} · №${selectedLesson.lessonNumber} ${esc(selectedLesson.subject)}</span><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-sm btn-warning" id="qr-notify">🔔 Уведомить</button><button class="btn btn-sm btn-ghost" id="qr-print">🖨</button><button class="btn btn-sm" id="qr-refresh">🔄</button></div></div><div class="card-body"><div id="qr-timer-info" style="text-align:center;margin-bottom:14px"></div><div class="qr-wrap" id="qr-wrap"></div><div id="qr-validity" style="text-align:center;font-size:12px;color:#64748b;margin-top:8px"></div></div></div>
         <div class="card"><div class="card-header">Отметились (${checkins.length})</div><div class="card-body p-0">${checkins.length?`<div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Время</th><th>Статус</th></tr></thead><tbody>${checkins.map(c=>{const st=getStudent(c.studentId);return`<tr><td>${esc(st?.fullName||'—')}</td><td>${esc(c.time||'—')}</td><td>${c.isLate?'<span class="late-tag">опоздал</span>':'<span class="badge badge-success">вовремя</span>'}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">Пока никто</div>'}</div></div>`:''}`}`;
-
     const cs=document.getElementById('qr-class');if(cs)cs.onchange=()=>{qrClassId=Number(cs.value);qrSelectedLessonId=null;renderQR();};
     document.querySelectorAll('[data-lesson-id]').forEach(b=>{b.onclick=()=>{qrSelectedLessonId=Number(b.dataset.lessonId);renderQR();};});
     if(selectedLesson){
@@ -1105,7 +1102,6 @@ function printLessonQR(scheduleId){
     },300);
 }
 
-/* ============ QUICK-ADD (ПОСЕЩАЕМОСТЬ) ============ */
 let qaState={classId:null,date:null,mode:'view',viewLessonId:'',viewStudentId:'',search:'',filter:'all'};
 
 function renderQuickAdd(){
@@ -1118,7 +1114,6 @@ function renderQuickAdd(){
     const lessons=getLessonsForDate(cls.id,date);
     const allStudents=getStudentsOfClass(cls.id).sort((a,b)=>a.fullName.localeCompare(b.fullName));
 
-    // Хедер с переключателем режима
     const headerHTML=`<h1 class="page-title">Посещаемость · ${esc(cls.name)}</h1><p class="page-subtitle">${formatDate(date)}</p>
         <div class="mode-tabs">
             <button class="mode-tab ${qaState.mode==='view'?'active':''}" data-mode="view">👁 Просмотр пропусков</button>
@@ -1133,7 +1128,6 @@ function renderQuickAdd(){
     let contentHTML='';
 
     if(qaState.mode==='view'){
-        // РЕЖИМ ПРОСМОТРА — фильтры + таблица пропусков
         const filtered=state.absences.filter(a=>a.date===date&&a.status!=='rejected'&&allStudents.some(s=>s.id===a.studentId))
             .filter(a=>!qaState.viewLessonId||a.scheduleId===Number(qaState.viewLessonId))
             .filter(a=>!qaState.viewStudentId||a.studentId===Number(qaState.viewStudentId))
@@ -1142,24 +1136,20 @@ function renderQuickAdd(){
                 if(sa.fullName!==sb.fullName)return sa.fullName.localeCompare(sb.fullName);
                 return (a.lessonNumber||0)-(b.lessonNumber||0);
             });
-
-        const lessonOptions=lessons.length?`<option value="">Все уроки</option>${lessons.map(l=>`<option value="${l.id}" ${String(l.id)===qaState.viewLessonId?'selected':''}>№${l.lessonNumber} ${esc(l.subject)} (${esc(l.bellStart)}–${esc(l.bellEnd)})</option>`).join('')}`:'<option value="">Нет уроков на этот день</option>';
+        const lessonOptions=lessons.length?`<option value="">Все уроки</option>${lessons.map(l=>`<option value="${l.id}" ${String(l.id)===qaState.viewLessonId?'selected':''}>№${l.lessonNumber} ${esc(l.subject)} (${esc(l.bellStart)}–${esc(l.bellEnd)})</option>`).join('')}`:'<option value="">Нет уроков</option>';
         const studentOptions=`<option value="">Все ученики</option>${allStudents.map(s=>`<option value="${s.id}" ${String(s.id)===qaState.viewStudentId?'selected':''}>${esc(s.fullName)}</option>`).join('')}`;
-
-        // Список уроков с расписанием
-        const lessonsListHTML=lessons.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">${lessons.map(l=>`<div style="background:#f8fafc;border-radius:8px;padding:8px 12px;border-left:3px solid #2563eb;font-size:12px;min-width:140px"><div style="font-weight:700;color:#1e293b">№${l.lessonNumber} ${esc(l.subject)}</div><div style="color:#64748b;font-family:monospace;font-size:11px">${esc(l.bellStart)}–${esc(l.bellEnd)}</div></div>`).join('')}</div>`:'<div class="empty" style="padding:20px">Нет уроков на этот день</div>';
+        const lessonsListHTML=lessons.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">${lessons.map(l=>`<div style="background:#f8fafc;border-radius:8px;padding:8px 12px;border-left:3px solid #2563eb;font-size:12px;min-width:140px"><div style="font-weight:700;color:#1e293b">№${l.lessonNumber} ${esc(l.subject)}</div><div style="color:#64748b;font-family:monospace;font-size:11px">${esc(l.bellStart)}–${esc(l.bellEnd)}</div></div>`).join('')}</div>`:'<div class="empty" style="padding:20px">Нет уроков</div>';
 
         contentHTML=`<div class="card"><div class="card-body">
             <div class="form-label" style="margin-bottom:10px">📅 Расписание на ${formatDate(date)}</div>
             ${lessonsListHTML}
-            <div class="form-label" style="margin-bottom:10px;margin-top:16px">🔍 Фильтры для просмотра пропусков</div>
+            <div class="form-label" style="margin-bottom:10px;margin-top:16px">🔍 Фильтры</div>
             <div class="inline-form" style="grid-template-columns:1fr 1fr auto;margin-bottom:0">
                 <div class="form-group"><label class="form-label">Урок</label><select class="select" id="view-lesson">${lessonOptions}</select></div>
                 <div class="form-group"><label class="form-label">Ученик</label><select class="select" id="view-student">${studentOptions}</select></div>
                 <div class="form-group"><button class="btn btn-ghost" id="reset-view">Сбросить</button></div>
             </div>
         </div></div>
-
         <div class="card"><div class="card-header">Пропуски (${filtered.length})</div><div class="card-body p-0">
             ${filtered.length?`<div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Урок</th><th>Тип</th><th>Причина</th><th>Справка</th><th>Статус</th><th></th></tr></thead><tbody>${filtered.map(a=>{
                 const s=getStudent(a.studentId);const r=getReason(a.reasonId);
@@ -1168,9 +1158,7 @@ function renderQuickAdd(){
                 return`<tr><td><b>${esc(s?.fullName||'—')}</b></td><td><span class="badge badge-secondary">${esc(lessonName)}</span></td><td>${typeCell(a)||'<span class="badge badge-danger">пропуск</span>'}${autoBadge(a)}</td><td>${esc(r?.name||'—')}</td><td>${certCell(a,r)}</td><td>${statusBadge(a.status)}</td><td><button class="btn btn-ghost btn-sm" data-edit-abs="${a.id}">✎</button></td></tr>`;
             }).join('')}</tbody></table></div>`:'<div class="empty"><div class="empty-icon">✨</div>Пропусков не найдено</div>'}
         </div></div>`;
-
     } else {
-        // РЕЖИМ ОТМЕТКИ — чекбоксы
         let students=allStudents;
         const todayAbs=state.absences.filter(a=>a.date===date&&a.status==='approved'&&students.some(s=>s.id===a.studentId));
         const byS={};todayAbs.forEach(a=>{byS[a.studentId]=a;});
@@ -1199,13 +1187,12 @@ function renderQuickAdd(){
             const ex=byS[st.id];const status=ex?ex.type:'present';const chk=checkinByS[st.id];
             const qrBadge=chk?' <span class="badge badge-info" style="font-size:10px">QR '+esc(chk.time)+(chk.isLate?' ⚠':'')+'</span>':'';
             return`<tr class="attendance-row ${status==='absent'?'row-absent':status==='late'?'row-late':''}" data-row-sid="${st.id}"><td>${esc(st.fullName)}${qrBadge}</td><td><div class="status-switch" data-switch="${st.id}"><button data-status="present" class="${status==='present'?'active-present':''}">✓</button><button data-status="late" class="${status==='late'?'active-late':''}">⏰</button><button data-status="absent" class="${status==='absent'?'active-absent':''}">✗</button></div></td><td><select class="select" data-reason-for="${st.id}" ${status==='present'?'disabled':''}><option value="">—</option>${state.reasons.map(r=>`<option value="${r.id}" ${ex&&ex.reasonId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></td><td>${ex?`<button class="btn btn-ghost btn-sm" data-edit-abs="${ex.id}">✎</button>`:''}</td></tr>`;
-        }).join('')}</tbody></table></div>`:'<div class="empty">Нет учеников по фильтру</div>'}</div></div>
+        }).join('')}</tbody></table></div>`:'<div class="empty">Нет учеников</div>'}</div></div>
         <div id="qa-msg"></div>`;
     }
 
     document.getElementById('page-quick-add').innerHTML=headerHTML+contentHTML;
 
-    // Обработчики
     const cs=document.getElementById('qa-class');if(cs)cs.onchange=()=>{qaState.classId=Number(cs.value);qaState.viewLessonId='';qaState.viewStudentId='';renderQuickAdd();};
     document.getElementById('qa-date').onchange=e=>{qaState.date=e.target.value;qaState.viewLessonId='';qaState.viewStudentId='';renderQuickAdd();};
     document.querySelectorAll('[data-mode]').forEach(b=>{b.onclick=()=>{qaState.mode=b.dataset.mode;renderQuickAdd();};});
@@ -1227,11 +1214,9 @@ function renderQuickAdd(){
             let err='';
             Object.entries(sts).forEach(([sid,st])=>{if(st==='present')return;const r=Number(document.querySelector('[data-reason-for="'+sid+'"]').value);if(!r)err='«'+getStudent(Number(sid)).fullName+'» — причина';});
             if(err){document.getElementById('qa-msg').innerHTML='<div class="alert alert-error">'+esc(err)+'</div>';return;}
-            // Удаляем старые записи этого дня (кроме autoMarked для будущего) и создаём заново
             state.absences=state.absences.filter(a=>!(a.date===date&&allStudents.some(s=>s.id===a.studentId)));
             let idc=nextId(state.absences);
             Object.entries(sts).forEach(([sid,st])=>{if(st==='present')return;const reasonId=Number(document.querySelector('[data-reason-for="'+sid+'"]').value);state.absences.push({id:idc++,studentId:Number(sid),date,reasonId,comment:'',status:'approved',type:st,hasCertificate:false});});
-            // Отмечаем день как «обработан вручную» — автопрогул не будет срабатывать
             state.markedDays[date]=true;
             save();logAction('Посещаемость '+cls.name);
             const aN=Object.values(sts).filter(s=>s==='absent').length;const lN=Object.values(sts).filter(s=>s==='late').length;
@@ -1249,7 +1234,6 @@ function updateStatus(sid,st){
     const r=document.querySelector('[data-reason-for="'+sid+'"]');r.disabled=st==='present';if(st==='present')r.value='';
 }
 
-/* STUDENTS */
 let studentsClassId=null,studentsSearch='',selectedStudents=new Set();
 function renderStudents(){
     const isT=session.role==='teacher';const isS=session.role==='student';const isP=session.role==='parent';const canBulk=session.role==='director';
@@ -1264,7 +1248,7 @@ function renderStudents(){
     const totalAbs=approved().filter(a=>a.date>=start&&a.date<=end&&allSt.some(st=>st.id===a.studentId)).length;
     const totalLates=approvedLates().filter(a=>a.date>=start&&a.date<=end&&allSt.some(st=>st.id===a.studentId)).length;
     const bulkHTML=canBulk&&selectedStudents.size>0?`<div class="bulk-bar"><span class="bulk-info">Выбрано: ${selectedStudents.size}</span><button class="btn btn-sm btn-danger" id="bulk-delete">🗑 Удалить</button><select class="select" id="bulk-class" style="width:auto;padding:5px 10px;font-size:12px"><option value="">Перевести...</option>${state.classes.filter(c=>c.id!==studentsClassId).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><button class="btn btn-sm btn-ghost" id="bulk-clear">Снять</button></div>`:'';
-    document.getElementById('page-students').innerHTML=`<h1 class="page-title">Список класса — ${esc(cls.name)}</h1><p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${allSt.length} учеников</p>
+    document.getElementById('page-students').innerHTML=`<h1 class="page-title">Список — ${esc(cls.name)}</h1><p class="page-subtitle">${teacher?'Кл. руководитель: '+esc(teacher.name):''} · ${allSt.length} учеников</p>
         <div class="no-print">${!isT&&!isS&&!isP?`<div class="card"><div class="card-body"><div class="form-group" style="margin:0;max-width:300px"><label class="form-label">Класс</label><select class="select" id="stud-class">${allowed.map(c=>`<option value="${c.id}" ${c.id===studentsClassId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div></div></div>`:''}<div class="card"><div class="card-body" style="padding:14px 22px"><div class="search-bar"><input type="text" id="stud-search" placeholder="Поиск..." value="${esc(studentsSearch)}"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Печать</button>${canBulk?`<button class="btn btn-ghost btn-sm" id="sel-all">✓ Все</button>`:''}</div></div></div></div>
         ${bulkHTML}
         <div class="kpi-grid"><div class="kpi"><div class="kpi-label">Учеников</div><div class="kpi-value">${allSt.length}</div></div><div class="kpi success"><div class="kpi-label">Посещаемость</div><div class="kpi-value">${totalAtt}%</div></div><div class="kpi danger"><div class="kpi-label">Пропусков</div><div class="kpi-value">${totalAbs}</div></div><div class="kpi warning"><div class="kpi-label">Опозданий</div><div class="kpi-value">${totalLates}</div></div></div>
@@ -1278,7 +1262,6 @@ function renderStudents(){
     const bcl=document.getElementById('bulk-clear');if(bcl)bcl.onclick=()=>{selectedStudents.clear();renderStudents();};
 }
 
-/* SCHEDULE */
 let scheduleClassId=null;
 function renderSchedule(){
     const isT=session.role==='teacher';const isS=session.role==='student'||session.role==='parent';const canEdit=session.role==='deputy'||session.role==='director';
@@ -1304,7 +1287,6 @@ function renderSchedule(){
     }
 }
 
-/* HOME */
 function renderHome(){
     if(session.role==='student')return renderStudentHome();
     if(session.role==='parent')return renderParentHome();
@@ -1389,7 +1371,6 @@ function renderAdminHome(){
     document.getElementById('page-home').innerHTML=`<h1 class="page-title">Система</h1><div class="kpi-grid"><div class="kpi"><div class="kpi-label">Аккаунтов</div><div class="kpi-value">${state.users.length}</div></div><div class="kpi"><div class="kpi-label">Классов</div><div class="kpi-value">${state.classes.length}</div></div><div class="kpi success"><div class="kpi-label">Учеников</div><div class="kpi-value">${state.students.length}</div></div></div><div class="card"><div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="navigateTo('accounts')">Аккаунты</button><button class="btn btn-ghost" onclick="navigateTo('rooms')">Кабинеты</button><button class="btn btn-ghost" onclick="navigateTo('sync')">Синхр.</button><button class="btn btn-ghost" onclick="navigateTo('log')">Журнал</button></div></div>`;
 }
 
-/* MY REQUEST */
 function renderMyRequest(){
     const today=new Date().toISOString().slice(0,10);
     const my=state.absences.filter(a=>a.studentId===session.studentId&&a.status!=='approved').sort((a,b)=>b.date.localeCompare(a.date));
@@ -1405,7 +1386,6 @@ function renderMyRequest(){
     };
 }
 
-/* CALENDAR */
 let calState={year:null,month:null,selectedDay:null};
 function renderCalendar(){
     const today=new Date();if(calState.year===null)calState.year=today.getFullYear();if(calState.month===null)calState.month=today.getMonth();
@@ -1426,7 +1406,6 @@ function renderCalendar(){
     document.querySelectorAll('.cal-day').forEach(c=>{c.onclick=()=>{calState.selectedDay=c.dataset.date;renderCalendar();};});
 }
 
-/* REPORTS */
 function renderReports(){
     const today=new Date();const s=new Date();s.setDate(s.getDate()-29);const start=s.toISOString().slice(0,10);const end=today.toISOString().slice(0,10);
     const isT=session.role==='teacher';let allowed;if(isT){const o=getMyClass();allowed=o?[o]:[];}else allowed=state.classes;
@@ -1454,7 +1433,6 @@ function printTabel(){
     w.document.write(html);w.document.close();setTimeout(()=>w.print(),300);
 }
 
-/* MANAGE */
 function renderManage(){
     const teachers=allTeachers();
     const cr=state.classes.map(c=>{const cnt=getStudentsOfClass(c.id).length;return'<tr><td><b>'+esc(c.name)+'</b></td><td><select class="select" data-ac="'+c.id+'" style="padding:6px;font-size:13px"><option value="">—</option>'+teachers.map(t=>'<option value="'+t.id+'" '+(c.teacherId===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></td><td class="td-center">'+cnt+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dc="'+c.id+'">✕</button></td></tr>';}).join('');
@@ -1468,7 +1446,6 @@ function renderManage(){
     document.querySelectorAll('[data-ds]').forEach(b=>{b.onclick=async()=>{const s=getStudent(Number(b.dataset.ds));if(!await showConfirm('Удалить «'+s.fullName+'»?'))return;state.students=state.students.filter(x=>x.id!==s.id);state.absences=state.absences.filter(a=>a.studentId!==s.id);save();renderManage();};});
 }
 
-/* ACCOUNTS */
 function renderAccounts(){
     const rows=state.users.map(u=>{const ls=u.studentId?getStudent(u.studentId):null;return'<tr><td>'+esc(u.name)+'</td><td><code>'+esc(u.username)+'</code></td><td>'+(u.email?esc(u.email):'<span style="color:#94a3b8">—</span>')+'</td><td><span class="badge badge-secondary">'+roleLabel(u.role)+'</span></td><td>'+(ls?esc(ls.fullName):'—')+'</td><td class="td-end"><div class="action-btns"><button class="btn btn-ghost btn-sm" data-eu="'+u.id+'">✎</button><button class="btn btn-ghost btn-sm" data-du="'+u.id+'">✕</button></div></td></tr>';}).join('');
     const swa=state.students.filter(s=>!state.users.some(u=>u.studentId===s.id&&(u.role==='student'||u.role==='parent')));
@@ -1489,7 +1466,6 @@ function renderAccounts(){
     document.querySelectorAll('[data-du]').forEach(b=>{b.onclick=async()=>{const id=Number(b.dataset.du);if(id===session.userId){msg('Свой нельзя','error');return;}const u=getUser(id);if(!await showConfirm('Удалить «'+u.name+'»?'))return;state.users=state.users.filter(x=>x.id!==id);state.classes.forEach(c=>{if(c.teacherId===id)c.teacherId=null;});save();renderAccounts();};});
 }
 
-/* REASONS */
 function renderReasons(){
     const rows=state.reasons.map(r=>{const used=state.absences.filter(a=>a.reasonId===r.id).length;return'<tr><td>'+esc(r.name)+'</td><td>'+categoryBadge(r.category)+'</td><td class="td-center">'+(r.requiresCertificate?'<span class="badge badge-warning">обяз.</span>':'—')+'</td><td class="td-center">'+used+'</td><td class="td-end"><button class="btn btn-ghost btn-sm" data-dr="'+r.id+'">✕</button></td></tr>';}).join('');
     document.getElementById('page-reasons').innerHTML='<h1 class="page-title">Причины</h1><div id="rs-msg"></div><div class="card"><div class="card-body"><form id="fr" class="inline-form"><div class="form-group"><label class="form-label">Название</label><input class="input" name="name" required></div><div class="form-group"><label class="form-label">Категория</label><select class="select" name="category" required><option value="уважительная">уважительная</option><option value="неуважительная">неуважительная</option><option value="особая">особая</option></select></div><div class="form-group"><label style="display:flex;align-items:center;gap:6px;padding:10px;background:#f8fafc;border-radius:8px;cursor:pointer"><input type="checkbox" name="cert"><span style="font-size:13px">Справка</span></label></div><div class="form-group"><button class="btn" type="submit">+</button></div></form></div><div class="card-body p-0"><div class="table-wrap"><table><thead><tr><th>Название</th><th>Категория</th><th class="td-center">Справка</th><th class="td-center">Исп.</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
@@ -1497,7 +1473,6 @@ function renderReasons(){
     document.querySelectorAll('[data-dr]').forEach(b=>{b.onclick=async()=>{const id=Number(b.dataset.dr);const r=getReason(id);if(state.absences.filter(a=>a.reasonId===id).length){document.getElementById('rs-msg').innerHTML='<div class="alert alert-error">Используется</div>';return;}if(!await showConfirm('Удалить «'+r.name+'»?'))return;state.reasons=state.reasons.filter(x=>x.id!==id);save();renderReasons();};});
 }
 
-/* LOG */
 let logSearch='',logFilter='all';
 function renderLog(){
     let items=[...state.log].sort((a,b)=>b.ts-a.ts);
@@ -1511,12 +1486,10 @@ function renderLog(){
     const cl=document.getElementById('clear-log');if(cl)cl.onclick=async()=>{const le=state.log.filter(l=>l.action==='Вход'||l.action==='Выход');if(!le.length){showToast('Нет','info');return;}if(!await showConfirm('Удалить '+le.length+' записей?'))return;state.log=state.log.filter(l=>l.action!=='Вход'&&l.action!=='Выход');save();renderLog();showToast('Очищено','success');};
 }
 
-/* SYNC */
 function renderSync(){
-    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Активна':'⚠ Локально')+'</b></div></div></div><div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Автопрогул<br>✅ Постоянный QR кабинетов<br>✅ QR по урокам<br>✅ Печать QR<br>✅ Уведомления<br>✅ Звонки<br>✅ 2FA<br>✅ Журнал<br>✅ Подпись<br>✅ Массовые операции<br>✅ Просмотр посещаемости с фильтрами</div></div>';
+    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Активна':'⚠ Локально')+'</b></div></div></div><div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Автопрогул (причина «Без предупреждения»)<br>✅ Постоянный QR кабинетов<br>✅ QR по урокам<br>✅ Печать QR<br>✅ Уведомления<br>✅ Звонки<br>✅ 2FA<br>✅ Журнал<br>✅ Подпись<br>✅ Массовые операции<br>✅ Просмотр посещаемости с фильтрами</div></div>';
 }
 
-/* CSV */
 function exportCSV(){
     const rows=[['Класс','Ученик','Дата','Урок','Тип','Причина','Категория','Справка','Статус','Авто']];
     [...state.absences].sort((a,b)=>b.date.localeCompare(a.date)).forEach(a=>{
@@ -1532,7 +1505,6 @@ function exportCSV(){
     URL.revokeObjectURL(url);
 }
 
-/* INIT */
 function initApp(){
     loadSession();
     const params=new URLSearchParams(window.location.search);
