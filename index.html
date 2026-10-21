@@ -405,15 +405,10 @@ try{if(typeof firebase!=='undefined'&&firebase.initializeApp){firebase.initializ
 function dateOffset(d){const x=new Date();x.setDate(x.getDate()+d);return x.toISOString().slice(0,10);}
 function genToken(prefix){return prefix+'_'+Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,10);}
 
+/* ============ ОЧИЩЕННЫЕ ДАННЫЕ ============ */
 const SEED={
     classes:[{id:1,name:'10А',teacherId:4},{id:2,name:'10Б',teacherId:5},{id:3,name:'11А',teacherId:null}],
-    students:[
-        {id:1,fullName:'Иванов Иван',classId:1},{id:2,fullName:'Петров Пётр',classId:1},
-        {id:3,fullName:'Сидорова Анна',classId:1},{id:4,fullName:'Кузнецов Дмитрий',classId:1},
-        {id:5,fullName:'Смирнова Екатерина',classId:1},{id:6,fullName:'Морозов Артём',classId:1},
-        {id:7,fullName:'Волкова Мария',classId:2},{id:8,fullName:'Соколов Никита',classId:2},
-        {id:9,fullName:'Алексеев Андрей',classId:3}
-    ],
+    students:[],            // данные учеников удалены
     rooms:[
         {id:1,name:'Кабинет 203',token:genToken('room_203')},
         {id:2,name:'Кабинет 105',token:genToken('room_105')},
@@ -443,13 +438,7 @@ const SEED={
         {id:6,username:'student',password:'student123',role:'student',name:'Иванов Иван',studentId:1,email:''},
         {id:7,username:'parent',password:'parent123',role:'parent',name:'Иванова М.С.',studentId:1,email:''}
     ],
-    absences:[
-        {id:1,studentId:1,date:dateOffset(-2),reasonId:1,status:'approved',type:'absent',hasCertificate:true},
-        {id:2,studentId:2,date:dateOffset(-3),reasonId:4,status:'approved',type:'absent'},
-        {id:3,studentId:3,date:dateOffset(-5),reasonId:5,status:'approved',type:'late'},
-        {id:4,studentId:1,date:dateOffset(-7),reasonId:2,status:'approved',type:'absent'},
-        {id:5,studentId:4,date:dateOffset(-8),reasonId:3,status:'approved',type:'absent'}
-    ],
+    absences:[],            // данные пропусков удалены
     schedule:[
         {id:1,classId:1,dayOfWeek:1,lessonNumber:1,subject:'Математика',teacherId:4},
         {id:2,classId:1,dayOfWeek:1,lessonNumber:2,subject:'Русский язык',teacherId:5},
@@ -470,7 +459,8 @@ const SEED={
         {n:3,start:'10:25',end:'11:10'},{n:4,start:'11:25',end:'12:10'},
         {n:5,start:'12:20',end:'13:05'},{n:6,start:'13:15',end:'14:00'},{n:7,start:'14:10',end:'14:55'}
     ],
-    log:[],qrTokens:[],checkins:[],pending2fa:[],resetTokens:[],signatures:[],notifications:[],markedDays:{},customRoles:[]
+    log:[],qrTokens:[],checkins:[],pending2fa:[],resetTokens:[],signatures:[],notifications:[],markedDays:{},customRoles:[],
+    maxBot:{token:'',chatId:''}   // настройки бота MAX
 };
 
 const STORAGE_KEY='school_attendance_v17';
@@ -513,6 +503,7 @@ function migrate(){
     if(!state.bells||!state.bells.length)state.bells=JSON.parse(JSON.stringify(SEED.bells));
     if(!state.markedDays)state.markedDays={};
     if(!state.rooms.length){state.rooms=JSON.parse(JSON.stringify(SEED.rooms));}
+    if(!state.maxBot)state.maxBot={token:'',chatId:''};
     state.rooms.forEach(r=>{if(!r.token)r.token=genToken('room_'+r.id);});
     state.schedule.forEach(l=>{
         const bell=state.bells.find(b=>b.n===l.lessonNumber);
@@ -660,12 +651,13 @@ const PERMISSIONS={
     edit_attendance:'Отметка посещаемости',
     manage_roles:'Управление ролями',
     view_all_classes:'Просмотр всех классов',
-    manage_qr:'Создание QR-кодов'
+    manage_qr:'Создание QR-кодов',
+    manage_max:'Настройка бота MAX'
 };
 const DEFAULT_ROLE_PERMS={
-    admin:['manage_users','manage_roles','manage_rooms','manage_classes','manage_reasons','view_log','edit_attendance','view_all_classes','view_reports','edit_schedule','manage_qr'],
-    director:['view_all_classes','view_reports','edit_schedule','manage_rooms','manage_classes','manage_reasons','view_log','edit_attendance','manage_qr','manage_users','manage_roles'],
-    deputy:['view_all_classes','view_reports','edit_schedule','manage_rooms','manage_reasons','edit_attendance','manage_qr'],
+    admin:['manage_users','manage_roles','manage_rooms','manage_classes','manage_reasons','view_log','edit_attendance','view_all_classes','view_reports','edit_schedule','manage_qr','manage_max'],
+    director:['view_all_classes','view_reports','edit_schedule','manage_rooms','manage_classes','manage_reasons','view_log','edit_attendance','manage_qr','manage_users','manage_roles','manage_max'],
+    deputy:['view_all_classes','view_reports','edit_schedule','manage_rooms','manage_reasons','edit_attendance','manage_qr','manage_max'],
     teacher:['edit_attendance','view_reports','manage_qr','edit_schedule'],
     student:[],
     parent:[]
@@ -822,6 +814,39 @@ function createSignaturePad(padId,canvasId){
     return{clear:()=>{ctx.clearRect(0,0,canvas.width,canvas.height);empty=true;pad.classList.remove('signed');},isEmpty:()=>empty,getDataUrl:()=>canvas.toDataURL('image/png')};
 }
 
+/* ============ MAX BOT ============ */
+async function sendMaxNotification(text){
+    if(!state.maxBot||!state.maxBot.token||!state.maxBot.chatId){
+        showToast('Настройте бота MAX в разделе «Синхронизация»','warning');
+        return false;
+    }
+    try{
+        const resp=await fetch('https://platform-api2.max.ru/messages?chat_id='+encodeURIComponent(state.maxBot.chatId),{
+            method:'POST',
+            headers:{
+                'Authorization':state.maxBot.token,
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({text})
+        });
+        if(!resp.ok){
+            const err=await resp.text();
+            console.error('[MAX]',resp.status,err);
+            showToast('Ошибка MAX: '+resp.status,'error');
+            return false;
+        }
+        logAction('Отправлено уведомление в MAX');
+        showToast('Уведомление отправлено в MAX','success');
+        return true;
+    }catch(e){
+        console.error('[MAX]',e);
+        showToast('Не удалось отправить: '+e.message,'error');
+        return false;
+    }
+}
+
+/* ============ ОСТАЛЬНОЙ КОД (QR, посещаемость и т.д.) ============ */
+
 function processRoomCheckin(token){
     try{
         const room=state.rooms.find(r=>r.token===token);
@@ -873,6 +898,7 @@ function continueRoomCheckin(room,student,token){
         if(isLate){const lateReason=state.reasons.find(r=>r.name.toLowerCase().includes('опоздан'))?.id||5;state.absences.push({id:nextId(state.absences),studentId:session.studentId,date:today,scheduleId:lesson.id,lessonNumber:lesson.lessonNumber,reasonId:lateReason,comment:'по QR кабинета',status:'approved',type:'late',hasCertificate:false});}
         save();logAction(`QR ${room.name}: ${student.fullName} · ${lesson.subject}${isLate?' (опоздание)':''}`);
         showToast(isLate?`⚠ Отметились в ${nowTime} — опоздание`:`✓ Отметились на ${lesson.subject}`,isLate?'warning':'success');
+        sendMaxNotification(`📱 ${student.fullName} отметился на «${lesson.subject}»${isLate?' (опоздание)':''} в ${nowTime}`);
         pendingRoomToken=null;renderApp();
     }catch(err){console.error('[room continue]',err);pendingRoomToken=null;if(session)renderApp();}
 }
@@ -903,6 +929,7 @@ function processCheckin(token){
         if(isLate){const lateReason=state.reasons.find(r=>r.name.toLowerCase().includes('опоздан'))?.id||5;state.absences.push({id:nextId(state.absences),studentId:session.studentId,date:rec.date,scheduleId:rec.scheduleId,lessonNumber:lesson.lessonNumber,reasonId:lateReason,comment:'автоматически по QR',status:'approved',type:'late',hasCertificate:false});}
         save();logAction(`QR-отметка: ${student.fullName} · ${lesson.subject}${isLate?' (опоздание)':''}`);
         showToast(isLate?`⚠ Отметились в ${nowTime} — опоздание`:`✓ Отметились в ${nowTime}`,isLate?'warning':'success');
+        sendMaxNotification(`📱 ${student.fullName} отметился по QR на «${lesson.subject}»${isLate?' (опоздание)':''}`);
         pendingCheckinToken=null;renderApp();
     }catch(err){console.error('[checkin]',err);pendingCheckinToken=null;if(session)renderApp();}
 }
@@ -915,6 +942,7 @@ function sendNotification(classId,scheduleId){
     state.notifications.push({id:nextId(state.notifications),classId,scheduleId,lessonNumber:lesson.lessonNumber,subject:lesson.subject,createdAt:Date.now(),expiresAt:Date.now()+20*60*1000});
     save();logAction(`Уведомление: ${getClass(classId)?.name} · ${lesson.subject}`);
     showToast('🔔 Ученики получат уведомление','success');
+    sendMaxNotification(`🔔 Урок №${lesson.lessonNumber} «${lesson.subject}» — не забудьте отметиться!`);
 }
 function getActiveNotificationForStudent(){
     if(session.role!=='student')return null;
@@ -1080,7 +1108,7 @@ function getTabs(){
     if(hasPermission('edit_attendance'))tabs.push(['quick-add','Посещаемость']);
     tabs.push(['students',hasPermission('view_all_classes')?'Классы':'Список']);
     tabs.push(['schedule','Расписание']);
-    if(hasPermission('manage_qr'))tabs.push(['qr','QR-код']);
+    if(hasPermission('manage_qr') && r!=='director' && r!=='deputy')tabs.push(['qr','QR-код']);
     if(hasPermission('manage_rooms'))tabs.push(['rooms','Кабинеты']);
     tabs.push(['calendar','Календарь']);
     if(hasPermission('view_reports'))tabs.push(['reports','Отчёты']);
@@ -1662,6 +1690,7 @@ function renderMyRequest(){
         logAction(`Заявки: создано ${created}${skipped?' (пропущено '+skipped+')':''}`);
         msg.innerHTML='<div class="alert alert-success">Создано: '+created+(skipped?' · пропущено дубликатов: '+skipped:'')+'</div>';
         showToast('Отправлено: '+created,'success');
+        if(created>0)sendMaxNotification(`📝 ${session.name} подал(а) ${created} заявок на пропуск`);
         setTimeout(()=>renderMyRequest(),1000);
     };
 }
@@ -1879,7 +1908,26 @@ function renderLog(){
 }
 
 function renderSync(){
-    document.getElementById('page-sync').innerHTML='<h1 class="page-title">Синхронизация</h1><div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-'+(firebaseReady?'success':'warning')+'"><b>'+(firebaseReady?'✓ Активна':'⚠ Локально')+'</b></div></div></div><div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Авто-генерация логинов и паролей<br>✅ Групповые заявки (период)<br>✅ QR с ограничением по геолокации<br>✅ Гибкие роли и права<br>✅ Запоминание класса<br>✅ Индикатор «изменён» для авто-прогулов<br>✅ Период в отчётах<br>✅ QR кабинетов и уроков<br>✅ Печать QR · Уведомления · Звонки<br>✅ 2FA · Журнал · Подпись</div></div>';
+    document.getElementById('page-sync').innerHTML=`<h1 class="page-title">Синхронизация</h1>
+        <div class="card"><div class="card-header">Firebase</div><div class="card-body"><div class="alert alert-${firebaseReady?'success':'warning'}"><b>${firebaseReady?'✓ Активна':'⚠ Локально'}</b></div></div></div>
+        <div class="card"><div class="card-header">🤖 Бот MAX</div><div class="card-body">
+            <div class="form-group"><label class="form-label">Токен бота (access_token)</label><input class="input" type="text" id="max-token" value="${esc(state.maxBot?.token||'')}" placeholder="Вставьте токен из настроек бота"></div>
+            <div class="form-group"><label class="form-label">Chat ID (куда отправлять)</label><input class="input" type="text" id="max-chat" value="${esc(state.maxBot?.chatId||'')}" placeholder="Например, 123456789"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="max-save">💾 Сохранить</button><button class="btn btn-ghost" id="max-test">📤 Тест</button></div>
+            <p style="color:#64748b;font-size:12px;margin-top:12px">💡 Как получить Chat ID: напишите боту в личные сообщения, затем откройте <code>https://platform-api2.max.ru/messages</code> с токеном — в ответе будет <code>recipient.chat_id</code>. Или используйте бота <b>«Узнать ID в MAX»</b>.</p>
+        </div></div>
+        <div class="card"><div class="card-header">Реализовано</div><div class="card-body" style="font-size:13px;line-height:2">✅ Авто-генерация логинов и паролей<br>✅ Групповые заявки (период)<br>✅ QR с ограничением по геолокации<br>✅ Гибкие роли и права<br>✅ Запоминание класса<br>✅ Индикатор «изменён» для авто-прогулов<br>✅ Период в отчётах<br>✅ QR кабинетов и уроков<br>✅ Печать QR · Уведомления · Звонки<br>✅ 2FA · Журнал · Подпись<br>✅ Отправка уведомлений в MAX</div></div>`;
+    document.getElementById('max-save').onclick=()=>{
+        state.maxBot={token:document.getElementById('max-token').value.trim(),chatId:document.getElementById('max-chat').value.trim()};
+        save();showToast('Настройки MAX сохранены','success');
+    };
+    document.getElementById('max-test').onclick=async()=>{
+        const token=document.getElementById('max-token').value.trim();
+        const chatId=document.getElementById('max-chat').value.trim();
+        if(!token||!chatId){showToast('Заполните токен и Chat ID','error');return;}
+        state.maxBot={token,chatId};save();
+        await sendMaxNotification('✅ Тестовое уведомление из системы «Посещаемость»');
+    };
 }
 
 function exportCSV(){
