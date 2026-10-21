@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://nikita358853-design.github.io/school-absences/sitemap.xml
